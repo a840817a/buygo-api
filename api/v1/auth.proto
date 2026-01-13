@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package buygo.v1;
+
+option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
+
+// AuthService handles authentication and user management
+service AuthService {
+  // LoginOrRegister exchanges a 3rd party token for a session
+  rpc Login(LoginRequest) returns (LoginResponse);
+  // GetMe returns the current user's profile
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+}
+
+message LoginRequest {
+  string provider = 1; // "google", "line", "apple"
+  string token = 2;    // ID Token from the provider
+}
+
+message LoginResponse {
+  string access_token = 1;
+  User user = 2;
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string avatar_url = 4;
+  bool is_system_admin = 5;
+}

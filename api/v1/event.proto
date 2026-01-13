@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package buygo.v1;
+
+option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
+
+import "google/protobuf/timestamp.proto";
+import "buygo/v1/auth.proto";
+
+service EventService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse);
+}
+
+message Event {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp start_time = 4;
+  google.protobuf.Timestamp end_time = 5;
+  string location = 6;
+  User creator = 7;
+}
+
+message EventItem {
+  string id = 1;
+  string name = 2;
+  int64 price = 3;
+  int32 max_participants = 4;
+}
+
+message CreateEventRequest {
+  string title = 1;
+  // ...
+}
+
+message CreateEventResponse {
+  Event event = 1;
+}
+
+message ListEventsRequest {}
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message RegisterEventRequest {
+  string event_id = 1;
+  repeated string item_ids = 2;
+  string contact_info = 3;
+}
+
+message RegisterEventResponse {
+  string registration_id = 1;
+}

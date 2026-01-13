@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package buygo.v1;
+
+option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
+
+import "google/protobuf/timestamp.proto";
+import "buygo/v1/auth.proto";
+
+service ProjectService {
+  // Project Management
+  rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse);
+  rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
+  rpc GetProject(GetProjectRequest) returns (GetProjectResponse);
+  rpc UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse);
+  
+  // Product Management
+  rpc AddProduct(AddProductRequest) returns (AddProductResponse);
+  
+  // Order Management
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetMyOrders(GetMyOrdersRequest) returns (GetMyOrdersResponse);
+}
+
+message Project {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string cover_image_url = 4;
+  bool is_active = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp deadline = 7;
+  User creator = 8;
+  repeated User managers = 9;
+}
+
+message Product {
+  string id = 1;
+  string project_id = 2;
+  string name = 3;
+  int64 price_original = 4;
+  double exchange_rate = 5;
+  int64 price_final = 6;
+  repeated ProductSpec specs = 7;
+}
+
+message ProductSpec {
+  string id = 1;
+  string name = 2; // e.g., "Size: M, Color: Red"
+}
+
+message CreateProjectRequest {
+  string title = 1;
+  string description = 2;
+}
+
+message CreateProjectResponse {
+  Project project = 1;
+}
+
+message ListProjectsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListProjectsResponse {
+  repeated Project projects = 1;
+  string next_page_token = 2;
+}
+
+message GetProjectRequest {
+  string project_id = 1;
+}
+
+message GetProjectResponse {
+  Project project = 1;
+  repeated Product products = 2;
+}
+
+message UpdateProjectRequest {
+  string project_id = 1;
+  string title = 2;
+  // ... other fields
+}
+
+message UpdateProjectResponse {
+  Project project = 1;
+}
+
+message AddProductRequest {
+  string project_id = 1;
+  string name = 2;
+  int64 price_original = 3;
+  // ... specs
+}
+
+message AddProductResponse {
+  Product product = 1;
+}
+
+message CreateOrderRequest {
+  string project_id = 1;
+  repeated OrderItem items = 2;
+}
+
+message OrderItem {
+  string product_id = 1;
+  string spec_id = 2;
+  int32 quantity = 3;
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+}
+
+message GetMyOrdersRequest {}
+
+message GetMyOrdersResponse {
+  repeated Order orders = 1;
+}
+
+message Order {
+  string id = 1;
+  string project_id = 2;
+  string project_title = 3;
+  int64 total_amount = 4;
+  string status = 5; 
+  // ... details
+}
