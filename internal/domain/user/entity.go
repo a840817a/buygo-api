@@ -3,16 +3,28 @@ package user
 import (
 	"context"
 	"errors"
+	"time"
+)
+
+// UserRole Enum
+type UserRole int
+
+const (
+	UserRoleUnspecified UserRole = 0
+	UserRoleUser        UserRole = 1
+	UserRoleCreator     UserRole = 2
+	UserRoleSysAdmin    UserRole = 3
 )
 
 // User Entity
 type User struct {
-	ID            string
-	Name          string
-	Email         string
-	AvatarURL     string
-	ProviderID    string // e.g., "google:12345"
-	IsSystemAdmin bool
+	ID        string
+	Name      string
+	Email     string
+	PhotoURL  string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 var (
@@ -22,13 +34,8 @@ var (
 // Repository Port
 type Repository interface {
 	GetByID(ctx context.Context, id string) (*User, error)
-	GetByProviderID(ctx context.Context, providerID string) (*User, error)
+	GetByEmail(ctx context.Context, email string) (*User, error)
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, user *User) error
-}
-
-// Service Port (UseCase)
-type Service interface {
-	LoginOrRegister(ctx context.Context, provider string, token string) (*User, error)
-	GetProfile(ctx context.Context, id string) (*User, error)
+	List(ctx context.Context, limit, offset int) ([]*User, error)
 }

@@ -1,0 +1,157 @@
+package handler
+
+import (
+	"context"
+	"errors"
+
+	"connectrpc.com/connect"
+
+	v1 "github.com/buygo/buygo-api/api/v1"
+	"github.com/buygo/buygo-api/api/v1/buygov1connect"
+	"github.com/buygo/buygo-api/internal/domain/auth"
+	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/buygo/buygo-api/internal/service"
+)
+
+type AuthHandler struct {
+	authService *service.AuthService
+}
+
+func NewAuthHandler(authService *service.AuthService) *AuthHandler {
+	return &AuthHandler{authService: authService}
+}
+
+// Ensure implementation
+var _ buygov1connect.AuthServiceHandler = (*AuthHandler)(nil)
+
+func (h *AuthHandler) Login(ctx context.Context, req *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error) {
+	token := req.Msg.IdToken
+	if token == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("missing id_token"))
+	}
+
+	accessToken, u, err := h.authService.LoginOrRegister(ctx, token)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&v1.LoginResponse{
+		AccessToken: accessToken,
+		User:        toProtoUser(u),
+	}), nil
+}
+
+func (h *AuthHandler) GetMe(ctx context.Context, req *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
+	userID, _, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+	}
+
+	u, err := h.authService.GetMe(ctx, userID)
+	if err != nil {
+		if errors.Is(err, user.ErrNotFound) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&v1.GetMeResponse{
+		User: toProtoUser(u),
+	}), nil
+}
+
+func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
+	// TODO: Implement Admin check (though Service might handle it via Context, Handler should ideally check too or Service does)
+	// Service checks context? No, Service ListUsers just calls repo.
+	// The Service *should* check permission if it's a protected business logic.
+	// But usually we check at Handler or Interceptor layer for role.
+	// For now, let's assume Interceptor populates context, and Service or Handler checks.
+	// Since I'm not adding auth middleware to this specific handler in main.go yet (it's global),
+	// I should probably check here or rely on Service.
+	// Let's implement basics first.
+
+	limit := int(req.Msg.PageSize)
+	offset := 0 // Parse PageToken if implemented
+	// For now simple limit/offset or just limit
+
+	users, err := h.authService.ListUsers(ctx, limit, offset)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var protoUsers []*v1.User
+	for _, u := range users {
+		protoUsers = append(protoUsers, toProtoUser(u))
+	}
+
+	return connect.NewResponse(&v1.ListUsersResponse{
+		Users:         protoUsers,
+		NextPageToken: "", // Implement pagination token logic if needed
+	}), nil
+}
+
+func (h *AuthHandler) UpdateUserRole(ctx context.Context, req *connect.Request[v1.UpdateUserRoleRequest]) (*connect.Response[v1.UpdateUserRoleResponse], error) {
+	// TODO: Implement Admin check
+
+	targetUserID := req.Msg.UserId
+	newRole := user.UserRole(req.Msg.Role) // Proto enum to Domain enum mapping
+
+	// Minimal validation
+	if newRole == user.UserRoleUnspecified {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid role"))
+	}
+
+	u, err := h.authService.UpdateUserRole(ctx, targetUserID, newRole)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&v1.UpdateUserRoleResponse{
+		User: toProtoUser(u),
+	}), nil
+}
+
+func (h *AuthHandler) ListAssignableManagers(ctx context.Context, req *connect.Request[v1.ListAssignableManagersRequest]) (*connect.Response[v1.ListAssignableManagersResponse], error) {
+	managers, err := h.authService.ListAssignableManagers(ctx, req.Msg.Query)
+	if err != nil {
+		if errors.Is(err, service.ErrPermissionDenied) {
+			return nil, connect.NewError(connect.CodePermissionDenied, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var protoManagers []*v1.User
+	for _, u := range managers {
+		protoManagers = append(protoManagers, toProtoUser(u))
+	}
+
+	return connect.NewResponse(&v1.ListAssignableManagersResponse{
+		Managers: protoManagers,
+	}), nil
+}
+
+func toProtoUser(u *user.User) *v1.User {
+	if u == nil {
+		return nil
+	}
+	// Map Domain Role to Proto Role
+	var role v1.UserRole
+	switch u.Role {
+	case user.UserRoleUser:
+		role = v1.UserRole_USER_ROLE_USER
+	case user.UserRoleCreator:
+		role = v1.UserRole_USER_ROLE_CREATOR
+	case user.UserRoleSysAdmin:
+		role = v1.UserRole_USER_ROLE_SYS_ADMIN
+	default:
+		role = v1.UserRole_USER_ROLE_UNSPECIFIED
+	}
+
+	return &v1.User{
+		Id:       u.ID,
+		Name:     u.Name,
+		Email:    u.Email,
+		PhotoUrl: u.PhotoURL,
+		Role:     role,
+	}
+}

@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 
-	"buygo/internal/domain/event"
+	"github.com/buygo/buygo-api/internal/domain/auth"
+	"github.com/buygo/buygo-api/internal/domain/event"
+	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
 type EventService struct {
@@ -19,13 +22,37 @@ func NewEventService(repo event.Repository) *EventService {
 	}
 }
 
-func (s *EventService) CreateEvent(ctx context.Context, userID string, title string, start, end time.Time) (*event.Event, error) {
+// CreateEvent: Creator/Admin Only
+func (s *EventService) CreateEvent(ctx context.Context, title, description string, start, end time.Time, items []*event.EventItem, discounts []*event.DiscountRule) (*event.Event, error) {
+	usrID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	if role != int(user.UserRoleCreator) && role != int(user.UserRoleSysAdmin) {
+		return nil, ErrPermissionDenied
+	}
+
+	eventID := uuid.New().String()
+	for _, item := range items {
+		if item.ID == "" {
+			item.ID = uuid.New().String()
+		}
+		item.EventID = eventID
+	}
+
 	e := &event.Event{
-		ID:        uuid.New().String(),
-		Title:     title,
-		StartTime: start,
-		EndTime:   end,
-		CreatorID: userID,
+		ID:          eventID,
+		Title:       title,
+		Description: description,
+		StartTime:   start,
+		EndTime:     end,
+		CreatorID:   usrID,
+		Status:      event.EventStatusDraft,
+		ManagerIDs:  []string{usrID},
+		Discounts:   discounts,
+		Items:       items,
+		CreatedAt:   time.Now(),
 	}
 	if err := s.repo.Create(ctx, e); err != nil {
 		return nil, err
@@ -33,6 +60,448 @@ func (s *EventService) CreateEvent(ctx context.Context, userID string, title str
 	return e, nil
 }
 
-func (s *EventService) ListEvents(ctx context.Context) ([]*event.Event, error) {
-	return s.repo.List(ctx)
+// ListEvents: Public Only
+func (s *EventService) ListEvents(ctx context.Context, limit, offset int) ([]*event.Event, error) {
+	// Always Public View
+	return s.repo.List(ctx, limit, offset, "", false, false)
+}
+
+// ListManagerEvents: Authenticated Manager/Admin View
+func (s *EventService) ListManagerEvents(ctx context.Context, limit, offset int) ([]*event.Event, error) {
+	userID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+	isSysAdmin := role == int(user.UserRoleSysAdmin)
+	return s.repo.List(ctx, limit, offset, userID, isSysAdmin, true)
+}
+
+// GetEvent: Public
+func (s *EventService) GetEvent(ctx context.Context, id string) (*event.Event, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+// RegisterEvent: User Only
+func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items []*event.RegistrationItem, contactInfo, notes string) (*event.Registration, error) {
+	usrID, _, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	// Check Event Status
+	e, err := s.repo.GetByID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+	if e.Status != event.EventStatusActive {
+		return nil, errors.New("event not active")
+	}
+
+	// Double check deadline (optional but good practice)
+	if !e.RegistrationDeadline.IsZero() && time.Now().After(e.RegistrationDeadline) {
+		return nil, errors.New("registration deadline passed")
+	}
+
+	// Check if already registered
+	existingRegs, err := s.repo.ListRegistrations(ctx, eventID, usrID)
+	if err != nil {
+		return nil, err
+	}
+	// If any active registration exists, error out or return it.
+	for _, er := range existingRegs {
+		if er.Status != event.RegistrationStatusCancelled {
+			return nil, errors.New("user already registered for this event")
+		}
+	}
+
+	// Check item limits
+	for _, regItem := range items {
+		// Find event item
+		var evtItem *event.EventItem
+		for _, ei := range e.Items {
+			if ei.ID == regItem.EventItemID {
+				evtItem = ei
+				break
+			}
+		}
+		if evtItem == nil {
+			return nil, errors.New("invalid event item id")
+		}
+		if regItem.Quantity <= 0 {
+			return nil, errors.New("invalid quantity")
+		}
+		if !evtItem.AllowMultiple && regItem.Quantity > 1 {
+			return nil, errors.New("quantity limit exceeded for item: " + evtItem.Name)
+		}
+	}
+
+	reg := &event.Registration{
+		ID:            uuid.New().String(),
+		EventID:       eventID,
+		UserID:        usrID,
+		Status:        event.RegistrationStatusPending,
+		ContactInfo:   contactInfo,
+		Notes:         notes,
+		SelectedItems: items,
+		PaymentStatus: int(event.PaymentStatusUnpaid), // Default to Unpaid (1) instead of 0
+	}
+
+	// Calculate Totals & Discounts
+	reg.TotalAmount, reg.DiscountApplied = s.calculateTotal(e, items)
+
+	if err := s.repo.Register(ctx, reg); err != nil {
+		return nil, err
+	}
+	return reg, nil
+}
+
+// UpdateRegistration: User Only (with checks)
+func (s *EventService) UpdateRegistration(ctx context.Context, regID string, items []*event.RegistrationItem, contactInfo, notes string) (*event.Registration, error) {
+	usrID, _, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	reg, err := s.repo.GetRegistration(ctx, regID)
+	if err != nil {
+		return nil, err
+	}
+
+	if reg.UserID != usrID {
+		return nil, ErrPermissionDenied
+	}
+
+	e, err := s.repo.GetByID(ctx, reg.EventID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check modification rules
+	// 1. If AllowException is true, allow modification regardless of deadline?
+	//    Usually exceptions allow overriding deadline, but let's say "AllowModification" means "User can modify".
+	//    If False, user cannot modify at all once submitted? Or just not after deadline?
+	//    Let's interpret: AllowException=True => User can ALWAYS modify. AllowException=False => User can modify ONLY if before deadline.
+	//    Wait, previous context implies "AllowException" means "Allow modification even if... something".
+	//    Re-reading requirement: "Event-level control over registration modification (AllowException)."
+	//    Let's go with:
+	//    - If Deadline Passed AND AllowException False -> Error
+	//    - If Deadline Passed AND AllowException True -> OK (Exception allowed)
+	//    - If Deadline Not Passed -> OK (Normal modification)
+
+	deadlinePassed := !e.RegistrationDeadline.IsZero() && time.Now().After(e.RegistrationDeadline)
+
+	if deadlinePassed && !e.AllowException {
+		return nil, errors.New("registration modification not allowed (deadline passed)")
+	}
+
+	// If AllowException is strictly about "Allowing ANY modification", then:
+	// if !e.AllowException { return Error } -> This would mean NO edits ever. Too strict.
+	// Let's assume standard flow: Edits allowed before deadline. Exception allows edits AFTER deadline.
+
+	// Check item limits for new items
+	for _, regItem := range items {
+		// Find event item
+		var evtItem *event.EventItem
+		for _, ei := range e.Items {
+			if ei.ID == regItem.EventItemID {
+				evtItem = ei
+				break
+			}
+		}
+		if evtItem == nil {
+			return nil, errors.New("invalid event item id")
+		}
+		if !evtItem.AllowMultiple && regItem.Quantity > 1 {
+			return nil, errors.New("quantity limit exceeded for item: " + evtItem.Name)
+		}
+	}
+
+	// Smart Status Reset Logic
+	itemsChanged := false
+	if len(reg.SelectedItems) != len(items) {
+		itemsChanged = true
+	} else {
+		// Map old items for easy lookup
+		oldMap := make(map[string]int)
+		for _, i := range reg.SelectedItems {
+			oldMap[i.EventItemID] = i.Quantity
+		}
+		for _, i := range items {
+			if oldQty, exists := oldMap[i.EventItemID]; !exists || oldQty != i.Quantity {
+				itemsChanged = true
+				break
+			}
+		}
+	}
+
+	if itemsChanged && reg.Status == event.RegistrationStatusConfirmed {
+		reg.Status = event.RegistrationStatusPending
+	}
+
+	reg.SelectedItems = items
+	reg.ContactInfo = contactInfo
+	reg.Notes = notes
+
+	// Recalculate Totals
+	reg.TotalAmount, reg.DiscountApplied = s.calculateTotal(e, items)
+
+	if err := s.repo.UpdateRegistration(ctx, reg); err != nil {
+		return nil, err
+	}
+	return reg, nil
+}
+
+// UpdateRegistrationStatus: Manager/Admin Only
+func (s *EventService) UpdateRegistrationStatus(ctx context.Context, regID string, status event.RegistrationStatus, paymentStatus int) (*event.Registration, error) {
+	usrID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	reg, err := s.repo.GetRegistration(ctx, regID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check permissions
+	// Must be Admin OR Event Manager
+	isAuth := false
+	if role == int(user.UserRoleSysAdmin) {
+		isAuth = true
+	} else {
+		e, err := s.repo.GetByID(ctx, reg.EventID)
+		if err != nil {
+			return nil, err
+		}
+		if isEventManager(e, usrID) {
+			isAuth = true
+		}
+	}
+
+	if !isAuth {
+		return nil, ErrPermissionDenied
+	}
+
+	if status != event.RegistrationStatusUnspecified {
+		reg.Status = status
+	}
+	if paymentStatus != 0 {
+		reg.PaymentStatus = paymentStatus
+	}
+
+	if err := s.repo.UpdateRegistration(ctx, reg); err != nil {
+		return nil, err
+	}
+	return reg, nil
+}
+
+// CancelRegistration: Owner Only
+func (s *EventService) CancelRegistration(ctx context.Context, regID string) error {
+	usrID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return ErrPermissionDenied
+	}
+
+	reg, err := s.repo.GetRegistration(ctx, regID)
+	if err != nil {
+		return err
+	}
+
+	if role != int(user.UserRoleSysAdmin) && reg.UserID != usrID {
+		return ErrPermissionDenied
+	}
+
+	reg.Status = event.RegistrationStatusCancelled
+	return s.repo.UpdateRegistration(ctx, reg)
+}
+
+// GetMyRegistrations: User Only
+func (s *EventService) GetMyRegistrations(ctx context.Context) ([]*event.Registration, error) {
+	usrID, _, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	return s.repo.ListRegistrations(ctx, "", usrID)
+}
+
+// ListEventRegistrations: Manager/Admin Only
+func (s *EventService) ListEventRegistrations(ctx context.Context, eventID string) ([]*event.Registration, error) {
+	usrID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	e, err := s.repo.GetByID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check permissions
+	isAuth := false
+	if role == int(user.UserRoleSysAdmin) {
+		isAuth = true
+	} else {
+		if isEventManager(e, usrID) {
+			isAuth = true
+		}
+	}
+
+	if !isAuth {
+		return nil, ErrPermissionDenied
+	}
+
+	return s.repo.ListRegistrations(ctx, eventID, "")
+}
+
+// UpdateEvent: Manager/Admin Only
+func (s *EventService) UpdateEvent(ctx context.Context, id string, title, desc, location, cover string, start, end time.Time, allowMod bool, items []*event.EventItem, managerIDs []string, discounts []*event.DiscountRule) (*event.Event, error) {
+	usrID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	e, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Permission Check
+	isAuth := false
+	if role == int(user.UserRoleSysAdmin) {
+		isAuth = true
+	} else {
+		if isEventManager(e, usrID) {
+			isAuth = true
+		}
+	}
+	if !isAuth {
+		return nil, ErrPermissionDenied
+	}
+
+	// Update Fields
+	e.Title = title
+	e.Description = desc
+	e.Location = location
+	e.CoverImage = cover
+	e.StartTime = start
+	e.EndTime = end
+	e.AllowException = allowMod
+	// Update Discounts (Full Replace)
+	e.Discounts = discounts
+
+	// Update Managers (Security: Only Creator or SysAdmin)
+	if managerIDs != nil {
+		if role == int(user.UserRoleSysAdmin) || e.CreatorID == usrID {
+			e.ManagerIDs = managerIDs
+		}
+	}
+
+	// Update Items
+	// Ensure IDs are preserved if passed, or new IDs generated if empty
+	for _, item := range items {
+		if item.ID == "" {
+			item.ID = uuid.New().String()
+		}
+		item.EventID = e.ID
+		// Basic validation could happen here
+	}
+	e.Items = items
+
+	if err := s.repo.Update(ctx, e); err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+
+// UpdateEventStatus: Manager/Admin Only
+func (s *EventService) UpdateEventStatus(ctx context.Context, id string, status event.EventStatus) (*event.Event, error) {
+	usrID, role, ok := auth.FromContext(ctx)
+	if !ok {
+		return nil, ErrPermissionDenied
+	}
+
+	e, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Permission Check
+	isAuth := false
+	if role == int(user.UserRoleSysAdmin) {
+		isAuth = true
+	} else {
+		if isEventManager(e, usrID) {
+			isAuth = true
+		}
+	}
+	if !isAuth {
+		return nil, ErrPermissionDenied
+	}
+
+	e.Status = status
+	if err := s.repo.Update(ctx, e); err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+
+// Helper
+func isEventManager(e *event.Event, userID string) bool {
+	if e.CreatorID == userID {
+		return true
+	}
+	for _, m := range e.ManagerIDs {
+		if m == userID {
+			return true
+		}
+	}
+	return false
+}
+
+// Calculate Total Logic
+// Calculate Total Logic
+func (s *EventService) calculateTotal(e *event.Event, items []*event.RegistrationItem) (int64, int64) {
+	var subtotal int64
+	var totalQty int32
+	distinctItems := make(map[string]bool)
+
+	// Map items for price lookup
+	priceMap := make(map[string]int64)
+	for _, ei := range e.Items {
+		priceMap[ei.ID] = ei.Price
+	}
+
+	for _, item := range items {
+		price := priceMap[item.EventItemID]
+		subtotal += price * int64(item.Quantity)
+		totalQty += int32(item.Quantity)
+		if item.Quantity > 0 {
+			distinctItems[item.EventItemID] = true
+		}
+	}
+
+	distinctCount := int32(len(distinctItems))
+
+	// Apply Best Discount Rule
+	// Criteria:
+	// 1. Total Qty >= Rule.MinQuantity
+	// 2. Distinct Count >= Rule.MinDistinctItems
+	var maxDiscount int64
+	for _, rule := range e.Discounts {
+		if totalQty >= rule.MinQuantity && distinctCount >= rule.MinDistinctItems {
+			if rule.DiscountAmount > maxDiscount {
+				maxDiscount = rule.DiscountAmount
+			}
+		}
+	}
+
+	// Ensure discount doesn't exceed total
+	if maxDiscount > subtotal {
+		maxDiscount = subtotal
+	}
+
+	return subtotal - maxDiscount, maxDiscount
 }

@@ -5,51 +5,231 @@ package buygo.v1;
 option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
 
 import "google/protobuf/timestamp.proto";
-import "buygo/v1/auth.proto";
+import "api/v1/auth.proto";
+import "api/v1/project.proto"; // For PaymentStatus/PaymentMethods if reused, or redefine
+
+// Using project enums for consistency if possible, but distinct types might be better decoupled.
+// For now, redefining specific Event statuses.
+
+enum EventStatus {
+  EVENT_STATUS_UNSPECIFIED = 0;
+  EVENT_STATUS_DRAFT = 1;
+  EVENT_STATUS_ACTIVE = 2;
+  EVENT_STATUS_ENDED = 3;
+  EVENT_STATUS_ARCHIVED = 4;
+}
+
+enum RegistrationStatus {
+  REGISTRATION_STATUS_UNSPECIFIED = 0;
+  REGISTRATION_STATUS_PENDING = 1;
+  REGISTRATION_STATUS_CONFIRMED = 2;
+  REGISTRATION_STATUS_CANCELLED = 3;
+}
 
 service EventService {
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc ListManagerEvents(ListManagerEventsRequest) returns (ListManagerEventsResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  
+  // Registration
   rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse);
+  rpc UpdateRegistration(UpdateRegistrationRequest) returns (UpdateRegistrationResponse);
+  rpc UpdateRegistrationStatus(UpdateRegistrationStatusRequest) returns (UpdateRegistrationStatusResponse);
+  rpc CancelRegistration(CancelRegistrationRequest) returns (CancelRegistrationResponse);
+  rpc GetMyRegistrations(GetMyRegistrationsRequest) returns (GetMyRegistrationsResponse);
+  rpc ListEventRegistrations(ListEventRegistrationsRequest) returns (ListEventRegistrationsResponse);
+  
+  // Management
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc UpdateEventStatus(UpdateEventStatusRequest) returns (UpdateEventStatusResponse);
 }
+// ...
+message UpdateRegistrationRequest {
+  string registration_id = 1;
+  repeated RegisterItem items = 2;
+  string contact_info = 3;
+  string notes = 4;
+}
+
+message UpdateRegistrationResponse {
+  string registration_id = 1;
+  RegistrationStatus status = 2;
+}
+
+message UpdateRegistrationStatusRequest {
+  string registration_id = 1;
+  RegistrationStatus status = 2;
+  PaymentStatus payment_status = 3;
+}
+
+message UpdateRegistrationStatusResponse {
+  string registration_id = 1;
+  RegistrationStatus status = 2;
+  PaymentStatus payment_status = 3;
+}
+// ...
 
 message Event {
   string id = 1;
   string title = 2;
   string description = 3;
-  google.protobuf.Timestamp start_time = 4;
-  google.protobuf.Timestamp end_time = 5;
-  string location = 6;
-  User creator = 7;
+  string cover_image_url = 4;
+  EventStatus status = 5;
+  
+  google.protobuf.Timestamp start_time = 6;
+  google.protobuf.Timestamp end_time = 7;
+  google.protobuf.Timestamp registration_deadline = 8;
+  
+  string location = 9;
+  
+  User creator = 10;
+  repeated User managers = 11;
+  
+  repeated string payment_methods = 12;
+  repeated EventItem items = 13;
+  bool allow_modification = 14;
+  repeated DiscountRule discounts = 15;
 }
 
 message EventItem {
   string id = 1;
   string name = 2;
   int64 price = 3;
-  int32 max_participants = 4;
+  int32 min_participants = 4;
+  int32 max_participants = 5;
+  google.protobuf.Timestamp start_time = 6;
+  google.protobuf.Timestamp end_time = 7;
+  bool allow_multiple = 8;
+}
+
+message DiscountRule {
+  int32 min_quantity = 1; // Minimum items (sum of all items in registration)
+  int64 discount_amount = 2; // Fixed amount off (e.g. 100 TWD)
+  int32 min_distinct_items = 3;
+  // Could add percentage later
+}
+
+message GetEventRequest {
+  string event_id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
 }
 
 message CreateEventRequest {
   string title = 1;
-  // ...
+  string description = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+  repeated DiscountRule discounts = 5;
+  repeated EventItem items = 6;
 }
 
 message CreateEventResponse {
   Event event = 1;
 }
 
-message ListEventsRequest {}
+message UpdateEventRequest {
+  string event_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp start_time = 4;
+  google.protobuf.Timestamp end_time = 5;
+  string location = 6;
+  string cover_image_url = 7;
+  bool allow_modification = 8;
+  repeated EventItem items = 9; // Full replace strategy for items
+  repeated string manager_ids = 10;
+  repeated DiscountRule discounts = 11;
+}
+
+message UpdateEventResponse {
+  Event event = 1;
+}
+
+message UpdateEventStatusRequest {
+  string event_id = 1;
+  EventStatus status = 2;
+}
+
+message UpdateEventStatusResponse {
+  Event event = 1;
+}
+
+message ListEventsRequest {
+    int32 page_size = 1;
+    string page_token = 2;
+}
+
 message ListEventsResponse {
   repeated Event events = 1;
+  string next_page_token = 2;
+}
+
+message ListManagerEventsRequest {
+    int32 page_size = 1;
+    string page_token = 2;
+}
+
+message ListManagerEventsResponse {
+  repeated Event events = 1;
+  string next_page_token = 2;
 }
 
 message RegisterEventRequest {
   string event_id = 1;
-  repeated string item_ids = 2;
-  string contact_info = 3;
+  repeated RegisterItem items = 2;
+  string contact_info = 3; // JSON or Struct
+  string notes = 4;
+}
+
+message RegisterItem {
+    string event_item_id = 1;
+    int32 quantity = 2; // Usually 1 for events, but maybe guest tickets
 }
 
 message RegisterEventResponse {
   string registration_id = 1;
+  RegistrationStatus status = 2;
+}
+
+message CancelRegistrationRequest {
+  string registration_id = 1;
+}
+
+message CancelRegistrationResponse {
+  string registration_id = 1;
+  RegistrationStatus status = 2;
+}
+
+message Registration {
+    string id = 1;
+    string event_id = 2;
+    string user_id = 3;
+    RegistrationStatus status = 4;
+    PaymentStatus payment_status = 5;
+    string contact_info = 6;
+    string notes = 7;
+  repeated RegisterItem selected_items = 8;
+  User user = 9;
+  
+  // Snapshots at time of order
+  int64 total_amount = 10;
+  int64 discount_applied = 11;
+}
+
+message GetMyRegistrationsRequest {}
+
+message GetMyRegistrationsResponse {
+    repeated Registration registrations = 1;
+}
+
+message ListEventRegistrationsRequest {
+    string event_id = 1;
+}
+
+message ListEventRegistrationsResponse {
+    repeated Registration registrations = 1;
 }

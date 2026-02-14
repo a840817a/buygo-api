@@ -4,22 +4,65 @@ package buygo.v1;
 
 option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
 
-// AuthService handles authentication and user management
+// User Roles matching Specification
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_USER = 1;
+  USER_ROLE_CREATOR = 2;
+  USER_ROLE_SYS_ADMIN = 3;
+}
+
 service AuthService {
-  // LoginOrRegister exchanges a 3rd party token for a session
+  // Login with 3rd Party Token (Firebase)
   rpc Login(LoginRequest) returns (LoginResponse);
-  // GetMe returns the current user's profile
+  
+  // Admin only: List users for management
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  
+  // Admin only: Update user role
+  rpc UpdateUserRole(UpdateUserRoleRequest) returns (UpdateUserRoleResponse);
+  
+  // Get current user profile (Self)
   rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  
+  // List Users eligible to be Managers (Creator or SysAdmin)
+  rpc ListAssignableManagers(ListAssignableManagersRequest) returns (ListAssignableManagersResponse);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string photo_url = 4;
+  UserRole role = 5;
 }
 
 message LoginRequest {
-  string provider = 1; // "google", "line", "apple"
-  string token = 2;    // ID Token from the provider
+  string id_token = 1; // Firebase ID Token
 }
 
 message LoginResponse {
-  string access_token = 1;
+  string access_token = 1; // Backend JWT
   User user = 2;
+}
+
+message ListUsersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  string next_page_token = 2;
+}
+
+message UpdateUserRoleRequest {
+  string user_id = 1;
+  UserRole role = 2;
+}
+
+message UpdateUserRoleResponse {
+  User user = 1;
 }
 
 message GetMeRequest {}
@@ -28,10 +71,10 @@ message GetMeResponse {
   User user = 1;
 }
 
-message User {
-  string id = 1;
-  string name = 2;
-  string email = 3;
-  string avatar_url = 4;
-  bool is_system_admin = 5;
+message ListAssignableManagersRequest {
+  string query = 1; // Optional: Search by name or email
+}
+
+message ListAssignableManagersResponse {
+  repeated User managers = 1;
 }

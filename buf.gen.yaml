@@ -1,0 +1,14 @@
+version: v1
+plugins:
+  - plugin: go
+    out: .
+    opt: paths=source_relative
+  - plugin: connect-go
+    out: .
+    opt: paths=source_relative
+  - plugin: es
+    out: ../buygo-web/src/app/core/api
+    opt: target=ts
+  - plugin: connect-es
+    out: ../buygo-web/src/app/core/api
+    opt: target=ts

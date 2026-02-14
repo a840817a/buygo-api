@@ -42,6 +42,22 @@ enum PaymentStatus {
 }
 ```
 
+### 1.3. Event Domain
+```go
+enum EventStatus {
+  EVENT_STATUS_DRAFT = 1;
+  EVENT_STATUS_ACTIVE = 2;
+  EVENT_STATUS_ENDED = 3;
+  EVENT_STATUS_ARCHIVED = 4;
+}
+
+enum RegistrationStatus {
+  REGISTRATION_STATUS_PENDING = 1;
+  REGISTRATION_STATUS_CONFIRMED = 2;
+  REGISTRATION_STATUS_CANCELLED = 3;
+}
+```
+
 ## 2. Data Models (Domain Entities)
 
 ### 2.1. Pricing Models
@@ -64,23 +80,62 @@ enum PaymentStatus {
 4.  **Limit**: Take top `Count`.
 5.  **Update**: Set `Status = TargetStatus` for these items.
 
-## 3. API Definitions (Proto Snippets)
+## 3. API Definitions (Proto Summary)
 
 ### 3.1. Project Service
-`rpc ConfirmPayment(ConfirmPaymentRequest) returns (Empty);`
-`rpc BatchUpdateStatus(BatchUpdateStatusRequest) returns (BatchUpdateStatusResponse);`
+**RPCs**:
+- `CreateProject(CreateProjectRequest) returns (CreateProjectResponse)`
+- `ListProjects(ListProjectsRequest) returns (ListProjectsResponse)`
+- `GetProject(GetProjectRequest) returns (GetProjectResponse)`
+- `UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse)`
+- `AddProduct(AddProductRequest) returns (AddProductResponse)`
+- `CreateOrder(CreateOrderRequest) returns (CreateOrderResponse)`
+- `CancelOrder(CancelOrderRequest) returns (CancelOrderResponse)`
+- `GetMyOrders(GetMyOrdersRequest) returns (GetMyOrdersResponse)`
+- `ListProjectOrders(ListProjectOrdersRequest) returns (ListProjectOrdersResponse)` (Manager Only)
+- `ConfirmPayment(ConfirmPaymentRequest) returns (ConfirmPaymentResponse)` (Manager Only)
+- `BatchUpdateStatus(BatchUpdateStatusRequest) returns (BatchUpdateStatusResponse)` (Manager Only)
 
+**Key Structures**:
 ```protobuf
+message CreateOrderRequest {
+  string project_id = 1;
+  repeated CreateOrderItem items = 2;
+  string contact_info = 3;
+  string shipping_address = 4;
+}
+
 message BatchUpdateStatusRequest {
   string project_id = 1;
   string spec_id = 2;
   OrderItemStatus target_status = 3;
   int32 count = 4; // Number of items to progress
 }
+```
 
-message BatchUpdateStatusResponse {
-  int32 updated_count = 1;
-  repeated string updated_order_ids = 2;
+### 3.2. Event Service
+**RPCs**:
+- `CreateEvent(CreateEventRequest) returns (CreateEventResponse)`
+- `ListEvents(ListEventsRequest) returns (ListEventsResponse)`
+- `GetEvent(GetEventRequest) returns (GetEventResponse)`
+- `RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse)`
+- `CancelRegistration(CancelRegistrationRequest) returns (CancelRegistrationResponse)`
+- `GetMyRegistrations(GetMyRegistrationsRequest) returns (GetMyRegistrationsResponse)`
+
+**Key Structures**:
+```protobuf
+message CreateEventRequest {
+  string title = 1;
+  string description = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+}
+
+message RegisterEventRequest {
+  string event_id = 1;
+  repeated RegisterItem items = 2;
+  string contact_info = 3;
+  string notes = 4;
 }
 ```
 
