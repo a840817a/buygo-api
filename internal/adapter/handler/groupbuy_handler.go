@@ -10,22 +10,22 @@ import (
 
 	v1 "github.com/buygo/buygo-api/api/v1"
 	"github.com/buygo/buygo-api/api/v1/buygov1connect"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/service"
 )
 
-type ProjectHandler struct {
-	svc *service.ProjectService
+type GroupBuyHandler struct {
+	svc *service.GroupBuyService
 }
 
-func NewProjectHandler(svc *service.ProjectService) *ProjectHandler {
-	return &ProjectHandler{svc: svc}
+func NewGroupBuyHandler(svc *service.GroupBuyService) *GroupBuyHandler {
+	return &GroupBuyHandler{svc: svc}
 }
 
 // Ensure implementation
-var _ buygov1connect.ProjectServiceHandler = (*ProjectHandler)(nil)
+var _ buygov1connect.GroupBuyServiceHandler = (*GroupBuyHandler)(nil)
 
-func (h *ProjectHandler) CreateProject(ctx context.Context, req *connect.Request[v1.CreateProjectRequest]) (*connect.Response[v1.CreateProjectResponse], error) {
+func (h *GroupBuyHandler) CreateGroupBuy(ctx context.Context, req *connect.Request[v1.CreateGroupBuyRequest]) (*connect.Response[v1.CreateGroupBuyResponse], error) {
 	p, err := h.svc.CreateProject(ctx, req.Msg.Title, req.Msg.Description)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -34,57 +34,57 @@ func (h *ProjectHandler) CreateProject(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&v1.CreateProjectResponse{
-		Project: toProtoProject(p),
+	return connect.NewResponse(&v1.CreateGroupBuyResponse{
+		GroupBuy: toProtoProject(p),
 	}), nil
 }
 
-func (h *ProjectHandler) ListProjects(ctx context.Context, req *connect.Request[v1.ListProjectsRequest]) (*connect.Response[v1.ListProjectsResponse], error) {
+func (h *GroupBuyHandler) ListGroupBuys(ctx context.Context, req *connect.Request[v1.ListGroupBuysRequest]) (*connect.Response[v1.ListGroupBuysResponse], error) {
 	// TODO: Implement List in Service
 	projects, err := h.svc.ListProjects(ctx, int(req.Msg.PageSize), 0)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var protoProjects []*v1.Project
+	var protoGroupBuys []*v1.GroupBuy
 	for _, p := range projects {
-		protoProjects = append(protoProjects, toProtoProject(p))
+		protoGroupBuys = append(protoGroupBuys, toProtoProject(p))
 	}
 
-	return connect.NewResponse(&v1.ListProjectsResponse{
-		Projects: protoProjects,
+	return connect.NewResponse(&v1.ListGroupBuysResponse{
+		GroupBuys: protoGroupBuys,
 	}), nil
 }
 
-func (h *ProjectHandler) ListManagerProjects(ctx context.Context, req *connect.Request[v1.ListManagerProjectsRequest]) (*connect.Response[v1.ListManagerProjectsResponse], error) {
+func (h *GroupBuyHandler) ListManagerGroupBuys(ctx context.Context, req *connect.Request[v1.ListManagerGroupBuysRequest]) (*connect.Response[v1.ListManagerGroupBuysResponse], error) {
 	projects, err := h.svc.ListManagerProjects(ctx, int(req.Msg.PageSize), 0)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var protoProjects []*v1.Project
+	var protoGroupBuys []*v1.GroupBuy
 	for _, p := range projects {
-		protoProjects = append(protoProjects, toProtoProject(p))
+		protoGroupBuys = append(protoGroupBuys, toProtoProject(p))
 	}
 
-	return connect.NewResponse(&v1.ListManagerProjectsResponse{
-		Projects: protoProjects,
+	return connect.NewResponse(&v1.ListManagerGroupBuysResponse{
+		GroupBuys: protoGroupBuys,
 	}), nil
 }
 
-func (h *ProjectHandler) GetProject(ctx context.Context, req *connect.Request[v1.GetProjectRequest]) (*connect.Response[v1.GetProjectResponse], error) {
-	p, err := h.svc.GetProject(ctx, req.Msg.ProjectId)
+func (h *GroupBuyHandler) GetGroupBuy(ctx context.Context, req *connect.Request[v1.GetGroupBuyRequest]) (*connect.Response[v1.GetGroupBuyResponse], error) {
+	p, err := h.svc.GetProject(ctx, req.Msg.GroupBuyId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 
-	return connect.NewResponse(&v1.GetProjectResponse{
-		Project:  toProtoProject(p),
+	return connect.NewResponse(&v1.GetGroupBuyResponse{
+		GroupBuy:  toProtoProject(p),
 		Products: toProtoProducts(p.Products),
 	}), nil
 }
 
-func (h *ProjectHandler) UpdateProject(ctx context.Context, req *connect.Request[v1.UpdateProjectRequest]) (*connect.Response[v1.UpdateProjectResponse], error) {
+func (h *GroupBuyHandler) UpdateGroupBuy(ctx context.Context, req *connect.Request[v1.UpdateGroupBuyRequest]) (*connect.Response[v1.UpdateGroupBuyResponse], error) {
 	// Use make to ensure non-nil slices, allowing empty lists to clear data
 	status := project.ProjectStatus(req.Msg.Status)
 
@@ -112,7 +112,7 @@ func (h *ProjectHandler) UpdateProject(ctx context.Context, req *connect.Request
 		}
 	}
 
-	p, err := h.svc.UpdateProject(ctx, req.Msg.ProjectId, req.Msg.Title, req.Msg.Description, status, products, req.Msg.CoverImageUrl, deadline, shippingConfigs, req.Msg.ManagerIds, req.Msg.ExchangeRate, rounding, req.Msg.SourceCurrency)
+	p, err := h.svc.UpdateProject(ctx, req.Msg.GroupBuyId, req.Msg.Title, req.Msg.Description, status, products, req.Msg.CoverImageUrl, deadline, shippingConfigs, req.Msg.ManagerIds, req.Msg.ExchangeRate, rounding, req.Msg.SourceCurrency)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -120,8 +120,8 @@ func (h *ProjectHandler) UpdateProject(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&v1.UpdateProjectResponse{
-		Project: toProtoProject(p),
+	return connect.NewResponse(&v1.UpdateGroupBuyResponse{
+		GroupBuy: toProtoProject(p),
 	}), nil
 }
 
@@ -150,7 +150,7 @@ func fromProtoProduct(p *v1.Product) *project.Product {
 
 	return &project.Product{
 		ID:            p.Id,
-		ProjectID:     p.ProjectId,
+		ProjectID:     p.GroupBuyId,
 		Name:          p.Name,
 		Description:   p.Description,
 		ImageURL:      p.ImageUrl,
@@ -163,8 +163,8 @@ func fromProtoProduct(p *v1.Product) *project.Product {
 	}
 }
 
-func (h *ProjectHandler) AddProduct(ctx context.Context, req *connect.Request[v1.AddProductRequest]) (*connect.Response[v1.AddProductResponse], error) {
-	p, err := h.svc.AddProduct(ctx, req.Msg.ProjectId, req.Msg.Name, req.Msg.PriceOriginal, req.Msg.ExchangeRate, req.Msg.Specs)
+func (h *GroupBuyHandler) AddProduct(ctx context.Context, req *connect.Request[v1.AddProductRequest]) (*connect.Response[v1.AddProductResponse], error) {
+	p, err := h.svc.AddProduct(ctx, req.Msg.GroupBuyId, req.Msg.Name, req.Msg.PriceOriginal, req.Msg.ExchangeRate, req.Msg.Specs)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -177,7 +177,7 @@ func (h *ProjectHandler) AddProduct(ctx context.Context, req *connect.Request[v1
 	}), nil
 }
 
-func (h *ProjectHandler) CreateOrder(ctx context.Context, req *connect.Request[v1.CreateOrderRequest]) (*connect.Response[v1.CreateOrderResponse], error) {
+func (h *GroupBuyHandler) CreateOrder(ctx context.Context, req *connect.Request[v1.CreateOrderRequest]) (*connect.Response[v1.CreateOrderResponse], error) {
 	// Map Request Items to Domain Items
 	var items []*project.OrderItem
 	for _, i := range req.Msg.Items {
@@ -188,7 +188,7 @@ func (h *ProjectHandler) CreateOrder(ctx context.Context, req *connect.Request[v
 		})
 	}
 
-	order, err := h.svc.CreateOrder(ctx, req.Msg.ProjectId, items, req.Msg.ContactInfo, req.Msg.ShippingAddress, req.Msg.ShippingMethodId, req.Msg.Note)
+	order, err := h.svc.CreateOrder(ctx, req.Msg.GroupBuyId, items, req.Msg.ContactInfo, req.Msg.ShippingAddress, req.Msg.ShippingMethodId, req.Msg.Note)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -201,8 +201,8 @@ func (h *ProjectHandler) CreateOrder(ctx context.Context, req *connect.Request[v
 	}), nil
 }
 
-func (h *ProjectHandler) ListProjectOrders(ctx context.Context, req *connect.Request[v1.ListProjectOrdersRequest]) (*connect.Response[v1.ListProjectOrdersResponse], error) {
-	orders, err := h.svc.ListProjectOrders(ctx, req.Msg.ProjectId)
+func (h *GroupBuyHandler) ListGroupBuyOrders(ctx context.Context, req *connect.Request[v1.ListGroupBuyOrdersRequest]) (*connect.Response[v1.ListGroupBuyOrdersResponse], error) {
+	orders, err := h.svc.ListProjectOrders(ctx, req.Msg.GroupBuyId)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -215,12 +215,12 @@ func (h *ProjectHandler) ListProjectOrders(ctx context.Context, req *connect.Req
 		protoOrders = append(protoOrders, toProtoOrder(o))
 	}
 
-	return connect.NewResponse(&v1.ListProjectOrdersResponse{
+	return connect.NewResponse(&v1.ListGroupBuyOrdersResponse{
 		Orders: protoOrders,
 	}), nil
 }
 
-func (h *ProjectHandler) GetMyOrders(ctx context.Context, req *connect.Request[v1.GetMyOrdersRequest]) (*connect.Response[v1.GetMyOrdersResponse], error) {
+func (h *GroupBuyHandler) GetMyOrders(ctx context.Context, req *connect.Request[v1.GetMyOrdersRequest]) (*connect.Response[v1.GetMyOrdersResponse], error) {
 	orders, err := h.svc.GetMyOrders(ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -240,8 +240,8 @@ func (h *ProjectHandler) GetMyOrders(ctx context.Context, req *connect.Request[v
 	}), nil
 }
 
-func (h *ProjectHandler) BatchUpdateStatus(ctx context.Context, req *connect.Request[v1.BatchUpdateStatusRequest]) (*connect.Response[v1.BatchUpdateStatusResponse], error) {
-	updatedCount, updatedIds, err := h.svc.BatchUpdateStatus(ctx, req.Msg.ProjectId, req.Msg.SpecId, int(req.Msg.TargetStatus), req.Msg.Count)
+func (h *GroupBuyHandler) BatchUpdateStatus(ctx context.Context, req *connect.Request[v1.BatchUpdateStatusRequest]) (*connect.Response[v1.BatchUpdateStatusResponse], error) {
+	updatedCount, updatedIds, err := h.svc.BatchUpdateStatus(ctx, req.Msg.GroupBuyId, req.Msg.SpecId, int(req.Msg.TargetStatus), req.Msg.Count)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -255,7 +255,7 @@ func (h *ProjectHandler) BatchUpdateStatus(ctx context.Context, req *connect.Req
 	}), nil
 }
 
-func (h *ProjectHandler) ConfirmPayment(ctx context.Context, req *connect.Request[v1.ConfirmPaymentRequest]) (*connect.Response[v1.ConfirmPaymentResponse], error) {
+func (h *GroupBuyHandler) ConfirmPayment(ctx context.Context, req *connect.Request[v1.ConfirmPaymentRequest]) (*connect.Response[v1.ConfirmPaymentResponse], error) {
 	status := int(req.Msg.Status)
 	if err := h.svc.ConfirmPayment(ctx, req.Msg.OrderId, status); err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -270,8 +270,8 @@ func (h *ProjectHandler) ConfirmPayment(ctx context.Context, req *connect.Reques
 	}), nil
 }
 
-func (h *ProjectHandler) GetMyProjectOrder(ctx context.Context, req *connect.Request[v1.GetMyProjectOrderRequest]) (*connect.Response[v1.GetMyProjectOrderResponse], error) {
-	order, err := h.svc.GetMyProjectOrder(ctx, req.Msg.ProjectId)
+func (h *GroupBuyHandler) GetMyGroupBuyOrder(ctx context.Context, req *connect.Request[v1.GetMyGroupBuyOrderRequest]) (*connect.Response[v1.GetMyGroupBuyOrderResponse], error) {
+	order, err := h.svc.GetMyProjectOrder(ctx, req.Msg.GroupBuyId)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -284,12 +284,12 @@ func (h *ProjectHandler) GetMyProjectOrder(ctx context.Context, req *connect.Req
 		protoOrder = toProtoOrder(order)
 	}
 
-	return connect.NewResponse(&v1.GetMyProjectOrderResponse{
+	return connect.NewResponse(&v1.GetMyGroupBuyOrderResponse{
 		Order: protoOrder,
 	}), nil
 }
 
-func (h *ProjectHandler) UpdateOrder(ctx context.Context, req *connect.Request[v1.UpdateOrderRequest]) (*connect.Response[v1.UpdateOrderResponse], error) {
+func (h *GroupBuyHandler) UpdateOrder(ctx context.Context, req *connect.Request[v1.UpdateOrderRequest]) (*connect.Response[v1.UpdateOrderResponse], error) {
 	var items []*project.OrderItem
 	for _, i := range req.Msg.Items {
 		items = append(items, &project.OrderItem{
@@ -313,7 +313,7 @@ func (h *ProjectHandler) UpdateOrder(ctx context.Context, req *connect.Request[v
 	}), nil
 }
 
-func (h *ProjectHandler) UpdatePaymentInfo(ctx context.Context, req *connect.Request[v1.UpdatePaymentInfoRequest]) (*connect.Response[v1.UpdatePaymentInfoResponse], error) {
+func (h *GroupBuyHandler) UpdatePaymentInfo(ctx context.Context, req *connect.Request[v1.UpdatePaymentInfoRequest]) (*connect.Response[v1.UpdatePaymentInfoResponse], error) {
 	var paidAt *time.Time
 	if req.Msg.PaidAt != nil {
 		t := req.Msg.PaidAt.AsTime()
@@ -332,7 +332,7 @@ func (h *ProjectHandler) UpdatePaymentInfo(ctx context.Context, req *connect.Req
 	}), nil
 }
 
-func (h *ProjectHandler) CancelOrder(ctx context.Context, req *connect.Request[v1.CancelOrderRequest]) (*connect.Response[v1.CancelOrderResponse], error) {
+func (h *GroupBuyHandler) CancelOrder(ctx context.Context, req *connect.Request[v1.CancelOrderRequest]) (*connect.Response[v1.CancelOrderResponse], error) {
 	if err := h.svc.CancelOrder(ctx, req.Msg.OrderId); err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
@@ -345,7 +345,7 @@ func (h *ProjectHandler) CancelOrder(ctx context.Context, req *connect.Request[v
 	}), nil
 }
 
-func toProtoProject(p *project.Project) *v1.Project {
+func toProtoProject(p *project.Project) *v1.GroupBuy {
 	if p == nil {
 		return nil
 	}
@@ -355,12 +355,12 @@ func toProtoProject(p *project.Project) *v1.Project {
 		deadline = timestamppb.New(*p.Deadline)
 	}
 
-	return &v1.Project{
+	return &v1.GroupBuy{
 		Id:            p.ID,
 		Title:         p.Title,
 		Description:   p.Description,
 		CoverImageUrl: p.CoverImage,
-		Status:        v1.ProjectStatus(p.Status),
+		Status:        v1.GroupBuyStatus(p.Status),
 		CreatedAt:     timestamppb.New(p.CreatedAt),
 		Deadline:      deadline,
 		ExchangeRate:  p.ExchangeRate,
@@ -417,7 +417,7 @@ func toProtoOrder(o *project.Order) *v1.Order {
 
 	return &v1.Order{
 		Id:               o.ID,
-		ProjectId:        o.ProjectID,
+		GroupBuyId:        o.ProjectID,
 		UserId:           o.UserID,
 		TotalAmount:      o.TotalAmount,
 		PaymentStatus:    v1.PaymentStatus(o.PaymentStatus),
@@ -480,7 +480,7 @@ func toProtoProduct(p *project.Product) *v1.Product {
 	}
 	return &v1.Product{
 		Id:             p.ID,
-		ProjectId:      p.ProjectID,
+		GroupBuyId:      p.ProjectID,
 		Name:           p.Name,
 		Description:    p.Description,
 		ImageUrl:       p.ImageURL,
@@ -492,7 +492,7 @@ func toProtoProduct(p *project.Product) *v1.Product {
 		Specs:          specs,
 	}
 }
-func (h *ProjectHandler) CreateCategory(ctx context.Context, req *connect.Request[v1.CreateCategoryRequest]) (*connect.Response[v1.CreateCategoryResponse], error) {
+func (h *GroupBuyHandler) CreateCategory(ctx context.Context, req *connect.Request[v1.CreateCategoryRequest]) (*connect.Response[v1.CreateCategoryResponse], error) {
 	c, err := h.svc.CreateCategory(ctx, req.Msg.Name, req.Msg.SpecNames)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -506,7 +506,7 @@ func (h *ProjectHandler) CreateCategory(ctx context.Context, req *connect.Reques
 	}), nil
 }
 
-func (h *ProjectHandler) ListCategories(ctx context.Context, req *connect.Request[v1.ListCategoriesRequest]) (*connect.Response[v1.ListCategoriesResponse], error) {
+func (h *GroupBuyHandler) ListCategories(ctx context.Context, req *connect.Request[v1.ListCategoriesRequest]) (*connect.Response[v1.ListCategoriesResponse], error) {
 	categories, err := h.svc.ListCategories(ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -538,7 +538,7 @@ func toProtoCategory(c *project.Category) *v1.Category {
 
 // PriceTemplate Handlers
 
-func (h *ProjectHandler) CreatePriceTemplate(ctx context.Context, req *connect.Request[v1.CreatePriceTemplateRequest]) (*connect.Response[v1.CreatePriceTemplateResponse], error) {
+func (h *GroupBuyHandler) CreatePriceTemplate(ctx context.Context, req *connect.Request[v1.CreatePriceTemplateRequest]) (*connect.Response[v1.CreatePriceTemplateResponse], error) {
 	var rounding *project.RoundingConfig
 	if req.Msg.RoundingConfig != nil {
 		rounding = &project.RoundingConfig{
@@ -560,7 +560,7 @@ func (h *ProjectHandler) CreatePriceTemplate(ctx context.Context, req *connect.R
 	}), nil
 }
 
-func (h *ProjectHandler) ListPriceTemplates(ctx context.Context, req *connect.Request[v1.ListPriceTemplatesRequest]) (*connect.Response[v1.ListPriceTemplatesResponse], error) {
+func (h *GroupBuyHandler) ListPriceTemplates(ctx context.Context, req *connect.Request[v1.ListPriceTemplatesRequest]) (*connect.Response[v1.ListPriceTemplatesResponse], error) {
 	templates, err := h.svc.ListPriceTemplates(ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -579,7 +579,7 @@ func (h *ProjectHandler) ListPriceTemplates(ctx context.Context, req *connect.Re
 	}), nil
 }
 
-func (h *ProjectHandler) GetPriceTemplate(ctx context.Context, req *connect.Request[v1.GetPriceTemplateRequest]) (*connect.Response[v1.GetPriceTemplateResponse], error) {
+func (h *GroupBuyHandler) GetPriceTemplate(ctx context.Context, req *connect.Request[v1.GetPriceTemplateRequest]) (*connect.Response[v1.GetPriceTemplateResponse], error) {
 	pt, err := h.svc.GetPriceTemplate(ctx, req.Msg.TemplateId)
 	if err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
@@ -593,7 +593,7 @@ func (h *ProjectHandler) GetPriceTemplate(ctx context.Context, req *connect.Requ
 	}), nil
 }
 
-func (h *ProjectHandler) UpdatePriceTemplate(ctx context.Context, req *connect.Request[v1.UpdatePriceTemplateRequest]) (*connect.Response[v1.UpdatePriceTemplateResponse], error) {
+func (h *GroupBuyHandler) UpdatePriceTemplate(ctx context.Context, req *connect.Request[v1.UpdatePriceTemplateRequest]) (*connect.Response[v1.UpdatePriceTemplateResponse], error) {
 	var rounding *project.RoundingConfig
 	if req.Msg.RoundingConfig != nil {
 		rounding = &project.RoundingConfig{
@@ -615,7 +615,7 @@ func (h *ProjectHandler) UpdatePriceTemplate(ctx context.Context, req *connect.R
 	}), nil
 }
 
-func (h *ProjectHandler) DeletePriceTemplate(ctx context.Context, req *connect.Request[v1.DeletePriceTemplateRequest]) (*connect.Response[v1.DeletePriceTemplateResponse], error) {
+func (h *GroupBuyHandler) DeletePriceTemplate(ctx context.Context, req *connect.Request[v1.DeletePriceTemplateRequest]) (*connect.Response[v1.DeletePriceTemplateResponse], error) {
 	if err := h.svc.DeletePriceTemplate(ctx, req.Msg.TemplateId); err != nil {
 		if errors.Is(err, service.ErrPermissionDenied) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)

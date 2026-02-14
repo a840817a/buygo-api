@@ -6,7 +6,7 @@ option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
 
 import "google/protobuf/timestamp.proto";
 import "api/v1/auth.proto";
-import "api/v1/project.proto"; // For PaymentStatus/PaymentMethods if reused, or redefine
+import "api/v1/groupbuy.proto"; // For PaymentStatus/PaymentMethods if reused, or redefine
 
 // Using project enums for consistency if possible, but distinct types might be better decoupled.
 // For now, redefining specific Event statuses.

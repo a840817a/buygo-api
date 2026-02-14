@@ -8,14 +8,14 @@ import (
 
 	"github.com/buygo/buygo-api/internal/adapter/repository/memory"
 	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestProjectService_AccessControl(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	// Contexts
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
@@ -133,7 +133,7 @@ func TestProjectService_AccessControl(t *testing.T) {
 
 func TestProjectService_ListPermissions(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	// Contexts
 	adminCtx := auth.NewContext(context.Background(), "admin", int(user.UserRoleSysAdmin))

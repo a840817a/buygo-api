@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// 2. Setup Client
-	client := buygov1connect.NewProjectServiceClient(
+	client := buygov1connect.NewGroupBuyServiceClient(
 		http.DefaultClient,
 		"http://localhost:8080",
 	)
@@ -40,33 +40,33 @@ func main() {
 	// I need to fetch them.
 
 	// Let's use ListProjects first
-	req := connect.NewRequest(&buygov1.ListProjectsRequest{})
+	req := connect.NewRequest(&buygov1.ListGroupBuysRequest{})
 	req.Header().Set("Authorization", "Bearer "+token)
 
-	res, err := client.ListProjects(context.Background(), req)
+	res, err := client.ListGroupBuys(context.Background(), req)
 	if err != nil {
 		log.Fatalf("ListProjects failed: %v", err)
 	}
-	if len(res.Msg.Projects) == 0 {
+	if len(res.Msg.GroupBuys) == 0 {
 		log.Fatalf("No projects found. Did seed run?")
 	}
 
-	var project *buygov1.Project
-	for _, p := range res.Msg.Projects {
+	var groupBuy *buygov1.GroupBuy
+	for _, p := range res.Msg.GroupBuys {
 		if p.Title == "Japan Snacks Group Buy" {
-			project = p
+			groupBuy = p
 			break
 		}
 	}
-	if project == nil {
-		log.Fatalf("Project 'Japan Snacks Group Buy' not found")
+	if groupBuy == nil {
+		log.Fatalf("GroupBuy 'Japan Snacks Group Buy' not found")
 	}
-	log.Printf("Using Project: %s (%s)", project.Title, project.Id)
+	log.Printf("Using GroupBuy: %s (%s)", groupBuy.Title, groupBuy.Id)
 
 	// Load Details to get Products
-	detailReq := connect.NewRequest(&buygov1.GetProjectRequest{ProjectId: project.Id})
+	detailReq := connect.NewRequest(&buygov1.GetGroupBuyRequest{GroupBuyId: groupBuy.Id})
 	detailReq.Header().Set("Authorization", "Bearer "+token)
-	detailRes, err := client.GetProject(context.Background(), detailReq)
+	detailRes, err := client.GetGroupBuy(context.Background(), detailReq)
 	if err != nil {
 		log.Fatalf("GetProject failed: %v", err)
 	}
@@ -83,7 +83,7 @@ func main() {
 
 	// 4. Create Order
 	createReq := connect.NewRequest(&buygov1.CreateOrderRequest{
-		ProjectId: project.Id,
+		GroupBuyId: groupBuy.Id,
 		Items: []*buygov1.CreateOrderItem{
 			{
 				ProductId: product.Id,

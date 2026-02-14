@@ -13,7 +13,7 @@ import (
 
 func TestProjectService_CategoryAccessControl(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	// Contexts
 	adminCtx := auth.NewContext(context.Background(), "admin", int(user.UserRoleSysAdmin))

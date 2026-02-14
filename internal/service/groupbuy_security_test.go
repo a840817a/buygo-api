@@ -7,13 +7,13 @@ import (
 
 	"github.com/buygo/buygo-api/internal/adapter/repository/memory"
 	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
 func TestProjectService_IDOR_Prevention(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	// Contexts
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))

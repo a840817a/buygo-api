@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
 // CreatePriceTemplate: Admin Only
-func (s *ProjectService) CreatePriceTemplate(ctx context.Context, name, sourceCurrency string, rate float64, rounding *project.RoundingConfig) (*project.PriceTemplate, error) {
+func (s *GroupBuyService) CreatePriceTemplate(ctx context.Context, name, sourceCurrency string, rate float64, rounding *project.RoundingConfig) (*project.PriceTemplate, error) {
 	_, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -27,7 +27,7 @@ func (s *ProjectService) CreatePriceTemplate(ctx context.Context, name, sourceCu
 }
 
 // ListPriceTemplates: Authenticated (Managers need to see them to select)
-func (s *ProjectService) ListPriceTemplates(ctx context.Context) ([]*project.PriceTemplate, error) {
+func (s *GroupBuyService) ListPriceTemplates(ctx context.Context) ([]*project.PriceTemplate, error) {
 	_, _, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -36,7 +36,7 @@ func (s *ProjectService) ListPriceTemplates(ctx context.Context) ([]*project.Pri
 }
 
 // GetPriceTemplate: Authenticated
-func (s *ProjectService) GetPriceTemplate(ctx context.Context, id string) (*project.PriceTemplate, error) {
+func (s *GroupBuyService) GetPriceTemplate(ctx context.Context, id string) (*project.PriceTemplate, error) {
 	_, _, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -45,7 +45,7 @@ func (s *ProjectService) GetPriceTemplate(ctx context.Context, id string) (*proj
 }
 
 // UpdatePriceTemplate: Admin Only
-func (s *ProjectService) UpdatePriceTemplate(ctx context.Context, id, name, sourceCurrency string, rate float64, rounding *project.RoundingConfig) (*project.PriceTemplate, error) {
+func (s *GroupBuyService) UpdatePriceTemplate(ctx context.Context, id, name, sourceCurrency string, rate float64, rounding *project.RoundingConfig) (*project.PriceTemplate, error) {
 	_, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -82,7 +82,7 @@ func (s *ProjectService) UpdatePriceTemplate(ctx context.Context, id, name, sour
 }
 
 // DeletePriceTemplate: Admin Only
-func (s *ProjectService) DeletePriceTemplate(ctx context.Context, id string) error {
+func (s *GroupBuyService) DeletePriceTemplate(ctx context.Context, id string) error {
 	_, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return ErrPermissionDenied

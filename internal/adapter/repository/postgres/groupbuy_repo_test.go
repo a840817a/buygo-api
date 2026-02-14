@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

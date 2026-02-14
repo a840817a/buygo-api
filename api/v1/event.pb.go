@@ -1939,7 +1939,7 @@ var File_api_v1_event_proto protoreflect.FileDescriptor
 
 const file_api_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x12api/v1/event.proto\x12\bbuygo.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x11api/v1/auth.proto\x1a\x14api/v1/project.proto\"\xab\x01\n" +
+	"\x12api/v1/event.proto\x12\bbuygo.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x11api/v1/auth.proto\x1a\x15api/v1/groupbuy.proto\"\xab\x01\n" +
 	"\x19UpdateRegistrationRequest\x12'\n" +
 	"\x0fregistration_id\x18\x01 \x01(\tR\x0eregistrationId\x12,\n" +
 	"\x05items\x18\x02 \x03(\v2\x16.buygo.v1.RegisterItemR\x05items\x12!\n" +
@@ -2228,7 +2228,7 @@ func file_api_v1_event_proto_init() {
 		return
 	}
 	file_api_v1_auth_proto_init()
-	file_api_v1_project_proto_init()
+	file_api_v1_groupbuy_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

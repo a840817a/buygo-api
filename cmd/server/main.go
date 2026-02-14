@@ -71,12 +71,12 @@ func main() {
 
 	// 5. Services
 	authSvc := service.NewAuthService(userRepo, tokenProvider, tokenManager)
-	projectSvc := service.NewProjectService(projectRepo)
+	projectSvc := service.NewGroupBuyService(projectRepo)
 	eventSvc := service.NewEventService(eventRepo)
 
 	// 6. Handlers
 	authHandler := handler.NewAuthHandler(authSvc)
-	projectHandler := handler.NewProjectHandler(projectSvc)
+	projectHandler := handler.NewGroupBuyHandler(projectSvc)
 	eventHandler := handler.NewEventHandler(eventSvc)
 
 	// 7. Interceptors
@@ -89,7 +89,7 @@ func main() {
 		connect.WithInterceptors(authInterceptor.NewUnaryInterceptor()))
 	mux.Handle(path, handler)
 
-	path, handler = buygov1connect.NewProjectServiceHandler(projectHandler,
+	path, handler = buygov1connect.NewGroupBuyServiceHandler(projectHandler,
 		connect.WithInterceptors(authInterceptor.NewUnaryInterceptor()))
 	mux.Handle(path, handler)
 

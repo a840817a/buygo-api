@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/google/uuid"
 )
 
@@ -81,14 +81,14 @@ func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID 
 			// Strict Manager View
 			query = query.Where(
 				r.db.Where("creator_id = ?", userID).
-					Or("id IN (?)", r.db.Table("project_managers").Select("project_id").Where("user_id = ?", userID)),
+					Or("id IN (?)", r.db.Table("project_managers").Select("group_buy_id").Where("user_id = ?", userID)),
 			)
 		} else {
 			// Public + My Items View
 			query = query.Where(
 				r.db.Where("status IN ?", []int{2, 3}).
 					Or("creator_id = ?", userID).
-					Or("id IN (?)", r.db.Table("project_managers").Select("project_id").Where("user_id = ?", userID)),
+					Or("id IN (?)", r.db.Table("project_managers").Select("group_buy_id").Where("user_id = ?", userID)),
 			)
 		}
 	} else {
@@ -155,6 +155,26 @@ func (r *ProjectRepository) AddProduct(ctx context.Context, product *project.Pro
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
+func (r *ProjectRepository) DeleteProduct(ctx context.Context, projectID, productID string) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 1. Check existing orders
+		var count int64
+		if err := tx.Model(&model.OrderItem{}).
+			Joins("JOIN orders ON orders.id = order_items.order_id").
+			Where("orders.group_buy_id = ? AND order_items.product_id = ?", projectID, productID).
+			Count(&count).Error; err != nil {
+			return err
+		}
+
+		if count > 0 {
+			return errors.New("cannot delete product: existing orders found")
+		}
+
+		// 2. Delete product (cascade will handle specs)
+		return tx.Where("id = ? AND group_buy_id = ?", productID, projectID).Delete(&model.Product{}).Error
+	})
+}
+
 // Order Methods
 func (r *ProjectRepository) CreateOrder(ctx context.Context, order *project.Order) error {
 	m := model.FromDomainOrder(order)
@@ -177,7 +197,7 @@ func (r *ProjectRepository) ListOrders(ctx context.Context, projectID string, us
 	query := r.db.WithContext(ctx).Preload("Items")
 
 	if projectID != "" {
-		query = query.Where("project_id = ?", projectID)
+		query = query.Where("group_buy_id = ?", projectID)
 	}
 	if userID != "" {
 		query = query.Where("user_id = ?", userID)
@@ -220,7 +240,7 @@ func (r *ProjectRepository) BatchUpdateOrderItemStatus(ctx context.Context, proj
 		// If rows have larger quantity, we might fetch 1 row for a large limit, which is fine.
 		if err := tx.Model(&model.OrderItem{}).
 			Joins("JOIN orders ON orders.id = order_items.order_id").
-			Where("orders.project_id = ? AND order_items.spec_id = ? AND order_items.status IN ?", projectID, specID, fromStatuses).
+			Where("orders.group_buy_id = ? AND order_items.spec_id = ? AND order_items.status IN ?", projectID, specID, fromStatuses).
 			Order("orders.created_at ASC").
 			Limit(limit).
 			Find(&items).Error; err != nil {

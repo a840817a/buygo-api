@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
@@ -18,18 +18,18 @@ var (
 	ErrPermissionDenied = errors.New("permission denied")
 )
 
-type ProjectService struct {
+type GroupBuyService struct {
 	repo project.Repository
 }
 
-func NewProjectService(repo project.Repository) *ProjectService {
-	return &ProjectService{
+func NewGroupBuyService(repo project.Repository) *GroupBuyService {
+	return &GroupBuyService{
 		repo: repo,
 	}
 }
 
 // CreateProject: Only UserRoleCreator or Admin
-func (s *ProjectService) CreateProject(ctx context.Context, title string, description string) (*project.Project, error) {
+func (s *GroupBuyService) CreateProject(ctx context.Context, title string, description string) (*project.Project, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -64,7 +64,7 @@ func (s *ProjectService) CreateProject(ctx context.Context, title string, descri
 }
 
 // GetProject: Public Read
-func (s *ProjectService) GetProject(ctx context.Context, id string) (*project.Project, error) {
+func (s *GroupBuyService) GetProject(ctx context.Context, id string) (*project.Project, error) {
 	p, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (s *ProjectService) GetProject(ctx context.Context, id string) (*project.Pr
 
 // ListProjects: Public List
 // ListProjects: Public Only
-func (s *ProjectService) ListProjects(ctx context.Context, limit, offset int) ([]*project.Project, error) {
+func (s *GroupBuyService) ListProjects(ctx context.Context, limit, offset int) ([]*project.Project, error) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -85,7 +85,7 @@ func (s *ProjectService) ListProjects(ctx context.Context, limit, offset int) ([
 }
 
 // ListManagerProjects: Authenticated Manager/Admin View
-func (s *ProjectService) ListManagerProjects(ctx context.Context, limit, offset int) ([]*project.Project, error) {
+func (s *GroupBuyService) ListManagerProjects(ctx context.Context, limit, offset int) ([]*project.Project, error) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -98,7 +98,7 @@ func (s *ProjectService) ListManagerProjects(ctx context.Context, limit, offset 
 }
 
 // UpdateProject: Manager Only
-func (s *ProjectService) UpdateProject(ctx context.Context, id string, title, desc string, status project.ProjectStatus, products []*project.Product, coverImage string, deadline *time.Time, shippingConfigs []*project.ShippingConfig, managerIDs []string, exchangeRate float64, rounding *project.RoundingConfig, sourceCurrency string) (*project.Project, error) {
+func (s *GroupBuyService) UpdateProject(ctx context.Context, id string, title, desc string, status project.ProjectStatus, products []*project.Product, coverImage string, deadline *time.Time, shippingConfigs []*project.ShippingConfig, managerIDs []string, exchangeRate float64, rounding *project.RoundingConfig, sourceCurrency string) (*project.Project, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -213,7 +213,7 @@ func (s *ProjectService) UpdateProject(ctx context.Context, id string, title, de
 	return p, nil
 }
 
-func (s *ProjectService) GetMyProjectOrder(ctx context.Context, projectID string) (*project.Order, error) {
+func (s *GroupBuyService) GetMyProjectOrder(ctx context.Context, projectID string) (*project.Order, error) {
 	userId, _, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -234,7 +234,7 @@ func (s *ProjectService) GetMyProjectOrder(ctx context.Context, projectID string
 	return orders[0], nil
 }
 
-func (s *ProjectService) UpdateOrder(ctx context.Context, orderID string, items []*project.OrderItem, note string) (*project.Order, error) {
+func (s *GroupBuyService) UpdateOrder(ctx context.Context, orderID string, items []*project.OrderItem, note string) (*project.Order, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -308,7 +308,7 @@ func (s *ProjectService) UpdateOrder(ctx context.Context, orderID string, items 
 	return order, nil
 }
 
-func (s *ProjectService) prepareOrderItems(ctx context.Context, projectID string, inputItems []*project.OrderItem) ([]*project.OrderItem, int64, error) {
+func (s *GroupBuyService) prepareOrderItems(ctx context.Context, projectID string, inputItems []*project.OrderItem) ([]*project.OrderItem, int64, error) {
 	p, err := s.repo.GetByID(ctx, projectID)
 	if err != nil {
 		return nil, 0, err
@@ -371,7 +371,7 @@ func (s *ProjectService) prepareOrderItems(ctx context.Context, projectID string
 	return validItems, total, nil
 }
 
-func (s *ProjectService) UpdatePaymentInfo(ctx context.Context, orderID string, method, account string, contact, shipping string, paidAt *time.Time, amount int64) (*project.Order, error) {
+func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string, method, account string, contact, shipping string, paidAt *time.Time, amount int64) (*project.Order, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -440,7 +440,7 @@ func (s *ProjectService) UpdatePaymentInfo(ctx context.Context, orderID string, 
 }
 
 // CreateOrder: User Only
-func (s *ProjectService) CreateOrder(ctx context.Context, projectID string, items []*project.OrderItem, contactInfo, shippingAddr, shippingMethodID, note string) (*project.Order, error) {
+func (s *GroupBuyService) CreateOrder(ctx context.Context, projectID string, items []*project.OrderItem, contactInfo, shippingAddr, shippingMethodID, note string) (*project.Order, error) {
 	usrID, _, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -498,7 +498,7 @@ func (s *ProjectService) CreateOrder(ctx context.Context, projectID string, item
 }
 
 // ListProjectOrders: Manager Only
-func (s *ProjectService) ListProjectOrders(ctx context.Context, projectID string) ([]*project.Order, error) {
+func (s *GroupBuyService) ListProjectOrders(ctx context.Context, projectID string) ([]*project.Order, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -520,7 +520,7 @@ func (s *ProjectService) ListProjectOrders(ctx context.Context, projectID string
 	return s.repo.ListOrders(ctx, projectID, "")
 }
 
-func (s *ProjectService) ConfirmPayment(ctx context.Context, orderID string, status int) error {
+func (s *GroupBuyService) ConfirmPayment(ctx context.Context, orderID string, status int) error {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return ErrPermissionDenied
@@ -544,7 +544,7 @@ func (s *ProjectService) ConfirmPayment(ctx context.Context, orderID string, sta
 }
 
 // CancelOrder: Owner Only, and only if Status allowed
-func (s *ProjectService) CancelOrder(ctx context.Context, orderID string) error {
+func (s *GroupBuyService) CancelOrder(ctx context.Context, orderID string) error {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return ErrPermissionDenied
@@ -571,7 +571,7 @@ func (s *ProjectService) CancelOrder(ctx context.Context, orderID string) error 
 	return nil
 }
 
-func (s *ProjectService) AddProduct(ctx context.Context, projectID string, name string, priceOriginal int64, exchangeRate float64, specs []string) (*project.Product, error) {
+func (s *GroupBuyService) AddProduct(ctx context.Context, projectID string, name string, priceOriginal int64, exchangeRate float64, specs []string) (*project.Product, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -632,7 +632,7 @@ func (s *ProjectService) AddProduct(ctx context.Context, projectID string, name 
 	return prod, nil
 }
 
-func (s *ProjectService) DeleteProduct(ctx context.Context, projectID, productID string) error {
+func (s *GroupBuyService) DeleteProduct(ctx context.Context, projectID, productID string) error {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return ErrPermissionDenied
@@ -650,7 +650,7 @@ func (s *ProjectService) DeleteProduct(ctx context.Context, projectID, productID
 	return s.repo.DeleteProduct(ctx, projectID, productID)
 }
 
-func (s *ProjectService) GetMyOrders(ctx context.Context) ([]*project.Order, error) {
+func (s *GroupBuyService) GetMyOrders(ctx context.Context) ([]*project.Order, error) {
 	usrID, _, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -671,7 +671,7 @@ func isManager(p *project.Project, userID string) bool {
 	return false
 }
 
-func (s *ProjectService) BatchUpdateStatus(ctx context.Context, projectID string, specID string, targetStatus int, count int32) (int32, []string, error) {
+func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, projectID string, specID string, targetStatus int, count int32) (int32, []string, error) {
 	usrID, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return 0, nil, ErrPermissionDenied
@@ -720,7 +720,7 @@ func (s *ProjectService) BatchUpdateStatus(ctx context.Context, projectID string
 	return int32(n), ids, nil
 }
 
-func (s *ProjectService) CreateCategory(ctx context.Context, name string, specNames []string) (*project.Category, error) {
+func (s *GroupBuyService) CreateCategory(ctx context.Context, name string, specNames []string) (*project.Category, error) {
 	_, role, ok := auth.FromContext(ctx)
 	if !ok {
 		return nil, ErrPermissionDenied
@@ -740,7 +740,7 @@ func (s *ProjectService) CreateCategory(ctx context.Context, name string, specNa
 	return c, nil
 }
 
-func (s *ProjectService) ListCategories(ctx context.Context) ([]*project.Category, error) {
+func (s *GroupBuyService) ListCategories(ctx context.Context) ([]*project.Category, error) {
 	// Public access allowed? Or Authenticated?
 	// Add Product form is manager only (Auth required).
 	// Let's require Auth at least.
@@ -751,7 +751,7 @@ func (s *ProjectService) ListCategories(ctx context.Context) ([]*project.Categor
 	return s.repo.ListCategories(ctx)
 }
 
-func (s *ProjectService) CalculateFinalPrice(original int64, rate float64, rounding *project.RoundingConfig) int64 {
+func (s *GroupBuyService) CalculateFinalPrice(original int64, rate float64, rounding *project.RoundingConfig) int64 {
 	if original == 0 || rate == 0 {
 		return 0
 	}

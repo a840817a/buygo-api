@@ -9,12 +9,12 @@ import "api/v1/auth.proto";
 
 // --- Enums ---
 
-enum ProjectStatus {
-  PROJECT_STATUS_UNSPECIFIED = 0;
-  PROJECT_STATUS_DRAFT = 1;
-  PROJECT_STATUS_ACTIVE = 2;
-  PROJECT_STATUS_ENDED = 3;
-  PROJECT_STATUS_ARCHIVED = 4;
+enum GroupBuyStatus {
+  GROUP_BUY_STATUS_UNSPECIFIED = 0;
+  GROUP_BUY_STATUS_DRAFT = 1;
+  GROUP_BUY_STATUS_ACTIVE = 2;
+  GROUP_BUY_STATUS_ENDED = 3;
+  GROUP_BUY_STATUS_ARCHIVED = 4;
 }
 
 enum OrderItemStatus {
@@ -45,13 +45,13 @@ enum RoundingMethod {
 
 // --- Service ---
 
-service ProjectService {
-  // Project Management (Creator/Admin)
-  rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse);
-  rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
-  rpc ListManagerProjects(ListManagerProjectsRequest) returns (ListManagerProjectsResponse);
-  rpc GetProject(GetProjectRequest) returns (GetProjectResponse);
-  rpc UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse);
+service GroupBuyService {
+  // GroupBuy Management (Creator/Admin)
+  rpc CreateGroupBuy(CreateGroupBuyRequest) returns (CreateGroupBuyResponse);
+  rpc ListGroupBuys(ListGroupBuysRequest) returns (ListGroupBuysResponse);
+  rpc ListManagerGroupBuys(ListManagerGroupBuysRequest) returns (ListManagerGroupBuysResponse);
+  rpc GetGroupBuy(GetGroupBuyRequest) returns (GetGroupBuyResponse);
+  rpc UpdateGroupBuy(UpdateGroupBuyRequest) returns (UpdateGroupBuyResponse);
   
   // Product Management (Creator/Admin)
   rpc AddProduct(AddProductRequest) returns (AddProductResponse);
@@ -63,20 +63,20 @@ service ProjectService {
   // Order Management (User)
   rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
   rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
-  rpc GetMyProjectOrder(GetMyProjectOrderRequest) returns (GetMyProjectOrderResponse);
+  rpc GetMyGroupBuyOrder(GetMyGroupBuyOrderRequest) returns (GetMyGroupBuyOrderResponse);
   rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
   rpc UpdatePaymentInfo(UpdatePaymentInfoRequest) returns (UpdatePaymentInfoResponse);
   rpc GetMyOrders(GetMyOrdersRequest) returns (GetMyOrdersResponse);
-  
+
   // Order Management (Manager)
   // Batch update status of items (FIFO)
   rpc BatchUpdateStatus(BatchUpdateStatusRequest) returns (BatchUpdateStatusResponse);
   // Confirm user payment
   // Confirm user payment
   rpc ConfirmPayment(ConfirmPaymentRequest) returns (ConfirmPaymentResponse);
-  
-  // Manager: List Orders for a Project
-  rpc ListProjectOrders(ListProjectOrdersRequest) returns (ListProjectOrdersResponse);
+
+  // Manager: List Orders for a GroupBuy
+  rpc ListGroupBuyOrders(ListGroupBuyOrdersRequest) returns (ListGroupBuyOrdersResponse);
 
   // Price Templates (Admin Only)
   rpc CreatePriceTemplate(CreatePriceTemplateRequest) returns (CreatePriceTemplateResponse);
@@ -102,23 +102,23 @@ message ShippingConfig {
   int64 price = 4;
 }
 
-message Project {
+message GroupBuy {
   string id = 1;
   string title = 2;
   string description = 3;
   string cover_image_url = 4;
-  ProjectStatus status = 5;
-  
+  GroupBuyStatus status = 5;
+
   double exchange_rate = 13;
   RoundingConfig rounding_config = 14;
   string source_currency = 15; // New field
-  
+
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp deadline = 7;
-  
+
   User creator = 8;
   repeated User managers = 9;
-  
+
   reserved 10; // payment_methods
 
   repeated ShippingConfig shipping_configs = 12; // New structured config
@@ -126,16 +126,16 @@ message Project {
 
 message Product {
   string id = 1;
-  string project_id = 2;
+  string group_buy_id = 2;
   string name = 3;
   string description = 4;
   string image_url = 5;
-  
+
   int64 price_original = 6;
   double exchange_rate = 7;
   RoundingConfig rounding_config = 8;
   int64 price_final = 9; // Calculated
-  
+
   int32 max_quantity = 10; // Total available
   repeated ProductSpec specs = 11;
 }
@@ -160,52 +160,52 @@ message ProductSpec {
 
 // --- Request/Response ---
 
-message CreateProjectRequest {
+message CreateGroupBuyRequest {
   string title = 1;
   string description = 2;
   reserved 3; // payment_methods
 
 }
 
-message CreateProjectResponse {
-  Project project = 1;
+message CreateGroupBuyResponse {
+  GroupBuy group_buy = 1;
 }
 
-message ListProjectsRequest {
+message ListGroupBuysRequest {
   int32 page_size = 1;
   string page_token = 2;
 }
 
-message ListProjectsResponse {
-  repeated Project projects = 1;
+message ListGroupBuysResponse {
+  repeated GroupBuy group_buys = 1;
   string next_page_token = 2;
 }
 
-message GetProjectRequest {
-  string project_id = 1;
+message GetGroupBuyRequest {
+  string group_buy_id = 1;
 }
 
-message GetProjectResponse {
-  Project project = 1;
+message GetGroupBuyResponse {
+  GroupBuy group_buy = 1;
   repeated Product products = 2;
 }
 
 message Order {
   string id = 1;
-  string project_id = 2;
+  string group_buy_id = 2;
   string user_id = 3;
   int64 total_amount = 4;
-  
+
   PaymentStatus payment_status = 5;
   PaymentInfo payment_info = 6;
-  
+
   // Sensitive Info (Manager/Owner Only)
   string contact_info = 7;
   string shipping_address = 8;
   string note = 12;
-  
+
   repeated OrderItem items = 9;
-  
+
   string shipping_method_id = 10;
   int64 shipping_fee = 11;
 }
@@ -231,7 +231,7 @@ message PaymentInfo {
 }
 
 message CreateOrderRequest {
-  string project_id = 1;
+  string group_buy_id = 1;
   repeated CreateOrderItem items = 2;
   // User can set payment/shipping later or now
   string contact_info = 3;
@@ -240,9 +240,9 @@ message CreateOrderRequest {
   string note = 6;
 }
 
-message UpdateProjectRequest {
-  string project_id = 1;
-  ProjectStatus status = 2;
+message UpdateGroupBuyRequest {
+  string group_buy_id = 1;
+  GroupBuyStatus status = 2;
   string title = 3;
   string description = 4;
   repeated Product products = 5;
@@ -257,12 +257,12 @@ message UpdateProjectRequest {
   repeated string manager_ids = 11;
 }
 
-message UpdateProjectResponse {
-  Project project = 1;
+message UpdateGroupBuyResponse {
+  GroupBuy group_buy = 1;
 }
 
 message AddProductRequest {
-  string project_id = 1;
+  string group_buy_id = 1;
   string name = 2;
   int64 price_original = 3;
   double exchange_rate = 4;
@@ -297,21 +297,21 @@ message ListCategoriesResponse {
   repeated Category categories = 1;
 }
 
-message ListProjectOrdersRequest {
-  string project_id = 1;
+message ListGroupBuyOrdersRequest {
+  string group_buy_id = 1;
 }
 
-message ListProjectOrdersResponse {
+message ListGroupBuyOrdersResponse {
   repeated Order orders = 1;
 }
 
-message ListManagerProjectsRequest {
+message ListManagerGroupBuysRequest {
   int32 page_size = 1;
   string page_token = 2;
 }
 
-message ListManagerProjectsResponse {
-  repeated Project projects = 1;
+message ListManagerGroupBuysResponse {
+  repeated GroupBuy group_buys = 1;
   string next_page_token = 2;
 }
 
@@ -336,11 +336,11 @@ message CancelOrderResponse {
 }
 
 // User: Edit existing order items (only if UNORDERED)
-message GetMyProjectOrderRequest {
-  string project_id = 1;
+message GetMyGroupBuyOrderRequest {
+  string group_buy_id = 1;
 }
 
-message GetMyProjectOrderResponse {
+message GetMyGroupBuyOrderResponse {
   Order order = 1; // Nullable if none
 }
 
@@ -377,7 +377,7 @@ message GetMyOrdersResponse {
 }
 
 message BatchUpdateStatusRequest {
-  string project_id = 1;
+  string group_buy_id = 1;
   string spec_id = 2;
   OrderItemStatus target_status = 3;
   int32 count = 4; // Number of items to progress (FIFO)

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 )
 
 type ProjectRepository struct {

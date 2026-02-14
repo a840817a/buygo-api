@@ -5,7 +5,7 @@ import (
 	"time"
 
 	v1 "github.com/buygo/buygo-api/api/v1"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 )
@@ -70,7 +70,7 @@ func TestToProtoProject(t *testing.T) {
 	assert.Equal(t, "My Project", proto.Title)
 	assert.Equal(t, "Desc", proto.Description)
 	assert.Equal(t, "http://cover.jpg", proto.CoverImageUrl)
-	assert.Equal(t, v1.ProjectStatus(project.ProjectStatusActive), proto.Status)
+	assert.Equal(t, v1.GroupBuyStatus(project.ProjectStatusActive), proto.Status)
 	assert.Equal(t, 0.25, proto.ExchangeRate)
 	assert.Equal(t, "JPY", proto.SourceCurrency)
 	assert.NotNil(t, proto.Deadline)
@@ -129,7 +129,7 @@ func TestToProtoOrder(t *testing.T) {
 
 	proto := toProtoOrder(o)
 	assert.Equal(t, "ord-1", proto.Id)
-	assert.Equal(t, "proj-1", proto.ProjectId)
+	assert.Equal(t, "proj-1", proto.GroupBuyId)
 	assert.Equal(t, "user-1", proto.UserId)
 	assert.Equal(t, int64(5000), proto.TotalAmount)
 	assert.Equal(t, v1.PaymentStatus(2), proto.PaymentStatus)
@@ -221,7 +221,7 @@ func TestToProtoShippingConfig_Nil(t *testing.T) {
 func TestFromProtoProduct(t *testing.T) {
 	proto := &v1.Product{
 		Id:            "prod-1",
-		ProjectId:     "proj-1",
+		GroupBuyId:     "proj-1",
 		Name:          "Widget",
 		PriceOriginal: 500,
 		ExchangeRate:  0.3,

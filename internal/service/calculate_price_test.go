@@ -3,12 +3,12 @@ package service
 import (
 	"testing"
 
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCalculateFinalPrice(t *testing.T) {
-	svc := &ProjectService{}
+	svc := &GroupBuyService{}
 
 	tests := []struct {
 		name     string

@@ -7,7 +7,7 @@ import (
 
 	"github.com/buygo/buygo-api/internal/adapter/repository/memory"
 	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/project"
+	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +17,7 @@ import (
 
 func TestConfirmPayment_ManagerOnly(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
@@ -50,7 +50,7 @@ func TestConfirmPayment_ManagerOnly(t *testing.T) {
 
 func TestBatchUpdateStatus_AccessControl(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
@@ -74,7 +74,7 @@ func TestBatchUpdateStatus_AccessControl(t *testing.T) {
 
 func TestBatchUpdateStatus_InvalidTarget(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	p, _ := svc.CreateProject(creatorCtx, "Proj", "Desc")
@@ -96,7 +96,7 @@ func TestBatchUpdateStatus_InvalidTarget(t *testing.T) {
 
 func TestBatchUpdateStatus_ValidTransitions(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	p, _ := svc.CreateProject(creatorCtx, "Proj", "Desc")
@@ -113,7 +113,7 @@ func TestBatchUpdateStatus_ValidTransitions(t *testing.T) {
 
 func TestAddProduct_AccessControl(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
@@ -138,7 +138,7 @@ func TestAddProduct_AccessControl(t *testing.T) {
 
 func TestAddProduct_DefaultsFromProject(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	p, _ := svc.CreateProject(creatorCtx, "Proj", "Desc")
@@ -155,7 +155,7 @@ func TestAddProduct_DefaultsFromProject(t *testing.T) {
 
 func TestAddProduct_SpecGeneration(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	p, _ := svc.CreateProject(creatorCtx, "Proj", "Desc")
@@ -178,7 +178,7 @@ func TestAddProduct_SpecGeneration(t *testing.T) {
 
 func TestGetMyProjectOrder(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
@@ -208,7 +208,7 @@ func TestGetMyProjectOrder(t *testing.T) {
 
 func TestGetMyOrders(t *testing.T) {
 	repo := memory.NewProjectRepository()
-	svc := NewProjectService(repo)
+	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userACtx := auth.NewContext(context.Background(), "user-a", int(user.UserRoleUser))

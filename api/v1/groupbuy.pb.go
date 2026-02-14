@@ -2,18 +2,17 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: api/v1/project.proto
+// source: api/v1/groupbuy.proto
 
 package buygov1
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -23,59 +22,59 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ProjectStatus int32
+type GroupBuyStatus int32
 
 const (
-	ProjectStatus_PROJECT_STATUS_UNSPECIFIED ProjectStatus = 0
-	ProjectStatus_PROJECT_STATUS_DRAFT       ProjectStatus = 1
-	ProjectStatus_PROJECT_STATUS_ACTIVE      ProjectStatus = 2
-	ProjectStatus_PROJECT_STATUS_ENDED       ProjectStatus = 3
-	ProjectStatus_PROJECT_STATUS_ARCHIVED    ProjectStatus = 4
+	GroupBuyStatus_GROUP_BUY_STATUS_UNSPECIFIED GroupBuyStatus = 0
+	GroupBuyStatus_GROUP_BUY_STATUS_DRAFT       GroupBuyStatus = 1
+	GroupBuyStatus_GROUP_BUY_STATUS_ACTIVE      GroupBuyStatus = 2
+	GroupBuyStatus_GROUP_BUY_STATUS_ENDED       GroupBuyStatus = 3
+	GroupBuyStatus_GROUP_BUY_STATUS_ARCHIVED    GroupBuyStatus = 4
 )
 
-// Enum value maps for ProjectStatus.
+// Enum value maps for GroupBuyStatus.
 var (
-	ProjectStatus_name = map[int32]string{
-		0: "PROJECT_STATUS_UNSPECIFIED",
-		1: "PROJECT_STATUS_DRAFT",
-		2: "PROJECT_STATUS_ACTIVE",
-		3: "PROJECT_STATUS_ENDED",
-		4: "PROJECT_STATUS_ARCHIVED",
+	GroupBuyStatus_name = map[int32]string{
+		0: "GROUP_BUY_STATUS_UNSPECIFIED",
+		1: "GROUP_BUY_STATUS_DRAFT",
+		2: "GROUP_BUY_STATUS_ACTIVE",
+		3: "GROUP_BUY_STATUS_ENDED",
+		4: "GROUP_BUY_STATUS_ARCHIVED",
 	}
-	ProjectStatus_value = map[string]int32{
-		"PROJECT_STATUS_UNSPECIFIED": 0,
-		"PROJECT_STATUS_DRAFT":       1,
-		"PROJECT_STATUS_ACTIVE":      2,
-		"PROJECT_STATUS_ENDED":       3,
-		"PROJECT_STATUS_ARCHIVED":    4,
+	GroupBuyStatus_value = map[string]int32{
+		"GROUP_BUY_STATUS_UNSPECIFIED": 0,
+		"GROUP_BUY_STATUS_DRAFT":       1,
+		"GROUP_BUY_STATUS_ACTIVE":      2,
+		"GROUP_BUY_STATUS_ENDED":       3,
+		"GROUP_BUY_STATUS_ARCHIVED":    4,
 	}
 )
 
-func (x ProjectStatus) Enum() *ProjectStatus {
-	p := new(ProjectStatus)
+func (x GroupBuyStatus) Enum() *GroupBuyStatus {
+	p := new(GroupBuyStatus)
 	*p = x
 	return p
 }
 
-func (x ProjectStatus) String() string {
+func (x GroupBuyStatus) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (ProjectStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_project_proto_enumTypes[0].Descriptor()
+func (GroupBuyStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_v1_groupbuy_proto_enumTypes[0].Descriptor()
 }
 
-func (ProjectStatus) Type() protoreflect.EnumType {
-	return &file_api_v1_project_proto_enumTypes[0]
+func (GroupBuyStatus) Type() protoreflect.EnumType {
+	return &file_api_v1_groupbuy_proto_enumTypes[0]
 }
 
-func (x ProjectStatus) Number() protoreflect.EnumNumber {
+func (x GroupBuyStatus) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use ProjectStatus.Descriptor instead.
-func (ProjectStatus) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{0}
+// Deprecated: Use GroupBuyStatus.Descriptor instead.
+func (GroupBuyStatus) EnumDescriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{0}
 }
 
 type OrderItemStatus int32
@@ -126,11 +125,11 @@ func (x OrderItemStatus) String() string {
 }
 
 func (OrderItemStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_project_proto_enumTypes[1].Descriptor()
+	return file_api_v1_groupbuy_proto_enumTypes[1].Descriptor()
 }
 
 func (OrderItemStatus) Type() protoreflect.EnumType {
-	return &file_api_v1_project_proto_enumTypes[1]
+	return &file_api_v1_groupbuy_proto_enumTypes[1]
 }
 
 func (x OrderItemStatus) Number() protoreflect.EnumNumber {
@@ -139,7 +138,7 @@ func (x OrderItemStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use OrderItemStatus.Descriptor instead.
 func (OrderItemStatus) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{1}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{1}
 }
 
 type PaymentStatus int32
@@ -181,11 +180,11 @@ func (x PaymentStatus) String() string {
 }
 
 func (PaymentStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_project_proto_enumTypes[2].Descriptor()
+	return file_api_v1_groupbuy_proto_enumTypes[2].Descriptor()
 }
 
 func (PaymentStatus) Type() protoreflect.EnumType {
-	return &file_api_v1_project_proto_enumTypes[2]
+	return &file_api_v1_groupbuy_proto_enumTypes[2]
 }
 
 func (x PaymentStatus) Number() protoreflect.EnumNumber {
@@ -194,7 +193,7 @@ func (x PaymentStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PaymentStatus.Descriptor instead.
 func (PaymentStatus) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{2}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{2}
 }
 
 type RoundingMethod int32
@@ -233,11 +232,11 @@ func (x RoundingMethod) String() string {
 }
 
 func (RoundingMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_project_proto_enumTypes[3].Descriptor()
+	return file_api_v1_groupbuy_proto_enumTypes[3].Descriptor()
 }
 
 func (RoundingMethod) Type() protoreflect.EnumType {
-	return &file_api_v1_project_proto_enumTypes[3]
+	return &file_api_v1_groupbuy_proto_enumTypes[3]
 }
 
 func (x RoundingMethod) Number() protoreflect.EnumNumber {
@@ -246,7 +245,7 @@ func (x RoundingMethod) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RoundingMethod.Descriptor instead.
 func (RoundingMethod) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{3}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{3}
 }
 
 type ShippingType int32
@@ -285,11 +284,11 @@ func (x ShippingType) String() string {
 }
 
 func (ShippingType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_project_proto_enumTypes[4].Descriptor()
+	return file_api_v1_groupbuy_proto_enumTypes[4].Descriptor()
 }
 
 func (ShippingType) Type() protoreflect.EnumType {
-	return &file_api_v1_project_proto_enumTypes[4]
+	return &file_api_v1_groupbuy_proto_enumTypes[4]
 }
 
 func (x ShippingType) Number() protoreflect.EnumNumber {
@@ -298,7 +297,7 @@ func (x ShippingType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ShippingType.Descriptor instead.
 func (ShippingType) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{4}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{4}
 }
 
 type ShippingConfig struct {
@@ -313,7 +312,7 @@ type ShippingConfig struct {
 
 func (x *ShippingConfig) Reset() {
 	*x = ShippingConfig{}
-	mi := &file_api_v1_project_proto_msgTypes[0]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -325,7 +324,7 @@ func (x *ShippingConfig) String() string {
 func (*ShippingConfig) ProtoMessage() {}
 
 func (x *ShippingConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[0]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -338,7 +337,7 @@ func (x *ShippingConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShippingConfig.ProtoReflect.Descriptor instead.
 func (*ShippingConfig) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{0}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ShippingConfig) GetId() string {
@@ -369,16 +368,16 @@ func (x *ShippingConfig) GetPrice() int64 {
 	return 0
 }
 
-type Project struct {
+type GroupBuy struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title           string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Description     string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	CoverImageUrl   string                 `protobuf:"bytes,4,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`
-	Status          ProjectStatus          `protobuf:"varint,5,opt,name=status,proto3,enum=buygo.v1.ProjectStatus" json:"status,omitempty"`
+	Status          GroupBuyStatus         `protobuf:"varint,5,opt,name=status,proto3,enum=buygo.v1.GroupBuyStatus" json:"status,omitempty"`
 	ExchangeRate    float64                `protobuf:"fixed64,13,opt,name=exchange_rate,json=exchangeRate,proto3" json:"exchange_rate,omitempty"`
 	RoundingConfig  *RoundingConfig        `protobuf:"bytes,14,opt,name=rounding_config,json=roundingConfig,proto3" json:"rounding_config,omitempty"`
-	SourceCurrency  string                 `protobuf:"bytes,15,opt,name=source_currency,json=sourceCurrency,proto3" json:"source_currency,omitempty"`
+	SourceCurrency  string                 `protobuf:"bytes,15,opt,name=source_currency,json=sourceCurrency,proto3" json:"source_currency,omitempty"` // New field
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	Deadline        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=deadline,proto3" json:"deadline,omitempty"`
 	Creator         *User                  `protobuf:"bytes,8,opt,name=creator,proto3" json:"creator,omitempty"`
@@ -388,21 +387,21 @@ type Project struct {
 	sizeCache       protoimpl.SizeCache
 }
 
-func (x *Project) Reset() {
-	*x = Project{}
-	mi := &file_api_v1_project_proto_msgTypes[1]
+func (x *GroupBuy) Reset() {
+	*x = GroupBuy{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Project) String() string {
+func (x *GroupBuy) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Project) ProtoMessage() {}
+func (*GroupBuy) ProtoMessage() {}
 
-func (x *Project) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[1]
+func (x *GroupBuy) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -413,96 +412,96 @@ func (x *Project) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Project.ProtoReflect.Descriptor instead.
-func (*Project) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{1}
+// Deprecated: Use GroupBuy.ProtoReflect.Descriptor instead.
+func (*GroupBuy) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Project) GetId() string {
+func (x *GroupBuy) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *Project) GetTitle() string {
+func (x *GroupBuy) GetTitle() string {
 	if x != nil {
 		return x.Title
 	}
 	return ""
 }
 
-func (x *Project) GetDescription() string {
+func (x *GroupBuy) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-func (x *Project) GetCoverImageUrl() string {
+func (x *GroupBuy) GetCoverImageUrl() string {
 	if x != nil {
 		return x.CoverImageUrl
 	}
 	return ""
 }
 
-func (x *Project) GetStatus() ProjectStatus {
+func (x *GroupBuy) GetStatus() GroupBuyStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ProjectStatus_PROJECT_STATUS_UNSPECIFIED
+	return GroupBuyStatus_GROUP_BUY_STATUS_UNSPECIFIED
 }
 
-func (x *Project) GetExchangeRate() float64 {
+func (x *GroupBuy) GetExchangeRate() float64 {
 	if x != nil {
 		return x.ExchangeRate
 	}
 	return 0
 }
 
-func (x *Project) GetRoundingConfig() *RoundingConfig {
+func (x *GroupBuy) GetRoundingConfig() *RoundingConfig {
 	if x != nil {
 		return x.RoundingConfig
 	}
 	return nil
 }
 
-func (x *Project) GetSourceCurrency() string {
+func (x *GroupBuy) GetSourceCurrency() string {
 	if x != nil {
 		return x.SourceCurrency
 	}
 	return ""
 }
 
-func (x *Project) GetCreatedAt() *timestamppb.Timestamp {
+func (x *GroupBuy) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *Project) GetDeadline() *timestamppb.Timestamp {
+func (x *GroupBuy) GetDeadline() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Deadline
 	}
 	return nil
 }
 
-func (x *Project) GetCreator() *User {
+func (x *GroupBuy) GetCreator() *User {
 	if x != nil {
 		return x.Creator
 	}
 	return nil
 }
 
-func (x *Project) GetManagers() []*User {
+func (x *GroupBuy) GetManagers() []*User {
 	if x != nil {
 		return x.Managers
 	}
 	return nil
 }
 
-func (x *Project) GetShippingConfigs() []*ShippingConfig {
+func (x *GroupBuy) GetShippingConfigs() []*ShippingConfig {
 	if x != nil {
 		return x.ShippingConfigs
 	}
@@ -512,7 +511,7 @@ func (x *Project) GetShippingConfigs() []*ShippingConfig {
 type Product struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ProjectId      string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId     string                 `protobuf:"bytes,2,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	Name           string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description    string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	ImageUrl       string                 `protobuf:"bytes,5,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
@@ -528,7 +527,7 @@ type Product struct {
 
 func (x *Product) Reset() {
 	*x = Product{}
-	mi := &file_api_v1_project_proto_msgTypes[2]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -540,7 +539,7 @@ func (x *Product) String() string {
 func (*Product) ProtoMessage() {}
 
 func (x *Product) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[2]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -553,7 +552,7 @@ func (x *Product) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Product.ProtoReflect.Descriptor instead.
 func (*Product) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{2}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Product) GetId() string {
@@ -563,9 +562,9 @@ func (x *Product) GetId() string {
 	return ""
 }
 
-func (x *Product) GetProjectId() string {
+func (x *Product) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
@@ -643,7 +642,7 @@ type RoundingConfig struct {
 
 func (x *RoundingConfig) Reset() {
 	*x = RoundingConfig{}
-	mi := &file_api_v1_project_proto_msgTypes[3]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -655,7 +654,7 @@ func (x *RoundingConfig) String() string {
 func (*RoundingConfig) ProtoMessage() {}
 
 func (x *RoundingConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[3]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -668,7 +667,7 @@ func (x *RoundingConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoundingConfig.ProtoReflect.Descriptor instead.
 func (*RoundingConfig) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{3}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RoundingConfig) GetMethod() RoundingMethod {
@@ -698,7 +697,7 @@ type PriceTemplate struct {
 
 func (x *PriceTemplate) Reset() {
 	*x = PriceTemplate{}
-	mi := &file_api_v1_project_proto_msgTypes[4]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -710,7 +709,7 @@ func (x *PriceTemplate) String() string {
 func (*PriceTemplate) ProtoMessage() {}
 
 func (x *PriceTemplate) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[4]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -723,7 +722,7 @@ func (x *PriceTemplate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceTemplate.ProtoReflect.Descriptor instead.
 func (*PriceTemplate) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{4}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *PriceTemplate) GetId() string {
@@ -771,7 +770,7 @@ type ProductSpec struct {
 
 func (x *ProductSpec) Reset() {
 	*x = ProductSpec{}
-	mi := &file_api_v1_project_proto_msgTypes[5]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -783,7 +782,7 @@ func (x *ProductSpec) String() string {
 func (*ProductSpec) ProtoMessage() {}
 
 func (x *ProductSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[5]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -796,7 +795,7 @@ func (x *ProductSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProductSpec.ProtoReflect.Descriptor instead.
 func (*ProductSpec) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{5}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ProductSpec) GetId() string {
@@ -813,7 +812,7 @@ func (x *ProductSpec) GetName() string {
 	return ""
 }
 
-type CreateProjectRequest struct {
+type CreateGroupBuyRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
@@ -821,21 +820,21 @@ type CreateProjectRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateProjectRequest) Reset() {
-	*x = CreateProjectRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[6]
+func (x *CreateGroupBuyRequest) Reset() {
+	*x = CreateGroupBuyRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateProjectRequest) String() string {
+func (x *CreateGroupBuyRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateProjectRequest) ProtoMessage() {}
+func (*CreateGroupBuyRequest) ProtoMessage() {}
 
-func (x *CreateProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[6]
+func (x *CreateGroupBuyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -846,47 +845,47 @@ func (x *CreateProjectRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateProjectRequest.ProtoReflect.Descriptor instead.
-func (*CreateProjectRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{6}
+// Deprecated: Use CreateGroupBuyRequest.ProtoReflect.Descriptor instead.
+func (*CreateGroupBuyRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *CreateProjectRequest) GetTitle() string {
+func (x *CreateGroupBuyRequest) GetTitle() string {
 	if x != nil {
 		return x.Title
 	}
 	return ""
 }
 
-func (x *CreateProjectRequest) GetDescription() string {
+func (x *CreateGroupBuyRequest) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-type CreateProjectResponse struct {
+type CreateGroupBuyResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Project       *Project               `protobuf:"bytes,1,opt,name=project,proto3" json:"project,omitempty"`
+	GroupBuy      *GroupBuy              `protobuf:"bytes,1,opt,name=group_buy,json=groupBuy,proto3" json:"group_buy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateProjectResponse) Reset() {
-	*x = CreateProjectResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[7]
+func (x *CreateGroupBuyResponse) Reset() {
+	*x = CreateGroupBuyResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateProjectResponse) String() string {
+func (x *CreateGroupBuyResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateProjectResponse) ProtoMessage() {}
+func (*CreateGroupBuyResponse) ProtoMessage() {}
 
-func (x *CreateProjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[7]
+func (x *CreateGroupBuyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -897,19 +896,19 @@ func (x *CreateProjectResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateProjectResponse.ProtoReflect.Descriptor instead.
-func (*CreateProjectResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{7}
+// Deprecated: Use CreateGroupBuyResponse.ProtoReflect.Descriptor instead.
+func (*CreateGroupBuyResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *CreateProjectResponse) GetProject() *Project {
+func (x *CreateGroupBuyResponse) GetGroupBuy() *GroupBuy {
 	if x != nil {
-		return x.Project
+		return x.GroupBuy
 	}
 	return nil
 }
 
-type ListProjectsRequest struct {
+type ListGroupBuysRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
@@ -917,21 +916,21 @@ type ListProjectsRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListProjectsRequest) Reset() {
-	*x = ListProjectsRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[8]
+func (x *ListGroupBuysRequest) Reset() {
+	*x = ListGroupBuysRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListProjectsRequest) String() string {
+func (x *ListGroupBuysRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListProjectsRequest) ProtoMessage() {}
+func (*ListGroupBuysRequest) ProtoMessage() {}
 
-func (x *ListProjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[8]
+func (x *ListGroupBuysRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -942,48 +941,48 @@ func (x *ListProjectsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListProjectsRequest.ProtoReflect.Descriptor instead.
-func (*ListProjectsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{8}
+// Deprecated: Use ListGroupBuysRequest.ProtoReflect.Descriptor instead.
+func (*ListGroupBuysRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ListProjectsRequest) GetPageSize() int32 {
+func (x *ListGroupBuysRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListProjectsRequest) GetPageToken() string {
+func (x *ListGroupBuysRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
 	}
 	return ""
 }
 
-type ListProjectsResponse struct {
+type ListGroupBuysResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Projects      []*Project             `protobuf:"bytes,1,rep,name=projects,proto3" json:"projects,omitempty"`
+	GroupBuys     []*GroupBuy            `protobuf:"bytes,1,rep,name=group_buys,json=groupBuys,proto3" json:"group_buys,omitempty"`
 	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListProjectsResponse) Reset() {
-	*x = ListProjectsResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[9]
+func (x *ListGroupBuysResponse) Reset() {
+	*x = ListGroupBuysResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListProjectsResponse) String() string {
+func (x *ListGroupBuysResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListProjectsResponse) ProtoMessage() {}
+func (*ListGroupBuysResponse) ProtoMessage() {}
 
-func (x *ListProjectsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[9]
+func (x *ListGroupBuysResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -994,47 +993,47 @@ func (x *ListProjectsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListProjectsResponse.ProtoReflect.Descriptor instead.
-func (*ListProjectsResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{9}
+// Deprecated: Use ListGroupBuysResponse.ProtoReflect.Descriptor instead.
+func (*ListGroupBuysResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *ListProjectsResponse) GetProjects() []*Project {
+func (x *ListGroupBuysResponse) GetGroupBuys() []*GroupBuy {
 	if x != nil {
-		return x.Projects
+		return x.GroupBuys
 	}
 	return nil
 }
 
-func (x *ListProjectsResponse) GetNextPageToken() string {
+func (x *ListGroupBuysResponse) GetNextPageToken() string {
 	if x != nil {
 		return x.NextPageToken
 	}
 	return ""
 }
 
-type GetProjectRequest struct {
+type GetGroupBuyRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId    string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetProjectRequest) Reset() {
-	*x = GetProjectRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[10]
+func (x *GetGroupBuyRequest) Reset() {
+	*x = GetGroupBuyRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetProjectRequest) String() string {
+func (x *GetGroupBuyRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetProjectRequest) ProtoMessage() {}
+func (*GetGroupBuyRequest) ProtoMessage() {}
 
-func (x *GetProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[10]
+func (x *GetGroupBuyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1045,41 +1044,41 @@ func (x *GetProjectRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetProjectRequest.ProtoReflect.Descriptor instead.
-func (*GetProjectRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{10}
+// Deprecated: Use GetGroupBuyRequest.ProtoReflect.Descriptor instead.
+func (*GetGroupBuyRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *GetProjectRequest) GetProjectId() string {
+func (x *GetGroupBuyRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
 
-type GetProjectResponse struct {
+type GetGroupBuyResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Project       *Project               `protobuf:"bytes,1,opt,name=project,proto3" json:"project,omitempty"`
+	GroupBuy      *GroupBuy              `protobuf:"bytes,1,opt,name=group_buy,json=groupBuy,proto3" json:"group_buy,omitempty"`
 	Products      []*Product             `protobuf:"bytes,2,rep,name=products,proto3" json:"products,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetProjectResponse) Reset() {
-	*x = GetProjectResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[11]
+func (x *GetGroupBuyResponse) Reset() {
+	*x = GetGroupBuyResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetProjectResponse) String() string {
+func (x *GetGroupBuyResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetProjectResponse) ProtoMessage() {}
+func (*GetGroupBuyResponse) ProtoMessage() {}
 
-func (x *GetProjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[11]
+func (x *GetGroupBuyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1090,19 +1089,19 @@ func (x *GetProjectResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetProjectResponse.ProtoReflect.Descriptor instead.
-func (*GetProjectResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{11}
+// Deprecated: Use GetGroupBuyResponse.ProtoReflect.Descriptor instead.
+func (*GetGroupBuyResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *GetProjectResponse) GetProject() *Project {
+func (x *GetGroupBuyResponse) GetGroupBuy() *GroupBuy {
 	if x != nil {
-		return x.Project
+		return x.GroupBuy
 	}
 	return nil
 }
 
-func (x *GetProjectResponse) GetProducts() []*Product {
+func (x *GetGroupBuyResponse) GetProducts() []*Product {
 	if x != nil {
 		return x.Products
 	}
@@ -1112,7 +1111,7 @@ func (x *GetProjectResponse) GetProducts() []*Product {
 type Order struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ProjectId     string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId    string                 `protobuf:"bytes,2,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	TotalAmount   int64                  `protobuf:"varint,4,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
 	PaymentStatus PaymentStatus          `protobuf:"varint,5,opt,name=payment_status,json=paymentStatus,proto3,enum=buygo.v1.PaymentStatus" json:"payment_status,omitempty"`
@@ -1130,7 +1129,7 @@ type Order struct {
 
 func (x *Order) Reset() {
 	*x = Order{}
-	mi := &file_api_v1_project_proto_msgTypes[12]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1142,7 +1141,7 @@ func (x *Order) String() string {
 func (*Order) ProtoMessage() {}
 
 func (x *Order) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[12]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1155,7 +1154,7 @@ func (x *Order) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Order.ProtoReflect.Descriptor instead.
 func (*Order) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{12}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Order) GetId() string {
@@ -1165,9 +1164,9 @@ func (x *Order) GetId() string {
 	return ""
 }
 
-func (x *Order) GetProjectId() string {
+func (x *Order) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
@@ -1259,7 +1258,7 @@ type OrderItem struct {
 
 func (x *OrderItem) Reset() {
 	*x = OrderItem{}
-	mi := &file_api_v1_project_proto_msgTypes[13]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1271,7 +1270,7 @@ func (x *OrderItem) String() string {
 func (*OrderItem) ProtoMessage() {}
 
 func (x *OrderItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[13]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1284,7 +1283,7 @@ func (x *OrderItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderItem.ProtoReflect.Descriptor instead.
 func (*OrderItem) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{13}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *OrderItem) GetId() string {
@@ -1355,7 +1354,7 @@ type PaymentInfo struct {
 
 func (x *PaymentInfo) Reset() {
 	*x = PaymentInfo{}
-	mi := &file_api_v1_project_proto_msgTypes[14]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1367,7 +1366,7 @@ func (x *PaymentInfo) String() string {
 func (*PaymentInfo) ProtoMessage() {}
 
 func (x *PaymentInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[14]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1380,7 +1379,7 @@ func (x *PaymentInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaymentInfo.ProtoReflect.Descriptor instead.
 func (*PaymentInfo) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{14}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *PaymentInfo) GetMethod() string {
@@ -1412,9 +1411,9 @@ func (x *PaymentInfo) GetAmount() int64 {
 }
 
 type CreateOrderRequest struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Items     []*CreateOrderItem     `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	GroupBuyId string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
+	Items      []*CreateOrderItem     `protobuf:"bytes,2,rep,name=items,proto3" json:"items,omitempty"`
 	// User can set payment/shipping later or now
 	ContactInfo      string `protobuf:"bytes,3,opt,name=contact_info,json=contactInfo,proto3" json:"contact_info,omitempty"`
 	ShippingAddress  string `protobuf:"bytes,4,opt,name=shipping_address,json=shippingAddress,proto3" json:"shipping_address,omitempty"`
@@ -1426,7 +1425,7 @@ type CreateOrderRequest struct {
 
 func (x *CreateOrderRequest) Reset() {
 	*x = CreateOrderRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[15]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1438,7 +1437,7 @@ func (x *CreateOrderRequest) String() string {
 func (*CreateOrderRequest) ProtoMessage() {}
 
 func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[15]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1451,12 +1450,12 @@ func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrderRequest.ProtoReflect.Descriptor instead.
 func (*CreateOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{15}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *CreateOrderRequest) GetProjectId() string {
+func (x *CreateOrderRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
@@ -1496,10 +1495,10 @@ func (x *CreateOrderRequest) GetNote() string {
 	return ""
 }
 
-type UpdateProjectRequest struct {
+type UpdateGroupBuyRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId       string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	Status          ProjectStatus          `protobuf:"varint,2,opt,name=status,proto3,enum=buygo.v1.ProjectStatus" json:"status,omitempty"`
+	GroupBuyId      string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
+	Status          GroupBuyStatus         `protobuf:"varint,2,opt,name=status,proto3,enum=buygo.v1.GroupBuyStatus" json:"status,omitempty"`
 	Title           string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Description     string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	Products        []*Product             `protobuf:"bytes,5,rep,name=products,proto3" json:"products,omitempty"`
@@ -1514,21 +1513,21 @@ type UpdateProjectRequest struct {
 	sizeCache       protoimpl.SizeCache
 }
 
-func (x *UpdateProjectRequest) Reset() {
-	*x = UpdateProjectRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[16]
+func (x *UpdateGroupBuyRequest) Reset() {
+	*x = UpdateGroupBuyRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateProjectRequest) String() string {
+func (x *UpdateGroupBuyRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateProjectRequest) ProtoMessage() {}
+func (*UpdateGroupBuyRequest) ProtoMessage() {}
 
-func (x *UpdateProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[16]
+func (x *UpdateGroupBuyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1539,117 +1538,117 @@ func (x *UpdateProjectRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateProjectRequest.ProtoReflect.Descriptor instead.
-func (*UpdateProjectRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{16}
+// Deprecated: Use UpdateGroupBuyRequest.ProtoReflect.Descriptor instead.
+func (*UpdateGroupBuyRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *UpdateProjectRequest) GetProjectId() string {
+func (x *UpdateGroupBuyRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
 
-func (x *UpdateProjectRequest) GetStatus() ProjectStatus {
+func (x *UpdateGroupBuyRequest) GetStatus() GroupBuyStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ProjectStatus_PROJECT_STATUS_UNSPECIFIED
+	return GroupBuyStatus_GROUP_BUY_STATUS_UNSPECIFIED
 }
 
-func (x *UpdateProjectRequest) GetTitle() string {
+func (x *UpdateGroupBuyRequest) GetTitle() string {
 	if x != nil {
 		return x.Title
 	}
 	return ""
 }
 
-func (x *UpdateProjectRequest) GetDescription() string {
+func (x *UpdateGroupBuyRequest) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-func (x *UpdateProjectRequest) GetProducts() []*Product {
+func (x *UpdateGroupBuyRequest) GetProducts() []*Product {
 	if x != nil {
 		return x.Products
 	}
 	return nil
 }
 
-func (x *UpdateProjectRequest) GetCoverImageUrl() string {
+func (x *UpdateGroupBuyRequest) GetCoverImageUrl() string {
 	if x != nil {
 		return x.CoverImageUrl
 	}
 	return ""
 }
 
-func (x *UpdateProjectRequest) GetDeadline() *timestamppb.Timestamp {
+func (x *UpdateGroupBuyRequest) GetDeadline() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Deadline
 	}
 	return nil
 }
 
-func (x *UpdateProjectRequest) GetExchangeRate() float64 {
+func (x *UpdateGroupBuyRequest) GetExchangeRate() float64 {
 	if x != nil {
 		return x.ExchangeRate
 	}
 	return 0
 }
 
-func (x *UpdateProjectRequest) GetRoundingConfig() *RoundingConfig {
+func (x *UpdateGroupBuyRequest) GetRoundingConfig() *RoundingConfig {
 	if x != nil {
 		return x.RoundingConfig
 	}
 	return nil
 }
 
-func (x *UpdateProjectRequest) GetSourceCurrency() string {
+func (x *UpdateGroupBuyRequest) GetSourceCurrency() string {
 	if x != nil {
 		return x.SourceCurrency
 	}
 	return ""
 }
 
-func (x *UpdateProjectRequest) GetShippingConfigs() []*ShippingConfig {
+func (x *UpdateGroupBuyRequest) GetShippingConfigs() []*ShippingConfig {
 	if x != nil {
 		return x.ShippingConfigs
 	}
 	return nil
 }
 
-func (x *UpdateProjectRequest) GetManagerIds() []string {
+func (x *UpdateGroupBuyRequest) GetManagerIds() []string {
 	if x != nil {
 		return x.ManagerIds
 	}
 	return nil
 }
 
-type UpdateProjectResponse struct {
+type UpdateGroupBuyResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Project       *Project               `protobuf:"bytes,1,opt,name=project,proto3" json:"project,omitempty"`
+	GroupBuy      *GroupBuy              `protobuf:"bytes,1,opt,name=group_buy,json=groupBuy,proto3" json:"group_buy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpdateProjectResponse) Reset() {
-	*x = UpdateProjectResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[17]
+func (x *UpdateGroupBuyResponse) Reset() {
+	*x = UpdateGroupBuyResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateProjectResponse) String() string {
+func (x *UpdateGroupBuyResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateProjectResponse) ProtoMessage() {}
+func (*UpdateGroupBuyResponse) ProtoMessage() {}
 
-func (x *UpdateProjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[17]
+func (x *UpdateGroupBuyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1660,21 +1659,21 @@ func (x *UpdateProjectResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateProjectResponse.ProtoReflect.Descriptor instead.
-func (*UpdateProjectResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{17}
+// Deprecated: Use UpdateGroupBuyResponse.ProtoReflect.Descriptor instead.
+func (*UpdateGroupBuyResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *UpdateProjectResponse) GetProject() *Project {
+func (x *UpdateGroupBuyResponse) GetGroupBuy() *GroupBuy {
 	if x != nil {
-		return x.Project
+		return x.GroupBuy
 	}
 	return nil
 }
 
 type AddProductRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId      string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId     string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	PriceOriginal  int64                  `protobuf:"varint,3,opt,name=price_original,json=priceOriginal,proto3" json:"price_original,omitempty"`
 	ExchangeRate   float64                `protobuf:"fixed64,4,opt,name=exchange_rate,json=exchangeRate,proto3" json:"exchange_rate,omitempty"`
@@ -1687,7 +1686,7 @@ type AddProductRequest struct {
 
 func (x *AddProductRequest) Reset() {
 	*x = AddProductRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[18]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1699,7 +1698,7 @@ func (x *AddProductRequest) String() string {
 func (*AddProductRequest) ProtoMessage() {}
 
 func (x *AddProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[18]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1712,12 +1711,12 @@ func (x *AddProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProductRequest.ProtoReflect.Descriptor instead.
 func (*AddProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{18}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *AddProductRequest) GetProjectId() string {
+func (x *AddProductRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
@@ -1766,7 +1765,7 @@ type AddProductResponse struct {
 
 func (x *AddProductResponse) Reset() {
 	*x = AddProductResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[19]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1778,7 +1777,7 @@ func (x *AddProductResponse) String() string {
 func (*AddProductResponse) ProtoMessage() {}
 
 func (x *AddProductResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[19]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1791,7 +1790,7 @@ func (x *AddProductResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddProductResponse.ProtoReflect.Descriptor instead.
 func (*AddProductResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{19}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *AddProductResponse) GetProduct() *Product {
@@ -1813,7 +1812,7 @@ type Category struct {
 
 func (x *Category) Reset() {
 	*x = Category{}
-	mi := &file_api_v1_project_proto_msgTypes[20]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1825,7 +1824,7 @@ func (x *Category) String() string {
 func (*Category) ProtoMessage() {}
 
 func (x *Category) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[20]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1838,7 +1837,7 @@ func (x *Category) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Category.ProtoReflect.Descriptor instead.
 func (*Category) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{20}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Category) GetId() string {
@@ -1872,7 +1871,7 @@ type CreateCategoryRequest struct {
 
 func (x *CreateCategoryRequest) Reset() {
 	*x = CreateCategoryRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[21]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1884,7 +1883,7 @@ func (x *CreateCategoryRequest) String() string {
 func (*CreateCategoryRequest) ProtoMessage() {}
 
 func (x *CreateCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[21]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1897,7 +1896,7 @@ func (x *CreateCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCategoryRequest.ProtoReflect.Descriptor instead.
 func (*CreateCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{21}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateCategoryRequest) GetName() string {
@@ -1923,7 +1922,7 @@ type CreateCategoryResponse struct {
 
 func (x *CreateCategoryResponse) Reset() {
 	*x = CreateCategoryResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[22]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1935,7 +1934,7 @@ func (x *CreateCategoryResponse) String() string {
 func (*CreateCategoryResponse) ProtoMessage() {}
 
 func (x *CreateCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[22]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1948,7 +1947,7 @@ func (x *CreateCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCategoryResponse.ProtoReflect.Descriptor instead.
 func (*CreateCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{22}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CreateCategoryResponse) GetCategory() *Category {
@@ -1966,7 +1965,7 @@ type ListCategoriesRequest struct {
 
 func (x *ListCategoriesRequest) Reset() {
 	*x = ListCategoriesRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[23]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1978,7 +1977,7 @@ func (x *ListCategoriesRequest) String() string {
 func (*ListCategoriesRequest) ProtoMessage() {}
 
 func (x *ListCategoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[23]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1991,7 +1990,7 @@ func (x *ListCategoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCategoriesRequest.ProtoReflect.Descriptor instead.
 func (*ListCategoriesRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{23}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{23}
 }
 
 type ListCategoriesResponse struct {
@@ -2003,7 +2002,7 @@ type ListCategoriesResponse struct {
 
 func (x *ListCategoriesResponse) Reset() {
 	*x = ListCategoriesResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[24]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2015,7 +2014,7 @@ func (x *ListCategoriesResponse) String() string {
 func (*ListCategoriesResponse) ProtoMessage() {}
 
 func (x *ListCategoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[24]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2028,7 +2027,7 @@ func (x *ListCategoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCategoriesResponse.ProtoReflect.Descriptor instead.
 func (*ListCategoriesResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{24}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListCategoriesResponse) GetCategories() []*Category {
@@ -2038,28 +2037,28 @@ func (x *ListCategoriesResponse) GetCategories() []*Category {
 	return nil
 }
 
-type ListProjectOrdersRequest struct {
+type ListGroupBuyOrdersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId    string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListProjectOrdersRequest) Reset() {
-	*x = ListProjectOrdersRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[25]
+func (x *ListGroupBuyOrdersRequest) Reset() {
+	*x = ListGroupBuyOrdersRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListProjectOrdersRequest) String() string {
+func (x *ListGroupBuyOrdersRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListProjectOrdersRequest) ProtoMessage() {}
+func (*ListGroupBuyOrdersRequest) ProtoMessage() {}
 
-func (x *ListProjectOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[25]
+func (x *ListGroupBuyOrdersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2070,40 +2069,40 @@ func (x *ListProjectOrdersRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListProjectOrdersRequest.ProtoReflect.Descriptor instead.
-func (*ListProjectOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{25}
+// Deprecated: Use ListGroupBuyOrdersRequest.ProtoReflect.Descriptor instead.
+func (*ListGroupBuyOrdersRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{25}
 }
 
-func (x *ListProjectOrdersRequest) GetProjectId() string {
+func (x *ListGroupBuyOrdersRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
 
-type ListProjectOrdersResponse struct {
+type ListGroupBuyOrdersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Orders        []*Order               `protobuf:"bytes,1,rep,name=orders,proto3" json:"orders,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListProjectOrdersResponse) Reset() {
-	*x = ListProjectOrdersResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[26]
+func (x *ListGroupBuyOrdersResponse) Reset() {
+	*x = ListGroupBuyOrdersResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListProjectOrdersResponse) String() string {
+func (x *ListGroupBuyOrdersResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListProjectOrdersResponse) ProtoMessage() {}
+func (*ListGroupBuyOrdersResponse) ProtoMessage() {}
 
-func (x *ListProjectOrdersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[26]
+func (x *ListGroupBuyOrdersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2114,19 +2113,19 @@ func (x *ListProjectOrdersResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListProjectOrdersResponse.ProtoReflect.Descriptor instead.
-func (*ListProjectOrdersResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{26}
+// Deprecated: Use ListGroupBuyOrdersResponse.ProtoReflect.Descriptor instead.
+func (*ListGroupBuyOrdersResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{26}
 }
 
-func (x *ListProjectOrdersResponse) GetOrders() []*Order {
+func (x *ListGroupBuyOrdersResponse) GetOrders() []*Order {
 	if x != nil {
 		return x.Orders
 	}
 	return nil
 }
 
-type ListManagerProjectsRequest struct {
+type ListManagerGroupBuysRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
@@ -2134,21 +2133,21 @@ type ListManagerProjectsRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListManagerProjectsRequest) Reset() {
-	*x = ListManagerProjectsRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[27]
+func (x *ListManagerGroupBuysRequest) Reset() {
+	*x = ListManagerGroupBuysRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListManagerProjectsRequest) String() string {
+func (x *ListManagerGroupBuysRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListManagerProjectsRequest) ProtoMessage() {}
+func (*ListManagerGroupBuysRequest) ProtoMessage() {}
 
-func (x *ListManagerProjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[27]
+func (x *ListManagerGroupBuysRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2159,48 +2158,48 @@ func (x *ListManagerProjectsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListManagerProjectsRequest.ProtoReflect.Descriptor instead.
-func (*ListManagerProjectsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{27}
+// Deprecated: Use ListManagerGroupBuysRequest.ProtoReflect.Descriptor instead.
+func (*ListManagerGroupBuysRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{27}
 }
 
-func (x *ListManagerProjectsRequest) GetPageSize() int32 {
+func (x *ListManagerGroupBuysRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListManagerProjectsRequest) GetPageToken() string {
+func (x *ListManagerGroupBuysRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
 	}
 	return ""
 }
 
-type ListManagerProjectsResponse struct {
+type ListManagerGroupBuysResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Projects      []*Project             `protobuf:"bytes,1,rep,name=projects,proto3" json:"projects,omitempty"`
+	GroupBuys     []*GroupBuy            `protobuf:"bytes,1,rep,name=group_buys,json=groupBuys,proto3" json:"group_buys,omitempty"`
 	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListManagerProjectsResponse) Reset() {
-	*x = ListManagerProjectsResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[28]
+func (x *ListManagerGroupBuysResponse) Reset() {
+	*x = ListManagerGroupBuysResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListManagerProjectsResponse) String() string {
+func (x *ListManagerGroupBuysResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListManagerProjectsResponse) ProtoMessage() {}
+func (*ListManagerGroupBuysResponse) ProtoMessage() {}
 
-func (x *ListManagerProjectsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[28]
+func (x *ListManagerGroupBuysResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2211,19 +2210,19 @@ func (x *ListManagerProjectsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListManagerProjectsResponse.ProtoReflect.Descriptor instead.
-func (*ListManagerProjectsResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{28}
+// Deprecated: Use ListManagerGroupBuysResponse.ProtoReflect.Descriptor instead.
+func (*ListManagerGroupBuysResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{28}
 }
 
-func (x *ListManagerProjectsResponse) GetProjects() []*Project {
+func (x *ListManagerGroupBuysResponse) GetGroupBuys() []*GroupBuy {
 	if x != nil {
-		return x.Projects
+		return x.GroupBuys
 	}
 	return nil
 }
 
-func (x *ListManagerProjectsResponse) GetNextPageToken() string {
+func (x *ListManagerGroupBuysResponse) GetNextPageToken() string {
 	if x != nil {
 		return x.NextPageToken
 	}
@@ -2242,7 +2241,7 @@ type CreateOrderItem struct {
 
 func (x *CreateOrderItem) Reset() {
 	*x = CreateOrderItem{}
-	mi := &file_api_v1_project_proto_msgTypes[29]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2254,7 +2253,7 @@ func (x *CreateOrderItem) String() string {
 func (*CreateOrderItem) ProtoMessage() {}
 
 func (x *CreateOrderItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[29]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2267,7 +2266,7 @@ func (x *CreateOrderItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrderItem.ProtoReflect.Descriptor instead.
 func (*CreateOrderItem) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{29}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *CreateOrderItem) GetProductId() string {
@@ -2307,7 +2306,7 @@ type CreateOrderResponse struct {
 
 func (x *CreateOrderResponse) Reset() {
 	*x = CreateOrderResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[30]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2319,7 +2318,7 @@ func (x *CreateOrderResponse) String() string {
 func (*CreateOrderResponse) ProtoMessage() {}
 
 func (x *CreateOrderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[30]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2332,7 +2331,7 @@ func (x *CreateOrderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrderResponse.ProtoReflect.Descriptor instead.
 func (*CreateOrderResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{30}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CreateOrderResponse) GetOrderId() string {
@@ -2351,7 +2350,7 @@ type CancelOrderRequest struct {
 
 func (x *CancelOrderRequest) Reset() {
 	*x = CancelOrderRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[31]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2363,7 +2362,7 @@ func (x *CancelOrderRequest) String() string {
 func (*CancelOrderRequest) ProtoMessage() {}
 
 func (x *CancelOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[31]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2376,7 +2375,7 @@ func (x *CancelOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelOrderRequest.ProtoReflect.Descriptor instead.
 func (*CancelOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{31}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *CancelOrderRequest) GetOrderId() string {
@@ -2396,7 +2395,7 @@ type CancelOrderResponse struct {
 
 func (x *CancelOrderResponse) Reset() {
 	*x = CancelOrderResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[32]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2408,7 +2407,7 @@ func (x *CancelOrderResponse) String() string {
 func (*CancelOrderResponse) ProtoMessage() {}
 
 func (x *CancelOrderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[32]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2421,7 +2420,7 @@ func (x *CancelOrderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelOrderResponse.ProtoReflect.Descriptor instead.
 func (*CancelOrderResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{32}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *CancelOrderResponse) GetOrderId() string {
@@ -2439,28 +2438,28 @@ func (x *CancelOrderResponse) GetStatus() OrderItemStatus {
 }
 
 // User: Edit existing order items (only if UNORDERED)
-type GetMyProjectOrderRequest struct {
+type GetMyGroupBuyOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId    string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetMyProjectOrderRequest) Reset() {
-	*x = GetMyProjectOrderRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[33]
+func (x *GetMyGroupBuyOrderRequest) Reset() {
+	*x = GetMyGroupBuyOrderRequest{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetMyProjectOrderRequest) String() string {
+func (x *GetMyGroupBuyOrderRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetMyProjectOrderRequest) ProtoMessage() {}
+func (*GetMyGroupBuyOrderRequest) ProtoMessage() {}
 
-func (x *GetMyProjectOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[33]
+func (x *GetMyGroupBuyOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2471,40 +2470,40 @@ func (x *GetMyProjectOrderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetMyProjectOrderRequest.ProtoReflect.Descriptor instead.
-func (*GetMyProjectOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{33}
+// Deprecated: Use GetMyGroupBuyOrderRequest.ProtoReflect.Descriptor instead.
+func (*GetMyGroupBuyOrderRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{33}
 }
 
-func (x *GetMyProjectOrderRequest) GetProjectId() string {
+func (x *GetMyGroupBuyOrderRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
 
-type GetMyProjectOrderResponse struct {
+type GetMyGroupBuyOrderResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Order         *Order                 `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"` // Nullable if none
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetMyProjectOrderResponse) Reset() {
-	*x = GetMyProjectOrderResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[34]
+func (x *GetMyGroupBuyOrderResponse) Reset() {
+	*x = GetMyGroupBuyOrderResponse{}
+	mi := &file_api_v1_groupbuy_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetMyProjectOrderResponse) String() string {
+func (x *GetMyGroupBuyOrderResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetMyProjectOrderResponse) ProtoMessage() {}
+func (*GetMyGroupBuyOrderResponse) ProtoMessage() {}
 
-func (x *GetMyProjectOrderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[34]
+func (x *GetMyGroupBuyOrderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_groupbuy_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2515,12 +2514,12 @@ func (x *GetMyProjectOrderResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetMyProjectOrderResponse.ProtoReflect.Descriptor instead.
-func (*GetMyProjectOrderResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{34}
+// Deprecated: Use GetMyGroupBuyOrderResponse.ProtoReflect.Descriptor instead.
+func (*GetMyGroupBuyOrderResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{34}
 }
 
-func (x *GetMyProjectOrderResponse) GetOrder() *Order {
+func (x *GetMyGroupBuyOrderResponse) GetOrder() *Order {
 	if x != nil {
 		return x.Order
 	}
@@ -2538,7 +2537,7 @@ type UpdateOrderRequest struct {
 
 func (x *UpdateOrderRequest) Reset() {
 	*x = UpdateOrderRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[35]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2550,7 +2549,7 @@ func (x *UpdateOrderRequest) String() string {
 func (*UpdateOrderRequest) ProtoMessage() {}
 
 func (x *UpdateOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[35]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2563,7 +2562,7 @@ func (x *UpdateOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrderRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{35}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *UpdateOrderRequest) GetOrderId() string {
@@ -2596,7 +2595,7 @@ type UpdateOrderResponse struct {
 
 func (x *UpdateOrderResponse) Reset() {
 	*x = UpdateOrderResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[36]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2608,7 +2607,7 @@ func (x *UpdateOrderResponse) String() string {
 func (*UpdateOrderResponse) ProtoMessage() {}
 
 func (x *UpdateOrderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[36]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2621,7 +2620,7 @@ func (x *UpdateOrderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrderResponse.ProtoReflect.Descriptor instead.
 func (*UpdateOrderResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{36}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *UpdateOrderResponse) GetOrder() *Order {
@@ -2648,7 +2647,7 @@ type UpdatePaymentInfoRequest struct {
 
 func (x *UpdatePaymentInfoRequest) Reset() {
 	*x = UpdatePaymentInfoRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[37]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2660,7 +2659,7 @@ func (x *UpdatePaymentInfoRequest) String() string {
 func (*UpdatePaymentInfoRequest) ProtoMessage() {}
 
 func (x *UpdatePaymentInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[37]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2673,7 +2672,7 @@ func (x *UpdatePaymentInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePaymentInfoRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePaymentInfoRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{37}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *UpdatePaymentInfoRequest) GetOrderId() string {
@@ -2734,7 +2733,7 @@ type UpdatePaymentInfoResponse struct {
 
 func (x *UpdatePaymentInfoResponse) Reset() {
 	*x = UpdatePaymentInfoResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[38]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2746,7 +2745,7 @@ func (x *UpdatePaymentInfoResponse) String() string {
 func (*UpdatePaymentInfoResponse) ProtoMessage() {}
 
 func (x *UpdatePaymentInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[38]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2759,7 +2758,7 @@ func (x *UpdatePaymentInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePaymentInfoResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePaymentInfoResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{38}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *UpdatePaymentInfoResponse) GetOrder() *Order {
@@ -2777,7 +2776,7 @@ type GetMyOrdersRequest struct {
 
 func (x *GetMyOrdersRequest) Reset() {
 	*x = GetMyOrdersRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[39]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2789,7 +2788,7 @@ func (x *GetMyOrdersRequest) String() string {
 func (*GetMyOrdersRequest) ProtoMessage() {}
 
 func (x *GetMyOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[39]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2802,7 +2801,7 @@ func (x *GetMyOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyOrdersRequest.ProtoReflect.Descriptor instead.
 func (*GetMyOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{39}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{39}
 }
 
 type GetMyOrdersResponse struct {
@@ -2814,7 +2813,7 @@ type GetMyOrdersResponse struct {
 
 func (x *GetMyOrdersResponse) Reset() {
 	*x = GetMyOrdersResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[40]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2826,7 +2825,7 @@ func (x *GetMyOrdersResponse) String() string {
 func (*GetMyOrdersResponse) ProtoMessage() {}
 
 func (x *GetMyOrdersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[40]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2839,7 +2838,7 @@ func (x *GetMyOrdersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMyOrdersResponse.ProtoReflect.Descriptor instead.
 func (*GetMyOrdersResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{40}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetMyOrdersResponse) GetOrders() []*Order {
@@ -2851,7 +2850,7 @@ func (x *GetMyOrdersResponse) GetOrders() []*Order {
 
 type BatchUpdateStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	GroupBuyId    string                 `protobuf:"bytes,1,opt,name=group_buy_id,json=groupBuyId,proto3" json:"group_buy_id,omitempty"`
 	SpecId        string                 `protobuf:"bytes,2,opt,name=spec_id,json=specId,proto3" json:"spec_id,omitempty"`
 	TargetStatus  OrderItemStatus        `protobuf:"varint,3,opt,name=target_status,json=targetStatus,proto3,enum=buygo.v1.OrderItemStatus" json:"target_status,omitempty"`
 	Count         int32                  `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"` // Number of items to progress (FIFO)
@@ -2861,7 +2860,7 @@ type BatchUpdateStatusRequest struct {
 
 func (x *BatchUpdateStatusRequest) Reset() {
 	*x = BatchUpdateStatusRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[41]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2873,7 +2872,7 @@ func (x *BatchUpdateStatusRequest) String() string {
 func (*BatchUpdateStatusRequest) ProtoMessage() {}
 
 func (x *BatchUpdateStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[41]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2886,12 +2885,12 @@ func (x *BatchUpdateStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchUpdateStatusRequest.ProtoReflect.Descriptor instead.
 func (*BatchUpdateStatusRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{41}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{41}
 }
 
-func (x *BatchUpdateStatusRequest) GetProjectId() string {
+func (x *BatchUpdateStatusRequest) GetGroupBuyId() string {
 	if x != nil {
-		return x.ProjectId
+		return x.GroupBuyId
 	}
 	return ""
 }
@@ -2927,7 +2926,7 @@ type BatchUpdateStatusResponse struct {
 
 func (x *BatchUpdateStatusResponse) Reset() {
 	*x = BatchUpdateStatusResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[42]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2939,7 +2938,7 @@ func (x *BatchUpdateStatusResponse) String() string {
 func (*BatchUpdateStatusResponse) ProtoMessage() {}
 
 func (x *BatchUpdateStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[42]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2952,7 +2951,7 @@ func (x *BatchUpdateStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchUpdateStatusResponse.ProtoReflect.Descriptor instead.
 func (*BatchUpdateStatusResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{42}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *BatchUpdateStatusResponse) GetUpdatedCount() int32 {
@@ -2979,7 +2978,7 @@ type ConfirmPaymentRequest struct {
 
 func (x *ConfirmPaymentRequest) Reset() {
 	*x = ConfirmPaymentRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[43]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2991,7 +2990,7 @@ func (x *ConfirmPaymentRequest) String() string {
 func (*ConfirmPaymentRequest) ProtoMessage() {}
 
 func (x *ConfirmPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[43]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3004,7 +3003,7 @@ func (x *ConfirmPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmPaymentRequest.ProtoReflect.Descriptor instead.
 func (*ConfirmPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{43}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *ConfirmPaymentRequest) GetOrderId() string {
@@ -3031,7 +3030,7 @@ type ConfirmPaymentResponse struct {
 
 func (x *ConfirmPaymentResponse) Reset() {
 	*x = ConfirmPaymentResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[44]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3043,7 +3042,7 @@ func (x *ConfirmPaymentResponse) String() string {
 func (*ConfirmPaymentResponse) ProtoMessage() {}
 
 func (x *ConfirmPaymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[44]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3056,7 +3055,7 @@ func (x *ConfirmPaymentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmPaymentResponse.ProtoReflect.Descriptor instead.
 func (*ConfirmPaymentResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{44}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *ConfirmPaymentResponse) GetOrderId() string {
@@ -3086,7 +3085,7 @@ type CreatePriceTemplateRequest struct {
 
 func (x *CreatePriceTemplateRequest) Reset() {
 	*x = CreatePriceTemplateRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[45]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3098,7 +3097,7 @@ func (x *CreatePriceTemplateRequest) String() string {
 func (*CreatePriceTemplateRequest) ProtoMessage() {}
 
 func (x *CreatePriceTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[45]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3111,7 +3110,7 @@ func (x *CreatePriceTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePriceTemplateRequest.ProtoReflect.Descriptor instead.
 func (*CreatePriceTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{45}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *CreatePriceTemplateRequest) GetName() string {
@@ -3151,7 +3150,7 @@ type CreatePriceTemplateResponse struct {
 
 func (x *CreatePriceTemplateResponse) Reset() {
 	*x = CreatePriceTemplateResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[46]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3163,7 +3162,7 @@ func (x *CreatePriceTemplateResponse) String() string {
 func (*CreatePriceTemplateResponse) ProtoMessage() {}
 
 func (x *CreatePriceTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[46]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3176,7 +3175,7 @@ func (x *CreatePriceTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePriceTemplateResponse.ProtoReflect.Descriptor instead.
 func (*CreatePriceTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{46}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *CreatePriceTemplateResponse) GetTemplate() *PriceTemplate {
@@ -3194,7 +3193,7 @@ type ListPriceTemplatesRequest struct {
 
 func (x *ListPriceTemplatesRequest) Reset() {
 	*x = ListPriceTemplatesRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[47]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3206,7 +3205,7 @@ func (x *ListPriceTemplatesRequest) String() string {
 func (*ListPriceTemplatesRequest) ProtoMessage() {}
 
 func (x *ListPriceTemplatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[47]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3219,7 +3218,7 @@ func (x *ListPriceTemplatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPriceTemplatesRequest.ProtoReflect.Descriptor instead.
 func (*ListPriceTemplatesRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{47}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{47}
 }
 
 type ListPriceTemplatesResponse struct {
@@ -3231,7 +3230,7 @@ type ListPriceTemplatesResponse struct {
 
 func (x *ListPriceTemplatesResponse) Reset() {
 	*x = ListPriceTemplatesResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[48]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3243,7 +3242,7 @@ func (x *ListPriceTemplatesResponse) String() string {
 func (*ListPriceTemplatesResponse) ProtoMessage() {}
 
 func (x *ListPriceTemplatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[48]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3256,7 +3255,7 @@ func (x *ListPriceTemplatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPriceTemplatesResponse.ProtoReflect.Descriptor instead.
 func (*ListPriceTemplatesResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{48}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *ListPriceTemplatesResponse) GetTemplates() []*PriceTemplate {
@@ -3275,7 +3274,7 @@ type GetPriceTemplateRequest struct {
 
 func (x *GetPriceTemplateRequest) Reset() {
 	*x = GetPriceTemplateRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[49]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3287,7 +3286,7 @@ func (x *GetPriceTemplateRequest) String() string {
 func (*GetPriceTemplateRequest) ProtoMessage() {}
 
 func (x *GetPriceTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[49]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3300,7 +3299,7 @@ func (x *GetPriceTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPriceTemplateRequest.ProtoReflect.Descriptor instead.
 func (*GetPriceTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{49}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetPriceTemplateRequest) GetTemplateId() string {
@@ -3319,7 +3318,7 @@ type GetPriceTemplateResponse struct {
 
 func (x *GetPriceTemplateResponse) Reset() {
 	*x = GetPriceTemplateResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[50]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3331,7 +3330,7 @@ func (x *GetPriceTemplateResponse) String() string {
 func (*GetPriceTemplateResponse) ProtoMessage() {}
 
 func (x *GetPriceTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[50]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3344,7 +3343,7 @@ func (x *GetPriceTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPriceTemplateResponse.ProtoReflect.Descriptor instead.
 func (*GetPriceTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{50}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *GetPriceTemplateResponse) GetTemplate() *PriceTemplate {
@@ -3367,7 +3366,7 @@ type UpdatePriceTemplateRequest struct {
 
 func (x *UpdatePriceTemplateRequest) Reset() {
 	*x = UpdatePriceTemplateRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[51]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3379,7 +3378,7 @@ func (x *UpdatePriceTemplateRequest) String() string {
 func (*UpdatePriceTemplateRequest) ProtoMessage() {}
 
 func (x *UpdatePriceTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[51]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3392,7 +3391,7 @@ func (x *UpdatePriceTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePriceTemplateRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePriceTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{51}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *UpdatePriceTemplateRequest) GetTemplateId() string {
@@ -3439,7 +3438,7 @@ type UpdatePriceTemplateResponse struct {
 
 func (x *UpdatePriceTemplateResponse) Reset() {
 	*x = UpdatePriceTemplateResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[52]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3451,7 +3450,7 @@ func (x *UpdatePriceTemplateResponse) String() string {
 func (*UpdatePriceTemplateResponse) ProtoMessage() {}
 
 func (x *UpdatePriceTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[52]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3464,7 +3463,7 @@ func (x *UpdatePriceTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePriceTemplateResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePriceTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{52}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *UpdatePriceTemplateResponse) GetTemplate() *PriceTemplate {
@@ -3483,7 +3482,7 @@ type DeletePriceTemplateRequest struct {
 
 func (x *DeletePriceTemplateRequest) Reset() {
 	*x = DeletePriceTemplateRequest{}
-	mi := &file_api_v1_project_proto_msgTypes[53]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3495,7 +3494,7 @@ func (x *DeletePriceTemplateRequest) String() string {
 func (*DeletePriceTemplateRequest) ProtoMessage() {}
 
 func (x *DeletePriceTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[53]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3508,7 +3507,7 @@ func (x *DeletePriceTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePriceTemplateRequest.ProtoReflect.Descriptor instead.
 func (*DeletePriceTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{53}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *DeletePriceTemplateRequest) GetTemplateId() string {
@@ -3527,7 +3526,7 @@ type DeletePriceTemplateResponse struct {
 
 func (x *DeletePriceTemplateResponse) Reset() {
 	*x = DeletePriceTemplateResponse{}
-	mi := &file_api_v1_project_proto_msgTypes[54]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3539,7 +3538,7 @@ func (x *DeletePriceTemplateResponse) String() string {
 func (*DeletePriceTemplateResponse) ProtoMessage() {}
 
 func (x *DeletePriceTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_project_proto_msgTypes[54]
+	mi := &file_api_v1_groupbuy_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3552,7 +3551,7 @@ func (x *DeletePriceTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePriceTemplateResponse.ProtoReflect.Descriptor instead.
 func (*DeletePriceTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_project_proto_rawDescGZIP(), []int{54}
+	return file_api_v1_groupbuy_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *DeletePriceTemplateResponse) GetTemplateId() string {
@@ -3562,22 +3561,22 @@ func (x *DeletePriceTemplateResponse) GetTemplateId() string {
 	return ""
 }
 
-var File_api_v1_project_proto protoreflect.FileDescriptor
+var File_api_v1_groupbuy_proto protoreflect.FileDescriptor
 
-const file_api_v1_project_proto_rawDesc = "" +
+const file_api_v1_groupbuy_proto_rawDesc = "" +
 	"\n" +
-	"\x14api/v1/project.proto\x12\bbuygo.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x11api/v1/auth.proto\"v\n" +
+	"\x15api/v1/groupbuy.proto\x12\bbuygo.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x11api/v1/auth.proto\"v\n" +
 	"\x0eShippingConfig\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12*\n" +
 	"\x04type\x18\x03 \x01(\x0e2\x16.buygo.v1.ShippingTypeR\x04type\x12\x14\n" +
-	"\x05price\x18\x04 \x01(\x03R\x05price\"\xcf\x04\n" +
-	"\aProject\x12\x0e\n" +
+	"\x05price\x18\x04 \x01(\x03R\x05price\"\xd1\x04\n" +
+	"\bGroupBuy\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12&\n" +
-	"\x0fcover_image_url\x18\x04 \x01(\tR\rcoverImageUrl\x12/\n" +
-	"\x06status\x18\x05 \x01(\x0e2\x17.buygo.v1.ProjectStatusR\x06status\x12#\n" +
+	"\x0fcover_image_url\x18\x04 \x01(\tR\rcoverImageUrl\x120\n" +
+	"\x06status\x18\x05 \x01(\x0e2\x18.buygo.v1.GroupBuyStatusR\x06status\x12#\n" +
 	"\rexchange_rate\x18\r \x01(\x01R\fexchangeRate\x12A\n" +
 	"\x0frounding_config\x18\x0e \x01(\v2\x18.buygo.v1.RoundingConfigR\x0eroundingConfig\x12'\n" +
 	"\x0fsource_currency\x18\x0f \x01(\tR\x0esourceCurrency\x129\n" +
@@ -3587,11 +3586,11 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\acreator\x18\b \x01(\v2\x0e.buygo.v1.UserR\acreator\x12*\n" +
 	"\bmanagers\x18\t \x03(\v2\x0e.buygo.v1.UserR\bmanagers\x12C\n" +
 	"\x10shipping_configs\x18\f \x03(\v2\x18.buygo.v1.ShippingConfigR\x0fshippingConfigsJ\x04\b\n" +
-	"\x10\v\"\x8b\x03\n" +
+	"\x10\v\"\x8e\x03\n" +
 	"\aProduct\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x02 \x01(\tR\tprojectId\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12 \n" +
+	"\fgroup_buy_id\x18\x02 \x01(\tR\n" +
+	"groupBuyId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1b\n" +
 	"\timage_url\x18\x05 \x01(\tR\bimageUrl\x12%\n" +
@@ -3614,29 +3613,30 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x0frounding_config\x18\x05 \x01(\v2\x18.buygo.v1.RoundingConfigR\x0eroundingConfig\"1\n" +
 	"\vProductSpec\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"T\n" +
-	"\x14CreateProjectRequest\x12\x14\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"U\n" +
+	"\x15CreateGroupBuyRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescriptionJ\x04\b\x03\x10\x04\"D\n" +
-	"\x15CreateProjectResponse\x12+\n" +
-	"\aproject\x18\x01 \x01(\v2\x11.buygo.v1.ProjectR\aproject\"Q\n" +
-	"\x13ListProjectsRequest\x12\x1b\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescriptionJ\x04\b\x03\x10\x04\"I\n" +
+	"\x16CreateGroupBuyResponse\x12/\n" +
+	"\tgroup_buy\x18\x01 \x01(\v2\x12.buygo.v1.GroupBuyR\bgroupBuy\"R\n" +
+	"\x14ListGroupBuysRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\"m\n" +
-	"\x14ListProjectsResponse\x12-\n" +
-	"\bprojects\x18\x01 \x03(\v2\x11.buygo.v1.ProjectR\bprojects\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"2\n" +
-	"\x11GetProjectRequest\x12\x1d\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\"r\n" +
+	"\x15ListGroupBuysResponse\x121\n" +
 	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\"p\n" +
-	"\x12GetProjectResponse\x12+\n" +
-	"\aproject\x18\x01 \x01(\v2\x11.buygo.v1.ProjectR\aproject\x12-\n" +
-	"\bproducts\x18\x02 \x03(\v2\x11.buygo.v1.ProductR\bproducts\"\xca\x03\n" +
+	"group_buys\x18\x01 \x03(\v2\x12.buygo.v1.GroupBuyR\tgroupBuys\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"6\n" +
+	"\x12GetGroupBuyRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\"u\n" +
+	"\x13GetGroupBuyResponse\x12/\n" +
+	"\tgroup_buy\x18\x01 \x01(\v2\x12.buygo.v1.GroupBuyR\bgroupBuy\x12-\n" +
+	"\bproducts\x18\x02 \x03(\v2\x11.buygo.v1.ProductR\bproducts\"\xcd\x03\n" +
 	"\x05Order\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x02 \x01(\tR\tprojectId\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12 \n" +
+	"\fgroup_buy_id\x18\x02 \x01(\tR\n" +
+	"groupBuyId\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\x12!\n" +
 	"\ftotal_amount\x18\x04 \x01(\x03R\vtotalAmount\x12>\n" +
 	"\x0epayment_status\x18\x05 \x01(\x0e2\x17.buygo.v1.PaymentStatusR\rpaymentStatus\x128\n" +
@@ -3662,19 +3662,19 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x06method\x18\x01 \x01(\tR\x06method\x12#\n" +
 	"\raccount_last5\x18\x02 \x01(\tR\faccountLast5\x123\n" +
 	"\apaid_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x06paidAt\x12\x16\n" +
-	"\x06amount\x18\x04 \x01(\x03R\x06amount\"\xf4\x01\n" +
-	"\x12CreateOrderRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12/\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\"\xf7\x01\n" +
+	"\x12CreateOrderRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\x12/\n" +
 	"\x05items\x18\x02 \x03(\v2\x19.buygo.v1.CreateOrderItemR\x05items\x12!\n" +
 	"\fcontact_info\x18\x03 \x01(\tR\vcontactInfo\x12)\n" +
 	"\x10shipping_address\x18\x04 \x01(\tR\x0fshippingAddress\x12,\n" +
 	"\x12shipping_method_id\x18\x05 \x01(\tR\x10shippingMethodId\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04note\"\xaa\x04\n" +
-	"\x14UpdateProjectRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12/\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x17.buygo.v1.ProjectStatusR\x06status\x12\x14\n" +
+	"\x04note\x18\x06 \x01(\tR\x04note\"\xaf\x04\n" +
+	"\x15UpdateGroupBuyRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\x120\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x18.buygo.v1.GroupBuyStatusR\x06status\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12-\n" +
 	"\bproducts\x18\x05 \x03(\v2\x11.buygo.v1.ProductR\bproducts\x12&\n" +
@@ -3686,12 +3686,12 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x10shipping_configs\x18\n" +
 	" \x03(\v2\x18.buygo.v1.ShippingConfigR\x0fshippingConfigs\x12\x1f\n" +
 	"\vmanager_ids\x18\v \x03(\tR\n" +
-	"managerIdsJ\x04\b\b\x10\t\"D\n" +
-	"\x15UpdateProjectResponse\x12+\n" +
-	"\aproject\x18\x01 \x01(\v2\x11.buygo.v1.ProjectR\aproject\"\xeb\x01\n" +
-	"\x11AddProductRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x12\n" +
+	"managerIdsJ\x04\b\b\x10\t\"I\n" +
+	"\x16UpdateGroupBuyResponse\x12/\n" +
+	"\tgroup_buy\x18\x01 \x01(\v2\x12.buygo.v1.GroupBuyR\bgroupBuy\"\xee\x01\n" +
+	"\x11AddProductRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
 	"\x0eprice_original\x18\x03 \x01(\x03R\rpriceOriginal\x12#\n" +
 	"\rexchange_rate\x18\x04 \x01(\x01R\fexchangeRate\x12A\n" +
@@ -3714,18 +3714,19 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x16ListCategoriesResponse\x122\n" +
 	"\n" +
 	"categories\x18\x01 \x03(\v2\x12.buygo.v1.CategoryR\n" +
-	"categories\"9\n" +
-	"\x18ListProjectOrdersRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\"D\n" +
-	"\x19ListProjectOrdersResponse\x12'\n" +
-	"\x06orders\x18\x01 \x03(\v2\x0f.buygo.v1.OrderR\x06orders\"X\n" +
-	"\x1aListManagerProjectsRequest\x12\x1b\n" +
+	"categories\"=\n" +
+	"\x19ListGroupBuyOrdersRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\"E\n" +
+	"\x1aListGroupBuyOrdersResponse\x12'\n" +
+	"\x06orders\x18\x01 \x03(\v2\x0f.buygo.v1.OrderR\x06orders\"Y\n" +
+	"\x1bListManagerGroupBuysRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\"t\n" +
-	"\x1bListManagerProjectsResponse\x12-\n" +
-	"\bprojects\x18\x01 \x03(\v2\x11.buygo.v1.ProjectR\bprojects\x12&\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\"y\n" +
+	"\x1cListManagerGroupBuysResponse\x121\n" +
+	"\n" +
+	"group_buys\x18\x01 \x03(\v2\x12.buygo.v1.GroupBuyR\tgroupBuys\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x98\x01\n" +
 	"\x0fCreateOrderItem\x12\x1d\n" +
 	"\n" +
@@ -3739,11 +3740,11 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\"c\n" +
 	"\x13CancelOrderResponse\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x121\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x19.buygo.v1.OrderItemStatusR\x06status\"9\n" +
-	"\x18GetMyProjectOrderRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\"B\n" +
-	"\x19GetMyProjectOrderResponse\x12%\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x19.buygo.v1.OrderItemStatusR\x06status\"=\n" +
+	"\x19GetMyGroupBuyOrderRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\"C\n" +
+	"\x1aGetMyGroupBuyOrderResponse\x12%\n" +
 	"\x05order\x18\x01 \x01(\v2\x0f.buygo.v1.OrderR\x05order\"t\n" +
 	"\x12UpdateOrderRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12/\n" +
@@ -3763,10 +3764,10 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x05order\x18\x01 \x01(\v2\x0f.buygo.v1.OrderR\x05order\"\x14\n" +
 	"\x12GetMyOrdersRequest\">\n" +
 	"\x13GetMyOrdersResponse\x12'\n" +
-	"\x06orders\x18\x01 \x03(\v2\x0f.buygo.v1.OrderR\x06orders\"\xa8\x01\n" +
-	"\x18BatchUpdateStatusRequest\x12\x1d\n" +
-	"\n" +
-	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x17\n" +
+	"\x06orders\x18\x01 \x03(\v2\x0f.buygo.v1.OrderR\x06orders\"\xab\x01\n" +
+	"\x18BatchUpdateStatusRequest\x12 \n" +
+	"\fgroup_buy_id\x18\x01 \x01(\tR\n" +
+	"groupBuyId\x12\x17\n" +
 	"\aspec_id\x18\x02 \x01(\tR\x06specId\x12>\n" +
 	"\rtarget_status\x18\x03 \x01(\x0e2\x19.buygo.v1.OrderItemStatusR\ftargetStatus\x12\x14\n" +
 	"\x05count\x18\x04 \x01(\x05R\x05count\"l\n" +
@@ -3808,13 +3809,13 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"templateId\">\n" +
 	"\x1bDeletePriceTemplateResponse\x12\x1f\n" +
 	"\vtemplate_id\x18\x01 \x01(\tR\n" +
-	"templateId*\x9b\x01\n" +
-	"\rProjectStatus\x12\x1e\n" +
-	"\x1aPROJECT_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14PROJECT_STATUS_DRAFT\x10\x01\x12\x19\n" +
-	"\x15PROJECT_STATUS_ACTIVE\x10\x02\x12\x18\n" +
-	"\x14PROJECT_STATUS_ENDED\x10\x03\x12\x1b\n" +
-	"\x17PROJECT_STATUS_ARCHIVED\x10\x04*\xf6\x01\n" +
+	"templateId*\xa6\x01\n" +
+	"\x0eGroupBuyStatus\x12 \n" +
+	"\x1cGROUP_BUY_STATUS_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16GROUP_BUY_STATUS_DRAFT\x10\x01\x12\x1b\n" +
+	"\x17GROUP_BUY_STATUS_ACTIVE\x10\x02\x12\x1a\n" +
+	"\x16GROUP_BUY_STATUS_ENDED\x10\x03\x12\x1d\n" +
+	"\x19GROUP_BUY_STATUS_ARCHIVED\x10\x04*\xf6\x01\n" +
 	"\x0fOrderItemStatus\x12\x1b\n" +
 	"\x17ITEM_STATUS_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15ITEM_STATUS_UNORDERED\x10\x01\x12\x17\n" +
@@ -3839,27 +3840,26 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x19SHIPPING_TYPE_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16SHIPPING_TYPE_DELIVERY\x10\x01\x12\x1e\n" +
 	"\x1aSHIPPING_TYPE_STORE_PICKUP\x10\x02\x12\x18\n" +
-	"\x14SHIPPING_TYPE_MEETUP\x10\x032\x88\x0f\n" +
-	"\x0eProjectService\x12P\n" +
-	"\rCreateProject\x12\x1e.buygo.v1.CreateProjectRequest\x1a\x1f.buygo.v1.CreateProjectResponse\x12M\n" +
-	"\fListProjects\x12\x1d.buygo.v1.ListProjectsRequest\x1a\x1e.buygo.v1.ListProjectsResponse\x12b\n" +
-	"\x13ListManagerProjects\x12$.buygo.v1.ListManagerProjectsRequest\x1a%.buygo.v1.ListManagerProjectsResponse\x12G\n" +
-	"\n" +
-	"GetProject\x12\x1b.buygo.v1.GetProjectRequest\x1a\x1c.buygo.v1.GetProjectResponse\x12P\n" +
-	"\rUpdateProject\x12\x1e.buygo.v1.UpdateProjectRequest\x1a\x1f.buygo.v1.UpdateProjectResponse\x12G\n" +
+	"\x14SHIPPING_TYPE_MEETUP\x10\x032\x9e\x0f\n" +
+	"\x0fGroupBuyService\x12S\n" +
+	"\x0eCreateGroupBuy\x12\x1f.buygo.v1.CreateGroupBuyRequest\x1a .buygo.v1.CreateGroupBuyResponse\x12P\n" +
+	"\rListGroupBuys\x12\x1e.buygo.v1.ListGroupBuysRequest\x1a\x1f.buygo.v1.ListGroupBuysResponse\x12e\n" +
+	"\x14ListManagerGroupBuys\x12%.buygo.v1.ListManagerGroupBuysRequest\x1a&.buygo.v1.ListManagerGroupBuysResponse\x12J\n" +
+	"\vGetGroupBuy\x12\x1c.buygo.v1.GetGroupBuyRequest\x1a\x1d.buygo.v1.GetGroupBuyResponse\x12S\n" +
+	"\x0eUpdateGroupBuy\x12\x1f.buygo.v1.UpdateGroupBuyRequest\x1a .buygo.v1.UpdateGroupBuyResponse\x12G\n" +
 	"\n" +
 	"AddProduct\x12\x1b.buygo.v1.AddProductRequest\x1a\x1c.buygo.v1.AddProductResponse\x12S\n" +
 	"\x0eCreateCategory\x12\x1f.buygo.v1.CreateCategoryRequest\x1a .buygo.v1.CreateCategoryResponse\x12S\n" +
 	"\x0eListCategories\x12\x1f.buygo.v1.ListCategoriesRequest\x1a .buygo.v1.ListCategoriesResponse\x12J\n" +
 	"\vCreateOrder\x12\x1c.buygo.v1.CreateOrderRequest\x1a\x1d.buygo.v1.CreateOrderResponse\x12J\n" +
-	"\vCancelOrder\x12\x1c.buygo.v1.CancelOrderRequest\x1a\x1d.buygo.v1.CancelOrderResponse\x12\\\n" +
-	"\x11GetMyProjectOrder\x12\".buygo.v1.GetMyProjectOrderRequest\x1a#.buygo.v1.GetMyProjectOrderResponse\x12J\n" +
+	"\vCancelOrder\x12\x1c.buygo.v1.CancelOrderRequest\x1a\x1d.buygo.v1.CancelOrderResponse\x12_\n" +
+	"\x12GetMyGroupBuyOrder\x12#.buygo.v1.GetMyGroupBuyOrderRequest\x1a$.buygo.v1.GetMyGroupBuyOrderResponse\x12J\n" +
 	"\vUpdateOrder\x12\x1c.buygo.v1.UpdateOrderRequest\x1a\x1d.buygo.v1.UpdateOrderResponse\x12\\\n" +
 	"\x11UpdatePaymentInfo\x12\".buygo.v1.UpdatePaymentInfoRequest\x1a#.buygo.v1.UpdatePaymentInfoResponse\x12J\n" +
 	"\vGetMyOrders\x12\x1c.buygo.v1.GetMyOrdersRequest\x1a\x1d.buygo.v1.GetMyOrdersResponse\x12\\\n" +
 	"\x11BatchUpdateStatus\x12\".buygo.v1.BatchUpdateStatusRequest\x1a#.buygo.v1.BatchUpdateStatusResponse\x12S\n" +
-	"\x0eConfirmPayment\x12\x1f.buygo.v1.ConfirmPaymentRequest\x1a .buygo.v1.ConfirmPaymentResponse\x12\\\n" +
-	"\x11ListProjectOrders\x12\".buygo.v1.ListProjectOrdersRequest\x1a#.buygo.v1.ListProjectOrdersResponse\x12b\n" +
+	"\x0eConfirmPayment\x12\x1f.buygo.v1.ConfirmPaymentRequest\x1a .buygo.v1.ConfirmPaymentResponse\x12_\n" +
+	"\x12ListGroupBuyOrders\x12#.buygo.v1.ListGroupBuyOrdersRequest\x1a$.buygo.v1.ListGroupBuyOrdersResponse\x12b\n" +
 	"\x13CreatePriceTemplate\x12$.buygo.v1.CreatePriceTemplateRequest\x1a%.buygo.v1.CreatePriceTemplateResponse\x12_\n" +
 	"\x12ListPriceTemplates\x12#.buygo.v1.ListPriceTemplatesRequest\x1a$.buygo.v1.ListPriceTemplatesResponse\x12Y\n" +
 	"\x10GetPriceTemplate\x12!.buygo.v1.GetPriceTemplateRequest\x1a\".buygo.v1.GetPriceTemplateResponse\x12b\n" +
@@ -3867,121 +3867,121 @@ const file_api_v1_project_proto_rawDesc = "" +
 	"\x13DeletePriceTemplate\x12$.buygo.v1.DeletePriceTemplateRequest\x1a%.buygo.v1.DeletePriceTemplateResponseB+Z)github.com/buygo/buygo-api/api/v1;buygov1b\x06proto3"
 
 var (
-	file_api_v1_project_proto_rawDescOnce sync.Once
-	file_api_v1_project_proto_rawDescData []byte
+	file_api_v1_groupbuy_proto_rawDescOnce sync.Once
+	file_api_v1_groupbuy_proto_rawDescData []byte
 )
 
-func file_api_v1_project_proto_rawDescGZIP() []byte {
-	file_api_v1_project_proto_rawDescOnce.Do(func() {
-		file_api_v1_project_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_v1_project_proto_rawDesc), len(file_api_v1_project_proto_rawDesc)))
+func file_api_v1_groupbuy_proto_rawDescGZIP() []byte {
+	file_api_v1_groupbuy_proto_rawDescOnce.Do(func() {
+		file_api_v1_groupbuy_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_v1_groupbuy_proto_rawDesc), len(file_api_v1_groupbuy_proto_rawDesc)))
 	})
-	return file_api_v1_project_proto_rawDescData
+	return file_api_v1_groupbuy_proto_rawDescData
 }
 
-var file_api_v1_project_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_api_v1_project_proto_msgTypes = make([]protoimpl.MessageInfo, 55)
-var file_api_v1_project_proto_goTypes = []any{
-	(ProjectStatus)(0),                  // 0: buygo.v1.ProjectStatus
-	(OrderItemStatus)(0),                // 1: buygo.v1.OrderItemStatus
-	(PaymentStatus)(0),                  // 2: buygo.v1.PaymentStatus
-	(RoundingMethod)(0),                 // 3: buygo.v1.RoundingMethod
-	(ShippingType)(0),                   // 4: buygo.v1.ShippingType
-	(*ShippingConfig)(nil),              // 5: buygo.v1.ShippingConfig
-	(*Project)(nil),                     // 6: buygo.v1.Project
-	(*Product)(nil),                     // 7: buygo.v1.Product
-	(*RoundingConfig)(nil),              // 8: buygo.v1.RoundingConfig
-	(*PriceTemplate)(nil),               // 9: buygo.v1.PriceTemplate
-	(*ProductSpec)(nil),                 // 10: buygo.v1.ProductSpec
-	(*CreateProjectRequest)(nil),        // 11: buygo.v1.CreateProjectRequest
-	(*CreateProjectResponse)(nil),       // 12: buygo.v1.CreateProjectResponse
-	(*ListProjectsRequest)(nil),         // 13: buygo.v1.ListProjectsRequest
-	(*ListProjectsResponse)(nil),        // 14: buygo.v1.ListProjectsResponse
-	(*GetProjectRequest)(nil),           // 15: buygo.v1.GetProjectRequest
-	(*GetProjectResponse)(nil),          // 16: buygo.v1.GetProjectResponse
-	(*Order)(nil),                       // 17: buygo.v1.Order
-	(*OrderItem)(nil),                   // 18: buygo.v1.OrderItem
-	(*PaymentInfo)(nil),                 // 19: buygo.v1.PaymentInfo
-	(*CreateOrderRequest)(nil),          // 20: buygo.v1.CreateOrderRequest
-	(*UpdateProjectRequest)(nil),        // 21: buygo.v1.UpdateProjectRequest
-	(*UpdateProjectResponse)(nil),       // 22: buygo.v1.UpdateProjectResponse
-	(*AddProductRequest)(nil),           // 23: buygo.v1.AddProductRequest
-	(*AddProductResponse)(nil),          // 24: buygo.v1.AddProductResponse
-	(*Category)(nil),                    // 25: buygo.v1.Category
-	(*CreateCategoryRequest)(nil),       // 26: buygo.v1.CreateCategoryRequest
-	(*CreateCategoryResponse)(nil),      // 27: buygo.v1.CreateCategoryResponse
-	(*ListCategoriesRequest)(nil),       // 28: buygo.v1.ListCategoriesRequest
-	(*ListCategoriesResponse)(nil),      // 29: buygo.v1.ListCategoriesResponse
-	(*ListProjectOrdersRequest)(nil),    // 30: buygo.v1.ListProjectOrdersRequest
-	(*ListProjectOrdersResponse)(nil),   // 31: buygo.v1.ListProjectOrdersResponse
-	(*ListManagerProjectsRequest)(nil),  // 32: buygo.v1.ListManagerProjectsRequest
-	(*ListManagerProjectsResponse)(nil), // 33: buygo.v1.ListManagerProjectsResponse
-	(*CreateOrderItem)(nil),             // 34: buygo.v1.CreateOrderItem
-	(*CreateOrderResponse)(nil),         // 35: buygo.v1.CreateOrderResponse
-	(*CancelOrderRequest)(nil),          // 36: buygo.v1.CancelOrderRequest
-	(*CancelOrderResponse)(nil),         // 37: buygo.v1.CancelOrderResponse
-	(*GetMyProjectOrderRequest)(nil),    // 38: buygo.v1.GetMyProjectOrderRequest
-	(*GetMyProjectOrderResponse)(nil),   // 39: buygo.v1.GetMyProjectOrderResponse
-	(*UpdateOrderRequest)(nil),          // 40: buygo.v1.UpdateOrderRequest
-	(*UpdateOrderResponse)(nil),         // 41: buygo.v1.UpdateOrderResponse
-	(*UpdatePaymentInfoRequest)(nil),    // 42: buygo.v1.UpdatePaymentInfoRequest
-	(*UpdatePaymentInfoResponse)(nil),   // 43: buygo.v1.UpdatePaymentInfoResponse
-	(*GetMyOrdersRequest)(nil),          // 44: buygo.v1.GetMyOrdersRequest
-	(*GetMyOrdersResponse)(nil),         // 45: buygo.v1.GetMyOrdersResponse
-	(*BatchUpdateStatusRequest)(nil),    // 46: buygo.v1.BatchUpdateStatusRequest
-	(*BatchUpdateStatusResponse)(nil),   // 47: buygo.v1.BatchUpdateStatusResponse
-	(*ConfirmPaymentRequest)(nil),       // 48: buygo.v1.ConfirmPaymentRequest
-	(*ConfirmPaymentResponse)(nil),      // 49: buygo.v1.ConfirmPaymentResponse
-	(*CreatePriceTemplateRequest)(nil),  // 50: buygo.v1.CreatePriceTemplateRequest
-	(*CreatePriceTemplateResponse)(nil), // 51: buygo.v1.CreatePriceTemplateResponse
-	(*ListPriceTemplatesRequest)(nil),   // 52: buygo.v1.ListPriceTemplatesRequest
-	(*ListPriceTemplatesResponse)(nil),  // 53: buygo.v1.ListPriceTemplatesResponse
-	(*GetPriceTemplateRequest)(nil),     // 54: buygo.v1.GetPriceTemplateRequest
-	(*GetPriceTemplateResponse)(nil),    // 55: buygo.v1.GetPriceTemplateResponse
-	(*UpdatePriceTemplateRequest)(nil),  // 56: buygo.v1.UpdatePriceTemplateRequest
-	(*UpdatePriceTemplateResponse)(nil), // 57: buygo.v1.UpdatePriceTemplateResponse
-	(*DeletePriceTemplateRequest)(nil),  // 58: buygo.v1.DeletePriceTemplateRequest
-	(*DeletePriceTemplateResponse)(nil), // 59: buygo.v1.DeletePriceTemplateResponse
-	(*timestamppb.Timestamp)(nil),       // 60: google.protobuf.Timestamp
-	(*User)(nil),                        // 61: buygo.v1.User
+var file_api_v1_groupbuy_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_api_v1_groupbuy_proto_msgTypes = make([]protoimpl.MessageInfo, 55)
+var file_api_v1_groupbuy_proto_goTypes = []any{
+	(GroupBuyStatus)(0),                  // 0: buygo.v1.GroupBuyStatus
+	(OrderItemStatus)(0),                 // 1: buygo.v1.OrderItemStatus
+	(PaymentStatus)(0),                   // 2: buygo.v1.PaymentStatus
+	(RoundingMethod)(0),                  // 3: buygo.v1.RoundingMethod
+	(ShippingType)(0),                    // 4: buygo.v1.ShippingType
+	(*ShippingConfig)(nil),               // 5: buygo.v1.ShippingConfig
+	(*GroupBuy)(nil),                     // 6: buygo.v1.GroupBuy
+	(*Product)(nil),                      // 7: buygo.v1.Product
+	(*RoundingConfig)(nil),               // 8: buygo.v1.RoundingConfig
+	(*PriceTemplate)(nil),                // 9: buygo.v1.PriceTemplate
+	(*ProductSpec)(nil),                  // 10: buygo.v1.ProductSpec
+	(*CreateGroupBuyRequest)(nil),        // 11: buygo.v1.CreateGroupBuyRequest
+	(*CreateGroupBuyResponse)(nil),       // 12: buygo.v1.CreateGroupBuyResponse
+	(*ListGroupBuysRequest)(nil),         // 13: buygo.v1.ListGroupBuysRequest
+	(*ListGroupBuysResponse)(nil),        // 14: buygo.v1.ListGroupBuysResponse
+	(*GetGroupBuyRequest)(nil),           // 15: buygo.v1.GetGroupBuyRequest
+	(*GetGroupBuyResponse)(nil),          // 16: buygo.v1.GetGroupBuyResponse
+	(*Order)(nil),                        // 17: buygo.v1.Order
+	(*OrderItem)(nil),                    // 18: buygo.v1.OrderItem
+	(*PaymentInfo)(nil),                  // 19: buygo.v1.PaymentInfo
+	(*CreateOrderRequest)(nil),           // 20: buygo.v1.CreateOrderRequest
+	(*UpdateGroupBuyRequest)(nil),        // 21: buygo.v1.UpdateGroupBuyRequest
+	(*UpdateGroupBuyResponse)(nil),       // 22: buygo.v1.UpdateGroupBuyResponse
+	(*AddProductRequest)(nil),            // 23: buygo.v1.AddProductRequest
+	(*AddProductResponse)(nil),           // 24: buygo.v1.AddProductResponse
+	(*Category)(nil),                     // 25: buygo.v1.Category
+	(*CreateCategoryRequest)(nil),        // 26: buygo.v1.CreateCategoryRequest
+	(*CreateCategoryResponse)(nil),       // 27: buygo.v1.CreateCategoryResponse
+	(*ListCategoriesRequest)(nil),        // 28: buygo.v1.ListCategoriesRequest
+	(*ListCategoriesResponse)(nil),       // 29: buygo.v1.ListCategoriesResponse
+	(*ListGroupBuyOrdersRequest)(nil),    // 30: buygo.v1.ListGroupBuyOrdersRequest
+	(*ListGroupBuyOrdersResponse)(nil),   // 31: buygo.v1.ListGroupBuyOrdersResponse
+	(*ListManagerGroupBuysRequest)(nil),  // 32: buygo.v1.ListManagerGroupBuysRequest
+	(*ListManagerGroupBuysResponse)(nil), // 33: buygo.v1.ListManagerGroupBuysResponse
+	(*CreateOrderItem)(nil),              // 34: buygo.v1.CreateOrderItem
+	(*CreateOrderResponse)(nil),          // 35: buygo.v1.CreateOrderResponse
+	(*CancelOrderRequest)(nil),           // 36: buygo.v1.CancelOrderRequest
+	(*CancelOrderResponse)(nil),          // 37: buygo.v1.CancelOrderResponse
+	(*GetMyGroupBuyOrderRequest)(nil),    // 38: buygo.v1.GetMyGroupBuyOrderRequest
+	(*GetMyGroupBuyOrderResponse)(nil),   // 39: buygo.v1.GetMyGroupBuyOrderResponse
+	(*UpdateOrderRequest)(nil),           // 40: buygo.v1.UpdateOrderRequest
+	(*UpdateOrderResponse)(nil),          // 41: buygo.v1.UpdateOrderResponse
+	(*UpdatePaymentInfoRequest)(nil),     // 42: buygo.v1.UpdatePaymentInfoRequest
+	(*UpdatePaymentInfoResponse)(nil),    // 43: buygo.v1.UpdatePaymentInfoResponse
+	(*GetMyOrdersRequest)(nil),           // 44: buygo.v1.GetMyOrdersRequest
+	(*GetMyOrdersResponse)(nil),          // 45: buygo.v1.GetMyOrdersResponse
+	(*BatchUpdateStatusRequest)(nil),     // 46: buygo.v1.BatchUpdateStatusRequest
+	(*BatchUpdateStatusResponse)(nil),    // 47: buygo.v1.BatchUpdateStatusResponse
+	(*ConfirmPaymentRequest)(nil),        // 48: buygo.v1.ConfirmPaymentRequest
+	(*ConfirmPaymentResponse)(nil),       // 49: buygo.v1.ConfirmPaymentResponse
+	(*CreatePriceTemplateRequest)(nil),   // 50: buygo.v1.CreatePriceTemplateRequest
+	(*CreatePriceTemplateResponse)(nil),  // 51: buygo.v1.CreatePriceTemplateResponse
+	(*ListPriceTemplatesRequest)(nil),    // 52: buygo.v1.ListPriceTemplatesRequest
+	(*ListPriceTemplatesResponse)(nil),   // 53: buygo.v1.ListPriceTemplatesResponse
+	(*GetPriceTemplateRequest)(nil),      // 54: buygo.v1.GetPriceTemplateRequest
+	(*GetPriceTemplateResponse)(nil),     // 55: buygo.v1.GetPriceTemplateResponse
+	(*UpdatePriceTemplateRequest)(nil),   // 56: buygo.v1.UpdatePriceTemplateRequest
+	(*UpdatePriceTemplateResponse)(nil),  // 57: buygo.v1.UpdatePriceTemplateResponse
+	(*DeletePriceTemplateRequest)(nil),   // 58: buygo.v1.DeletePriceTemplateRequest
+	(*DeletePriceTemplateResponse)(nil),  // 59: buygo.v1.DeletePriceTemplateResponse
+	(*timestamppb.Timestamp)(nil),        // 60: google.protobuf.Timestamp
+	(*User)(nil),                         // 61: buygo.v1.User
 }
-var file_api_v1_project_proto_depIdxs = []int32{
+var file_api_v1_groupbuy_proto_depIdxs = []int32{
 	4,  // 0: buygo.v1.ShippingConfig.type:type_name -> buygo.v1.ShippingType
-	0,  // 1: buygo.v1.Project.status:type_name -> buygo.v1.ProjectStatus
-	8,  // 2: buygo.v1.Project.rounding_config:type_name -> buygo.v1.RoundingConfig
-	60, // 3: buygo.v1.Project.created_at:type_name -> google.protobuf.Timestamp
-	60, // 4: buygo.v1.Project.deadline:type_name -> google.protobuf.Timestamp
-	61, // 5: buygo.v1.Project.creator:type_name -> buygo.v1.User
-	61, // 6: buygo.v1.Project.managers:type_name -> buygo.v1.User
-	5,  // 7: buygo.v1.Project.shipping_configs:type_name -> buygo.v1.ShippingConfig
+	0,  // 1: buygo.v1.GroupBuy.status:type_name -> buygo.v1.GroupBuyStatus
+	8,  // 2: buygo.v1.GroupBuy.rounding_config:type_name -> buygo.v1.RoundingConfig
+	60, // 3: buygo.v1.GroupBuy.created_at:type_name -> google.protobuf.Timestamp
+	60, // 4: buygo.v1.GroupBuy.deadline:type_name -> google.protobuf.Timestamp
+	61, // 5: buygo.v1.GroupBuy.creator:type_name -> buygo.v1.User
+	61, // 6: buygo.v1.GroupBuy.managers:type_name -> buygo.v1.User
+	5,  // 7: buygo.v1.GroupBuy.shipping_configs:type_name -> buygo.v1.ShippingConfig
 	8,  // 8: buygo.v1.Product.rounding_config:type_name -> buygo.v1.RoundingConfig
 	10, // 9: buygo.v1.Product.specs:type_name -> buygo.v1.ProductSpec
 	3,  // 10: buygo.v1.RoundingConfig.method:type_name -> buygo.v1.RoundingMethod
 	8,  // 11: buygo.v1.PriceTemplate.rounding_config:type_name -> buygo.v1.RoundingConfig
-	6,  // 12: buygo.v1.CreateProjectResponse.project:type_name -> buygo.v1.Project
-	6,  // 13: buygo.v1.ListProjectsResponse.projects:type_name -> buygo.v1.Project
-	6,  // 14: buygo.v1.GetProjectResponse.project:type_name -> buygo.v1.Project
-	7,  // 15: buygo.v1.GetProjectResponse.products:type_name -> buygo.v1.Product
+	6,  // 12: buygo.v1.CreateGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
+	6,  // 13: buygo.v1.ListGroupBuysResponse.group_buys:type_name -> buygo.v1.GroupBuy
+	6,  // 14: buygo.v1.GetGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
+	7,  // 15: buygo.v1.GetGroupBuyResponse.products:type_name -> buygo.v1.Product
 	2,  // 16: buygo.v1.Order.payment_status:type_name -> buygo.v1.PaymentStatus
 	19, // 17: buygo.v1.Order.payment_info:type_name -> buygo.v1.PaymentInfo
 	18, // 18: buygo.v1.Order.items:type_name -> buygo.v1.OrderItem
 	1,  // 19: buygo.v1.OrderItem.status:type_name -> buygo.v1.OrderItemStatus
 	60, // 20: buygo.v1.PaymentInfo.paid_at:type_name -> google.protobuf.Timestamp
 	34, // 21: buygo.v1.CreateOrderRequest.items:type_name -> buygo.v1.CreateOrderItem
-	0,  // 22: buygo.v1.UpdateProjectRequest.status:type_name -> buygo.v1.ProjectStatus
-	7,  // 23: buygo.v1.UpdateProjectRequest.products:type_name -> buygo.v1.Product
-	60, // 24: buygo.v1.UpdateProjectRequest.deadline:type_name -> google.protobuf.Timestamp
-	8,  // 25: buygo.v1.UpdateProjectRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
-	5,  // 26: buygo.v1.UpdateProjectRequest.shipping_configs:type_name -> buygo.v1.ShippingConfig
-	6,  // 27: buygo.v1.UpdateProjectResponse.project:type_name -> buygo.v1.Project
+	0,  // 22: buygo.v1.UpdateGroupBuyRequest.status:type_name -> buygo.v1.GroupBuyStatus
+	7,  // 23: buygo.v1.UpdateGroupBuyRequest.products:type_name -> buygo.v1.Product
+	60, // 24: buygo.v1.UpdateGroupBuyRequest.deadline:type_name -> google.protobuf.Timestamp
+	8,  // 25: buygo.v1.UpdateGroupBuyRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
+	5,  // 26: buygo.v1.UpdateGroupBuyRequest.shipping_configs:type_name -> buygo.v1.ShippingConfig
+	6,  // 27: buygo.v1.UpdateGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
 	8,  // 28: buygo.v1.AddProductRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
 	7,  // 29: buygo.v1.AddProductResponse.product:type_name -> buygo.v1.Product
 	25, // 30: buygo.v1.CreateCategoryResponse.category:type_name -> buygo.v1.Category
 	25, // 31: buygo.v1.ListCategoriesResponse.categories:type_name -> buygo.v1.Category
-	17, // 32: buygo.v1.ListProjectOrdersResponse.orders:type_name -> buygo.v1.Order
-	6,  // 33: buygo.v1.ListManagerProjectsResponse.projects:type_name -> buygo.v1.Project
+	17, // 32: buygo.v1.ListGroupBuyOrdersResponse.orders:type_name -> buygo.v1.Order
+	6,  // 33: buygo.v1.ListManagerGroupBuysResponse.group_buys:type_name -> buygo.v1.GroupBuy
 	1,  // 34: buygo.v1.CreateOrderItem.status:type_name -> buygo.v1.OrderItemStatus
 	1,  // 35: buygo.v1.CancelOrderResponse.status:type_name -> buygo.v1.OrderItemStatus
-	17, // 36: buygo.v1.GetMyProjectOrderResponse.order:type_name -> buygo.v1.Order
+	17, // 36: buygo.v1.GetMyGroupBuyOrderResponse.order:type_name -> buygo.v1.Order
 	34, // 37: buygo.v1.UpdateOrderRequest.items:type_name -> buygo.v1.CreateOrderItem
 	17, // 38: buygo.v1.UpdateOrderResponse.order:type_name -> buygo.v1.Order
 	60, // 39: buygo.v1.UpdatePaymentInfoRequest.paid_at:type_name -> google.protobuf.Timestamp
@@ -3996,50 +3996,50 @@ var file_api_v1_project_proto_depIdxs = []int32{
 	9,  // 48: buygo.v1.GetPriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
 	8,  // 49: buygo.v1.UpdatePriceTemplateRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
 	9,  // 50: buygo.v1.UpdatePriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
-	11, // 51: buygo.v1.ProjectService.CreateProject:input_type -> buygo.v1.CreateProjectRequest
-	13, // 52: buygo.v1.ProjectService.ListProjects:input_type -> buygo.v1.ListProjectsRequest
-	32, // 53: buygo.v1.ProjectService.ListManagerProjects:input_type -> buygo.v1.ListManagerProjectsRequest
-	15, // 54: buygo.v1.ProjectService.GetProject:input_type -> buygo.v1.GetProjectRequest
-	21, // 55: buygo.v1.ProjectService.UpdateProject:input_type -> buygo.v1.UpdateProjectRequest
-	23, // 56: buygo.v1.ProjectService.AddProduct:input_type -> buygo.v1.AddProductRequest
-	26, // 57: buygo.v1.ProjectService.CreateCategory:input_type -> buygo.v1.CreateCategoryRequest
-	28, // 58: buygo.v1.ProjectService.ListCategories:input_type -> buygo.v1.ListCategoriesRequest
-	20, // 59: buygo.v1.ProjectService.CreateOrder:input_type -> buygo.v1.CreateOrderRequest
-	36, // 60: buygo.v1.ProjectService.CancelOrder:input_type -> buygo.v1.CancelOrderRequest
-	38, // 61: buygo.v1.ProjectService.GetMyProjectOrder:input_type -> buygo.v1.GetMyProjectOrderRequest
-	40, // 62: buygo.v1.ProjectService.UpdateOrder:input_type -> buygo.v1.UpdateOrderRequest
-	42, // 63: buygo.v1.ProjectService.UpdatePaymentInfo:input_type -> buygo.v1.UpdatePaymentInfoRequest
-	44, // 64: buygo.v1.ProjectService.GetMyOrders:input_type -> buygo.v1.GetMyOrdersRequest
-	46, // 65: buygo.v1.ProjectService.BatchUpdateStatus:input_type -> buygo.v1.BatchUpdateStatusRequest
-	48, // 66: buygo.v1.ProjectService.ConfirmPayment:input_type -> buygo.v1.ConfirmPaymentRequest
-	30, // 67: buygo.v1.ProjectService.ListProjectOrders:input_type -> buygo.v1.ListProjectOrdersRequest
-	50, // 68: buygo.v1.ProjectService.CreatePriceTemplate:input_type -> buygo.v1.CreatePriceTemplateRequest
-	52, // 69: buygo.v1.ProjectService.ListPriceTemplates:input_type -> buygo.v1.ListPriceTemplatesRequest
-	54, // 70: buygo.v1.ProjectService.GetPriceTemplate:input_type -> buygo.v1.GetPriceTemplateRequest
-	56, // 71: buygo.v1.ProjectService.UpdatePriceTemplate:input_type -> buygo.v1.UpdatePriceTemplateRequest
-	58, // 72: buygo.v1.ProjectService.DeletePriceTemplate:input_type -> buygo.v1.DeletePriceTemplateRequest
-	12, // 73: buygo.v1.ProjectService.CreateProject:output_type -> buygo.v1.CreateProjectResponse
-	14, // 74: buygo.v1.ProjectService.ListProjects:output_type -> buygo.v1.ListProjectsResponse
-	33, // 75: buygo.v1.ProjectService.ListManagerProjects:output_type -> buygo.v1.ListManagerProjectsResponse
-	16, // 76: buygo.v1.ProjectService.GetProject:output_type -> buygo.v1.GetProjectResponse
-	22, // 77: buygo.v1.ProjectService.UpdateProject:output_type -> buygo.v1.UpdateProjectResponse
-	24, // 78: buygo.v1.ProjectService.AddProduct:output_type -> buygo.v1.AddProductResponse
-	27, // 79: buygo.v1.ProjectService.CreateCategory:output_type -> buygo.v1.CreateCategoryResponse
-	29, // 80: buygo.v1.ProjectService.ListCategories:output_type -> buygo.v1.ListCategoriesResponse
-	35, // 81: buygo.v1.ProjectService.CreateOrder:output_type -> buygo.v1.CreateOrderResponse
-	37, // 82: buygo.v1.ProjectService.CancelOrder:output_type -> buygo.v1.CancelOrderResponse
-	39, // 83: buygo.v1.ProjectService.GetMyProjectOrder:output_type -> buygo.v1.GetMyProjectOrderResponse
-	41, // 84: buygo.v1.ProjectService.UpdateOrder:output_type -> buygo.v1.UpdateOrderResponse
-	43, // 85: buygo.v1.ProjectService.UpdatePaymentInfo:output_type -> buygo.v1.UpdatePaymentInfoResponse
-	45, // 86: buygo.v1.ProjectService.GetMyOrders:output_type -> buygo.v1.GetMyOrdersResponse
-	47, // 87: buygo.v1.ProjectService.BatchUpdateStatus:output_type -> buygo.v1.BatchUpdateStatusResponse
-	49, // 88: buygo.v1.ProjectService.ConfirmPayment:output_type -> buygo.v1.ConfirmPaymentResponse
-	31, // 89: buygo.v1.ProjectService.ListProjectOrders:output_type -> buygo.v1.ListProjectOrdersResponse
-	51, // 90: buygo.v1.ProjectService.CreatePriceTemplate:output_type -> buygo.v1.CreatePriceTemplateResponse
-	53, // 91: buygo.v1.ProjectService.ListPriceTemplates:output_type -> buygo.v1.ListPriceTemplatesResponse
-	55, // 92: buygo.v1.ProjectService.GetPriceTemplate:output_type -> buygo.v1.GetPriceTemplateResponse
-	57, // 93: buygo.v1.ProjectService.UpdatePriceTemplate:output_type -> buygo.v1.UpdatePriceTemplateResponse
-	59, // 94: buygo.v1.ProjectService.DeletePriceTemplate:output_type -> buygo.v1.DeletePriceTemplateResponse
+	11, // 51: buygo.v1.GroupBuyService.CreateGroupBuy:input_type -> buygo.v1.CreateGroupBuyRequest
+	13, // 52: buygo.v1.GroupBuyService.ListGroupBuys:input_type -> buygo.v1.ListGroupBuysRequest
+	32, // 53: buygo.v1.GroupBuyService.ListManagerGroupBuys:input_type -> buygo.v1.ListManagerGroupBuysRequest
+	15, // 54: buygo.v1.GroupBuyService.GetGroupBuy:input_type -> buygo.v1.GetGroupBuyRequest
+	21, // 55: buygo.v1.GroupBuyService.UpdateGroupBuy:input_type -> buygo.v1.UpdateGroupBuyRequest
+	23, // 56: buygo.v1.GroupBuyService.AddProduct:input_type -> buygo.v1.AddProductRequest
+	26, // 57: buygo.v1.GroupBuyService.CreateCategory:input_type -> buygo.v1.CreateCategoryRequest
+	28, // 58: buygo.v1.GroupBuyService.ListCategories:input_type -> buygo.v1.ListCategoriesRequest
+	20, // 59: buygo.v1.GroupBuyService.CreateOrder:input_type -> buygo.v1.CreateOrderRequest
+	36, // 60: buygo.v1.GroupBuyService.CancelOrder:input_type -> buygo.v1.CancelOrderRequest
+	38, // 61: buygo.v1.GroupBuyService.GetMyGroupBuyOrder:input_type -> buygo.v1.GetMyGroupBuyOrderRequest
+	40, // 62: buygo.v1.GroupBuyService.UpdateOrder:input_type -> buygo.v1.UpdateOrderRequest
+	42, // 63: buygo.v1.GroupBuyService.UpdatePaymentInfo:input_type -> buygo.v1.UpdatePaymentInfoRequest
+	44, // 64: buygo.v1.GroupBuyService.GetMyOrders:input_type -> buygo.v1.GetMyOrdersRequest
+	46, // 65: buygo.v1.GroupBuyService.BatchUpdateStatus:input_type -> buygo.v1.BatchUpdateStatusRequest
+	48, // 66: buygo.v1.GroupBuyService.ConfirmPayment:input_type -> buygo.v1.ConfirmPaymentRequest
+	30, // 67: buygo.v1.GroupBuyService.ListGroupBuyOrders:input_type -> buygo.v1.ListGroupBuyOrdersRequest
+	50, // 68: buygo.v1.GroupBuyService.CreatePriceTemplate:input_type -> buygo.v1.CreatePriceTemplateRequest
+	52, // 69: buygo.v1.GroupBuyService.ListPriceTemplates:input_type -> buygo.v1.ListPriceTemplatesRequest
+	54, // 70: buygo.v1.GroupBuyService.GetPriceTemplate:input_type -> buygo.v1.GetPriceTemplateRequest
+	56, // 71: buygo.v1.GroupBuyService.UpdatePriceTemplate:input_type -> buygo.v1.UpdatePriceTemplateRequest
+	58, // 72: buygo.v1.GroupBuyService.DeletePriceTemplate:input_type -> buygo.v1.DeletePriceTemplateRequest
+	12, // 73: buygo.v1.GroupBuyService.CreateGroupBuy:output_type -> buygo.v1.CreateGroupBuyResponse
+	14, // 74: buygo.v1.GroupBuyService.ListGroupBuys:output_type -> buygo.v1.ListGroupBuysResponse
+	33, // 75: buygo.v1.GroupBuyService.ListManagerGroupBuys:output_type -> buygo.v1.ListManagerGroupBuysResponse
+	16, // 76: buygo.v1.GroupBuyService.GetGroupBuy:output_type -> buygo.v1.GetGroupBuyResponse
+	22, // 77: buygo.v1.GroupBuyService.UpdateGroupBuy:output_type -> buygo.v1.UpdateGroupBuyResponse
+	24, // 78: buygo.v1.GroupBuyService.AddProduct:output_type -> buygo.v1.AddProductResponse
+	27, // 79: buygo.v1.GroupBuyService.CreateCategory:output_type -> buygo.v1.CreateCategoryResponse
+	29, // 80: buygo.v1.GroupBuyService.ListCategories:output_type -> buygo.v1.ListCategoriesResponse
+	35, // 81: buygo.v1.GroupBuyService.CreateOrder:output_type -> buygo.v1.CreateOrderResponse
+	37, // 82: buygo.v1.GroupBuyService.CancelOrder:output_type -> buygo.v1.CancelOrderResponse
+	39, // 83: buygo.v1.GroupBuyService.GetMyGroupBuyOrder:output_type -> buygo.v1.GetMyGroupBuyOrderResponse
+	41, // 84: buygo.v1.GroupBuyService.UpdateOrder:output_type -> buygo.v1.UpdateOrderResponse
+	43, // 85: buygo.v1.GroupBuyService.UpdatePaymentInfo:output_type -> buygo.v1.UpdatePaymentInfoResponse
+	45, // 86: buygo.v1.GroupBuyService.GetMyOrders:output_type -> buygo.v1.GetMyOrdersResponse
+	47, // 87: buygo.v1.GroupBuyService.BatchUpdateStatus:output_type -> buygo.v1.BatchUpdateStatusResponse
+	49, // 88: buygo.v1.GroupBuyService.ConfirmPayment:output_type -> buygo.v1.ConfirmPaymentResponse
+	31, // 89: buygo.v1.GroupBuyService.ListGroupBuyOrders:output_type -> buygo.v1.ListGroupBuyOrdersResponse
+	51, // 90: buygo.v1.GroupBuyService.CreatePriceTemplate:output_type -> buygo.v1.CreatePriceTemplateResponse
+	53, // 91: buygo.v1.GroupBuyService.ListPriceTemplates:output_type -> buygo.v1.ListPriceTemplatesResponse
+	55, // 92: buygo.v1.GroupBuyService.GetPriceTemplate:output_type -> buygo.v1.GetPriceTemplateResponse
+	57, // 93: buygo.v1.GroupBuyService.UpdatePriceTemplate:output_type -> buygo.v1.UpdatePriceTemplateResponse
+	59, // 94: buygo.v1.GroupBuyService.DeletePriceTemplate:output_type -> buygo.v1.DeletePriceTemplateResponse
 	73, // [73:95] is the sub-list for method output_type
 	51, // [51:73] is the sub-list for method input_type
 	51, // [51:51] is the sub-list for extension type_name
@@ -4047,9 +4047,9 @@ var file_api_v1_project_proto_depIdxs = []int32{
 	0,  // [0:51] is the sub-list for field type_name
 }
 
-func init() { file_api_v1_project_proto_init() }
-func file_api_v1_project_proto_init() {
-	if File_api_v1_project_proto != nil {
+func init() { file_api_v1_groupbuy_proto_init() }
+func file_api_v1_groupbuy_proto_init() {
+	if File_api_v1_groupbuy_proto != nil {
 		return
 	}
 	file_api_v1_auth_proto_init()
@@ -4057,18 +4057,18 @@ func file_api_v1_project_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_project_proto_rawDesc), len(file_api_v1_project_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_groupbuy_proto_rawDesc), len(file_api_v1_groupbuy_proto_rawDesc)),
 			NumEnums:      5,
 			NumMessages:   55,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_v1_project_proto_goTypes,
-		DependencyIndexes: file_api_v1_project_proto_depIdxs,
-		EnumInfos:         file_api_v1_project_proto_enumTypes,
-		MessageInfos:      file_api_v1_project_proto_msgTypes,
+		GoTypes:           file_api_v1_groupbuy_proto_goTypes,
+		DependencyIndexes: file_api_v1_groupbuy_proto_depIdxs,
+		EnumInfos:         file_api_v1_groupbuy_proto_enumTypes,
+		MessageInfos:      file_api_v1_groupbuy_proto_msgTypes,
 	}.Build()
-	File_api_v1_project_proto = out.File
-	file_api_v1_project_proto_goTypes = nil
-	file_api_v1_project_proto_depIdxs = nil
+	File_api_v1_groupbuy_proto = out.File
+	file_api_v1_groupbuy_proto_goTypes = nil
+	file_api_v1_groupbuy_proto_depIdxs = nil
 }
