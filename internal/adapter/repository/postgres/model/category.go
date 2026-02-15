@@ -11,15 +11,15 @@ type Category struct {
 	SpecNames pq.StringArray `gorm:"type:text[]"`
 }
 
-func (c *Category) ToDomain() *project.Category {
-	return &project.Category{
+func (c *Category) ToDomain() *groupbuy.Category {
+	return &groupbuy.Category{
 		ID:        c.ID,
 		Name:      c.Name,
 		SpecNames: c.SpecNames,
 	}
 }
 
-func FromDomainCategory(c *project.Category) *Category {
+func FromDomainCategory(c *groupbuy.Category) *Category {
 	return &Category{
 		ID:        c.ID,
 		Name:      c.Name,

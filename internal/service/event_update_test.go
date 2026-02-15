@@ -21,8 +21,8 @@ func TestUpdateEvent_FieldsUpdate(t *testing.T) {
 	svc := NewEventService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	e, _ := svc.CreateEvent(creatorCtx, "Original", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Original", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 
 	newItems := []*event.EventItem{
 		{Name: "VIP Ticket", Price: 500, AllowMultiple: true},
@@ -49,8 +49,8 @@ func TestUpdateEvent_NonManagerDenied(t *testing.T) {
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 
 	// User → denied
 	_, err := svc.UpdateEvent(userCtx, e.ID, "Hack", "", "", "",
@@ -69,8 +69,8 @@ func TestUpdateEvent_OnlyCreatorUpdatesManagers(t *testing.T) {
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 
-	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 
 	// Add a manager
 	e, err := svc.UpdateEvent(creatorCtx, e.ID, e.Title, e.Description, "", "",
@@ -95,8 +95,8 @@ func TestUpdateEventStatus_Transitions(t *testing.T) {
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 
-	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 	assert.Equal(t, event.EventStatusDraft, e.Status)
 
 	// Draft → Active
@@ -118,8 +118,8 @@ func TestUpdateEventStatus_NonManagerDenied(t *testing.T) {
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 
 	// User → denied
 	_, err := svc.UpdateEventStatus(userCtx, e.ID, event.EventStatusActive)
@@ -137,8 +137,8 @@ func TestUpdateEventStatus_SysAdminAllowed(t *testing.T) {
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	adminCtx := auth.NewContext(context.Background(), "admin-1", int(user.UserRoleSysAdmin))
 
-	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 
 	// Admin can change status even though not creator
 	e, err := svc.UpdateEventStatus(adminCtx, e.ID, event.EventStatusActive)

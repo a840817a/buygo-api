@@ -12,24 +12,24 @@ import (
 	"github.com/google/uuid"
 )
 
-type ProjectRepository struct {
+type GroupBuyRepository struct {
 	db *gorm.DB
 }
 
-func NewProjectRepository(db *gorm.DB) *ProjectRepository {
-	return &ProjectRepository{db: db}
+func NewGroupBuyRepository(db *gorm.DB) *GroupBuyRepository {
+	return &GroupBuyRepository{db: db}
 }
 
-// Project Core
-func (r *ProjectRepository) Create(ctx context.Context, p *project.Project) error {
-	return r.CreateWithTx(ctx, p)
+// GroupBuy Core
+func (r *GroupBuyRepository) Create(ctx context.Context, gb *groupbuy.GroupBuy) error {
+	return r.CreateWithTx(ctx, gb)
 }
 
-func (r *ProjectRepository) CreateWithTx(ctx context.Context, p *project.Project) error {
+func (r *GroupBuyRepository) CreateWithTx(ctx context.Context, gb *groupbuy.GroupBuy) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		m := model.FromDomainProject(p)
+		m := model.FromDomainGroupBuy(gb)
 
-		// 1. Create Project (and Products by cascade, excluding Users)
+		// 1. Create GroupBuy (and Products by cascade, excluding Users)
 		if err := tx.Omit("Creator", "Managers").Create(m).Error; err != nil {
 			return err
 		}
@@ -45,23 +45,23 @@ func (r *ProjectRepository) CreateWithTx(ctx context.Context, p *project.Project
 	})
 }
 
-func (r *ProjectRepository) GetByID(ctx context.Context, id string) (*project.Project, error) {
-	var m model.Project
+func (r *GroupBuyRepository) GetByID(ctx context.Context, id string) (*groupbuy.GroupBuy, error) {
+	var m model.GroupBuy
 	if err := r.db.WithContext(ctx).
 		Preload("Creator").
 		Preload("Managers").
 		Preload("Products.Specs").
 		First(&m, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("project not found")
+			return nil, errors.New("group buy not found")
 		}
 		return nil, err
 	}
 	return m.ToDomain(), nil
 }
 
-func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID string, isSysAdmin bool, manageOnly bool) ([]*project.Project, error) {
-	var models []*model.Project
+func (r *GroupBuyRepository) List(ctx context.Context, limit, offset int, userID string, isSysAdmin bool, manageOnly bool) ([]*groupbuy.GroupBuy, error) {
+	var models []*model.GroupBuy
 
 	query := r.db.WithContext(ctx).
 		Limit(limit).Offset(offset).
@@ -100,20 +100,20 @@ func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID 
 		return nil, err
 	}
 
-	var res []*project.Project
+	var res []*groupbuy.GroupBuy
 	for _, m := range models {
 		res = append(res, m.ToDomain())
 	}
 	return res, nil
 }
 
-func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) error {
-	m := model.FromDomainProject(p)
+func (r *GroupBuyRepository) Update(ctx context.Context, gb *groupbuy.GroupBuy) error {
+	m := model.FromDomainGroupBuy(gb)
 
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 1. Update basic fields
 		// Use Select + Updates(struct) to ensure GORM serializers (JSON) run and zero values are updated.
-		if err := tx.Model(&model.Project{ID: m.ID}).
+		if err := tx.Model(&model.GroupBuy{ID: m.ID}).
 			Select("Title", "Description", "Status", "CoverImage", "Deadline", "PaymentMethods", "ShippingConfigs", "ExchangeRate", "RoundingMethod", "RoundingDigit", "SourceCurrency").
 			Updates(m).Error; err != nil {
 			return err
@@ -125,7 +125,7 @@ func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) erro
 			// (like ExchangeRate on an existing Product), it might depend on GORM configuration (FullSaveAssociations).
 			// To be safe and explicit:
 			// 1. Replace the association (handles FKs and insertions/deletions from the set)
-			if err := tx.Model(&model.Project{ID: m.ID}).Association("Products").Replace(m.Products); err != nil {
+			if err := tx.Model(&model.GroupBuy{ID: m.ID}).Association("Products").Replace(m.Products); err != nil {
 				return err
 			}
 
@@ -140,7 +140,7 @@ func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) erro
 			}
 		} else {
 			// ... (clear logic)
-			if err := tx.Model(&model.Project{ID: m.ID}).Association("Products").Clear(); err != nil {
+			if err := tx.Model(&model.GroupBuy{ID: m.ID}).Association("Products").Clear(); err != nil {
 				return err
 			}
 		}
@@ -150,18 +150,18 @@ func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) erro
 }
 
 // Product Methods
-func (r *ProjectRepository) AddProduct(ctx context.Context, product *project.Product) error {
+func (r *GroupBuyRepository) AddProduct(ctx context.Context, product *groupbuy.Product) error {
 	m := model.FromDomainProduct(product)
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *ProjectRepository) DeleteProduct(ctx context.Context, projectID, productID string) error {
+func (r *GroupBuyRepository) DeleteProduct(ctx context.Context, groupBuyID, productID string) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 1. Check existing orders
 		var count int64
 		if err := tx.Model(&model.OrderItem{}).
 			Joins("JOIN orders ON orders.id = order_items.order_id").
-			Where("orders.group_buy_id = ? AND order_items.product_id = ?", projectID, productID).
+			Where("orders.group_buy_id = ? AND order_items.product_id = ?", groupBuyID, productID).
 			Count(&count).Error; err != nil {
 			return err
 		}
@@ -171,17 +171,17 @@ func (r *ProjectRepository) DeleteProduct(ctx context.Context, projectID, produc
 		}
 
 		// 2. Delete product (cascade will handle specs)
-		return tx.Where("id = ? AND group_buy_id = ?", productID, projectID).Delete(&model.Product{}).Error
+		return tx.Where("id = ? AND group_buy_id = ?", productID, groupBuyID).Delete(&model.Product{}).Error
 	})
 }
 
 // Order Methods
-func (r *ProjectRepository) CreateOrder(ctx context.Context, order *project.Order) error {
+func (r *GroupBuyRepository) CreateOrder(ctx context.Context, order *groupbuy.Order) error {
 	m := model.FromDomainOrder(order)
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *ProjectRepository) GetOrder(ctx context.Context, id string) (*project.Order, error) {
+func (r *GroupBuyRepository) GetOrder(ctx context.Context, id string) (*groupbuy.Order, error) {
 	var m model.Order
 	if err := r.db.WithContext(ctx).Preload("Items").First(&m, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -192,12 +192,12 @@ func (r *ProjectRepository) GetOrder(ctx context.Context, id string) (*project.O
 	return m.ToDomain(), nil
 }
 
-func (r *ProjectRepository) ListOrders(ctx context.Context, projectID string, userID string) ([]*project.Order, error) {
+func (r *GroupBuyRepository) ListOrders(ctx context.Context, groupBuyID string, userID string) ([]*groupbuy.Order, error) {
 	var models []*model.Order
 	query := r.db.WithContext(ctx).Preload("Items")
 
-	if projectID != "" {
-		query = query.Where("group_buy_id = ?", projectID)
+	if groupBuyID != "" {
+		query = query.Where("group_buy_id = ?", groupBuyID)
 	}
 	if userID != "" {
 		query = query.Where("user_id = ?", userID)
@@ -207,14 +207,14 @@ func (r *ProjectRepository) ListOrders(ctx context.Context, projectID string, us
 		return nil, err
 	}
 
-	var res []*project.Order
+	var res []*groupbuy.Order
 	for _, m := range models {
 		res = append(res, m.ToDomain())
 	}
 	return res, nil
 }
 
-func (r *ProjectRepository) UpdateOrder(ctx context.Context, order *project.Order) error {
+func (r *GroupBuyRepository) UpdateOrder(ctx context.Context, order *groupbuy.Order) error {
 	m := model.FromDomainOrder(order)
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(m).Error; err != nil {
@@ -225,11 +225,11 @@ func (r *ProjectRepository) UpdateOrder(ctx context.Context, order *project.Orde
 	})
 }
 
-func (r *ProjectRepository) UpdateOrderPaymentStatus(ctx context.Context, orderID string, status int) error {
+func (r *GroupBuyRepository) UpdateOrderPaymentStatus(ctx context.Context, orderID string, status groupbuy.PaymentStatus) error {
 	return r.db.WithContext(ctx).Model(&model.Order{}).Where("id = ?", orderID).Update("payment_status", status).Error
 }
 
-func (r *ProjectRepository) BatchUpdateOrderItemStatus(ctx context.Context, projectID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error) {
+func (r *GroupBuyRepository) BatchUpdateOrderItemStatus(ctx context.Context, groupBuyID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error) {
 	var items []model.OrderItem
 	var uniqueOrderIDs []string
 	var movedCount int64
@@ -240,7 +240,7 @@ func (r *ProjectRepository) BatchUpdateOrderItemStatus(ctx context.Context, proj
 		// If rows have larger quantity, we might fetch 1 row for a large limit, which is fine.
 		if err := tx.Model(&model.OrderItem{}).
 			Joins("JOIN orders ON orders.id = order_items.order_id").
-			Where("orders.group_buy_id = ? AND order_items.spec_id = ? AND order_items.status IN ?", projectID, specID, fromStatuses).
+			Where("orders.group_buy_id = ? AND order_items.spec_id = ? AND order_items.status IN ?", groupBuyID, specID, fromStatuses).
 			Order("orders.created_at ASC").
 			Limit(limit).
 			Find(&items).Error; err != nil {
@@ -333,18 +333,18 @@ func (r *ProjectRepository) BatchUpdateOrderItemStatus(ctx context.Context, proj
 
 // Category Methods
 
-func (r *ProjectRepository) CreateCategory(ctx context.Context, c *project.Category) error {
+func (r *GroupBuyRepository) CreateCategory(ctx context.Context, c *groupbuy.Category) error {
 	m := model.FromDomainCategory(c)
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *ProjectRepository) ListCategories(ctx context.Context) ([]*project.Category, error) {
+func (r *GroupBuyRepository) ListCategories(ctx context.Context) ([]*groupbuy.Category, error) {
 	var models []*model.Category
 	if err := r.db.WithContext(ctx).Find(&models).Error; err != nil {
 		return nil, err
 	}
 
-	var res []*project.Category
+	var res []*groupbuy.Category
 	for _, m := range models {
 		res = append(res, m.ToDomain())
 	}

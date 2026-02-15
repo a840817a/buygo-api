@@ -9,63 +9,65 @@ import (
 	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 )
 
-type ProjectRepository struct {
-	mu         sync.RWMutex
-	projects   map[string]*project.Project
-	orders     map[string]*project.Order
-	categories map[string]*project.Category
+type GroupBuyRepository struct {
+	mu             sync.RWMutex
+	groupbuys      map[string]*groupbuy.GroupBuy
+	orders         map[string]*groupbuy.Order
+	categories     map[string]*groupbuy.Category
+	priceTemplates map[string]*groupbuy.PriceTemplate
 }
 
-func NewProjectRepository() *ProjectRepository {
-	return &ProjectRepository{
-		projects:   make(map[string]*project.Project),
-		orders:     make(map[string]*project.Order),
-		categories: make(map[string]*project.Category),
+func NewGroupBuyRepository() *GroupBuyRepository {
+	return &GroupBuyRepository{
+		groupbuys:      make(map[string]*groupbuy.GroupBuy),
+		orders:         make(map[string]*groupbuy.Order),
+		categories:     make(map[string]*groupbuy.Category),
+		priceTemplates: make(map[string]*groupbuy.PriceTemplate),
 	}
 }
 
-// Project Methods
-func (r *ProjectRepository) Create(ctx context.Context, p *project.Project) error {
+// GroupBuy Methods
+func (r *GroupBuyRepository) Create(ctx context.Context, gb *groupbuy.GroupBuy) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, ok := r.projects[p.ID]; ok {
-		return errors.New("project already exists")
+	if _, ok := r.groupbuys[gb.ID]; ok {
+		return errors.New("group buy already exists")
 	}
-	r.projects[p.ID] = p
+	r.groupbuys[gb.ID] = gb
 	return nil
 }
 
-func (r *ProjectRepository) GetByID(ctx context.Context, id string) (*project.Project, error) {
+func (r *GroupBuyRepository) GetByID(ctx context.Context, id string) (*groupbuy.GroupBuy, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	p, ok := r.projects[id]
+	gb, ok := r.groupbuys[id]
 	if !ok {
-		return nil, errors.New("project not found")
+		return nil, errors.New("group buy not found")
 	}
-	return p, nil
+	return gb, nil
 }
 
-func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID string, isSysAdmin bool, manageOnly bool) ([]*project.Project, error) {
+func (r *GroupBuyRepository) List(ctx context.Context, limit, offset int, userID string, isSysAdmin bool, manageOnly bool) ([]*groupbuy.GroupBuy, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	// 1. Collect all matching items
-	var filtered []*project.Project
-	for _, p := range r.projects {
+	var filtered []*groupbuy.GroupBuy
+	for _, gb := range r.groupbuys {
 		// Filtering Logic
 		// 1. SysAdmin sees all
 		if isSysAdmin {
-			filtered = append(filtered, p)
+			filtered = append(filtered, gb)
 			continue
 		}
 
 		// 2. Manager Access (if userID provided)
 		if userID != "" {
-			isManager := p.CreatorID == userID
+			isManager := gb.CreatorID == userID
 			if !isManager {
-				for _, mID := range p.ManagerIDs {
+				for _, mID := range gb.ManagerIDs {
 					if mID == userID {
 						isManager = true
 						break
@@ -75,20 +77,20 @@ func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID 
 
 			if manageOnly {
 				if isManager {
-					filtered = append(filtered, p)
+					filtered = append(filtered, gb)
 				}
 				continue
 			} else {
 				if isManager {
-					filtered = append(filtered, p)
+					filtered = append(filtered, gb)
 					continue
 				}
 			}
 		}
 
 		// 3. Public Access
-		if p.Status == project.ProjectStatusActive || p.Status == project.ProjectStatusEnded {
-			filtered = append(filtered, p)
+		if gb.Status == groupbuy.GroupBuyStatusActive || gb.Status == groupbuy.GroupBuyStatusEnded {
+			filtered = append(filtered, gb)
 		}
 	}
 
@@ -99,7 +101,7 @@ func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID 
 
 	// 3. Apply Pagination
 	if offset >= len(filtered) {
-		return []*project.Project{}, nil
+		return []*groupbuy.GroupBuy{}, nil
 	}
 	end := offset + limit
 	if end > len(filtered) {
@@ -108,47 +110,47 @@ func (r *ProjectRepository) List(ctx context.Context, limit, offset int, userID 
 	return filtered[offset:end], nil
 }
 
-func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) error {
+func (r *GroupBuyRepository) Update(ctx context.Context, gb *groupbuy.GroupBuy) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, ok := r.projects[p.ID]; !ok {
-		return errors.New("project not found")
+	if _, ok := r.groupbuys[gb.ID]; !ok {
+		return errors.New("group buy not found")
 	}
-	r.projects[p.ID] = p
+	r.groupbuys[gb.ID] = gb
 	return nil
 }
 
 // Product Methods
-func (r *ProjectRepository) AddProduct(ctx context.Context, product *project.Product) error {
+func (r *GroupBuyRepository) AddProduct(ctx context.Context, product *groupbuy.Product) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	p, ok := r.projects[product.ProjectID]
+	gb, ok := r.groupbuys[product.GroupBuyID]
 	if !ok {
-		return errors.New("project not found")
+		return errors.New("group buy not found")
 	}
 
-	p.Products = append(p.Products, product)
+	gb.Products = append(gb.Products, product)
 	return nil
 }
 
 // Order Methods
-func (r *ProjectRepository) CreateOrder(ctx context.Context, order *project.Order) error {
+func (r *GroupBuyRepository) CreateOrder(ctx context.Context, order *groupbuy.Order) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	// Check Stock Limit
 	for _, item := range order.Items {
-		p, ok := r.projects[order.ProjectID]
+		gb, ok := r.groupbuys[order.GroupBuyID]
 		if !ok {
 			// Should not happen if service checked, but for safety
 			continue
 		}
-		
+
 		var maxQty int32 = 0
 		// Find product max qty
-		for _, prod := range p.Products {
+		for _, prod := range gb.Products {
 			if prod.ID == item.ProductID {
 				maxQty = prod.MaxQuantity
 				break
@@ -159,7 +161,7 @@ func (r *ProjectRepository) CreateOrder(ctx context.Context, order *project.Orde
 			// Calculate sold amount
 			var sold int32 = 0
 			for _, o := range r.orders {
-				// Only count valid orders (not cancelled?) 
+				// Only count valid orders (not cancelled?)
 				// For now assume all orders in repo count towards stock
 				for _, i := range o.Items {
 					if i.ProductID == item.ProductID {
@@ -167,8 +169,8 @@ func (r *ProjectRepository) CreateOrder(ctx context.Context, order *project.Orde
 					}
 				}
 			}
-			
-			if sold + int32(item.Quantity) > maxQty {
+
+			if sold+int32(item.Quantity) > maxQty {
 				return errors.New("product out of stock")
 			}
 		}
@@ -181,7 +183,7 @@ func (r *ProjectRepository) CreateOrder(ctx context.Context, order *project.Orde
 	return nil
 }
 
-func (r *ProjectRepository) GetOrder(ctx context.Context, id string) (*project.Order, error) {
+func (r *GroupBuyRepository) GetOrder(ctx context.Context, id string) (*groupbuy.Order, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -192,20 +194,20 @@ func (r *ProjectRepository) GetOrder(ctx context.Context, id string) (*project.O
 	return o, nil
 }
 
-func (r *ProjectRepository) ListOrders(ctx context.Context, projectID string, userID string) ([]*project.Order, error) {
+func (r *GroupBuyRepository) ListOrders(ctx context.Context, groupBuyID string, userID string) ([]*groupbuy.Order, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	var res []*project.Order
+	var res []*groupbuy.Order
 	for _, o := range r.orders {
-		if (projectID == "" || o.ProjectID == projectID) && (userID == "" || o.UserID == userID) {
+		if (groupBuyID == "" || o.GroupBuyID == groupBuyID) && (userID == "" || o.UserID == userID) {
 			res = append(res, o)
 		}
 	}
 	return res, nil
 }
 
-func (r *ProjectRepository) UpdateOrder(ctx context.Context, order *project.Order) error {
+func (r *GroupBuyRepository) UpdateOrder(ctx context.Context, order *groupbuy.Order) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -216,7 +218,7 @@ func (r *ProjectRepository) UpdateOrder(ctx context.Context, order *project.Orde
 	return nil
 }
 
-func (r *ProjectRepository) UpdateOrderPaymentStatus(ctx context.Context, orderID string, status int) error {
+func (r *GroupBuyRepository) UpdateOrderPaymentStatus(ctx context.Context, orderID string, status groupbuy.PaymentStatus) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -228,14 +230,14 @@ func (r *ProjectRepository) UpdateOrderPaymentStatus(ctx context.Context, orderI
 	return nil
 }
 
-func (r *ProjectRepository) BatchUpdateOrderItemStatus(ctx context.Context, projectID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error) {
+func (r *GroupBuyRepository) BatchUpdateOrderItemStatus(ctx context.Context, groupBuyID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error) {
 	// Not implemented for memory repo in this practice scope
 	return 0, nil, nil
 }
 
 // Category Methods (Stub for Memory Repo)
 // Category Methods
-func (r *ProjectRepository) CreateCategory(ctx context.Context, c *project.Category) error {
+func (r *GroupBuyRepository) CreateCategory(ctx context.Context, c *groupbuy.Category) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -246,11 +248,11 @@ func (r *ProjectRepository) CreateCategory(ctx context.Context, c *project.Categ
 	return nil
 }
 
-func (r *ProjectRepository) ListCategories(ctx context.Context) ([]*project.Category, error) {
+func (r *GroupBuyRepository) ListCategories(ctx context.Context) ([]*groupbuy.Category, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	var res []*project.Category
+	var res []*groupbuy.Category
 	for _, c := range r.categories {
 		res = append(res, c)
 	}
@@ -264,24 +266,52 @@ func (r *ProjectRepository) ListCategories(ctx context.Context) ([]*project.Cate
 }
 
 // Price Template Stubs
-func (r *ProjectRepository) CreatePriceTemplate(ctx context.Context, pt *project.PriceTemplate) error {
+func (r *GroupBuyRepository) CreatePriceTemplate(ctx context.Context, pt *groupbuy.PriceTemplate) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.priceTemplates[pt.ID]; ok {
+		return errors.New("template already exists")
+	}
+	r.priceTemplates[pt.ID] = pt
 	return nil
 }
 
-func (r *ProjectRepository) ListPriceTemplates(ctx context.Context) ([]*project.PriceTemplate, error) {
-	return nil, nil
+func (r *GroupBuyRepository) ListPriceTemplates(ctx context.Context) ([]*groupbuy.PriceTemplate, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var res []*groupbuy.PriceTemplate
+	for _, pt := range r.priceTemplates {
+		res = append(res, pt)
+	}
+	return res, nil
 }
 
-func (r *ProjectRepository) GetPriceTemplate(ctx context.Context, id string) (*project.PriceTemplate, error) {
-	return nil, nil
+func (r *GroupBuyRepository) GetPriceTemplate(ctx context.Context, id string) (*groupbuy.PriceTemplate, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	pt, ok := r.priceTemplates[id]
+	if !ok {
+		return nil, errors.New("template not found")
+	}
+	return pt, nil
 }
 
-func (r *ProjectRepository) UpdatePriceTemplate(ctx context.Context, pt *project.PriceTemplate) error {
+func (r *GroupBuyRepository) UpdatePriceTemplate(ctx context.Context, pt *groupbuy.PriceTemplate) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.priceTemplates[pt.ID]; !ok {
+		return errors.New("template not found")
+	}
+	r.priceTemplates[pt.ID] = pt
 	return nil
 }
 
 // Product Methods
-func (r *ProjectRepository) DeleteProduct(ctx context.Context, projectID, productID string) error {
+func (r *GroupBuyRepository) DeleteProduct(ctx context.Context, groupBuyID, productID string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -294,15 +324,15 @@ func (r *ProjectRepository) DeleteProduct(ctx context.Context, projectID, produc
 		}
 	}
 
-	// 2. Remove from Project
-	p, ok := r.projects[projectID]
+	// 2. Remove from GroupBuy
+	gb, ok := r.groupbuys[groupBuyID]
 	if !ok {
-		return errors.New("project not found")
+		return errors.New("group buy not found")
 	}
 
-	newProducts := make([]*project.Product, 0, len(p.Products))
+	newProducts := make([]*groupbuy.Product, 0, len(gb.Products))
 	found := false
-	for _, prod := range p.Products {
+	for _, prod := range gb.Products {
 		if prod.ID == productID {
 			found = true
 			continue
@@ -314,10 +344,17 @@ func (r *ProjectRepository) DeleteProduct(ctx context.Context, projectID, produc
 		return errors.New("product not found")
 	}
 
-	p.Products = newProducts
+	gb.Products = newProducts
 	return nil
 }
 
-func (r *ProjectRepository) DeletePriceTemplate(ctx context.Context, id string) error {
+func (r *GroupBuyRepository) DeletePriceTemplate(ctx context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.priceTemplates[id]; !ok {
+		return errors.New("template not found")
+	}
+	delete(r.priceTemplates, id)
 	return nil
 }

@@ -11,8 +11,8 @@ import (
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
-func TestProjectService_IDOR_Prevention(t *testing.T) {
-	repo := memory.NewProjectRepository()
+func TestGroupBuyService_IDOR_Prevention(t *testing.T) {
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
 	// Contexts
@@ -20,19 +20,19 @@ func TestProjectService_IDOR_Prevention(t *testing.T) {
 	userACtx := auth.NewContext(context.Background(), "user-A", int(user.UserRoleUser))
 	userBCtx := auth.NewContext(context.Background(), "user-B", int(user.UserRoleUser))
 
-	// 1. Setup: Create Project and Order for User A
-	p, err := svc.CreateProject(creatorCtx, "IDOR Test Project", "Desc")
+	// 1. Setup: Create GroupBuy and Order for User A
+	gb, err := svc.CreateGroupBuy(creatorCtx, "IDOR Test GroupBuy", "Desc")
 	if err != nil {
 		t.Fatalf("Failed to create project: %v", err)
 	}
 
-	// Activate Project
-	_, err = svc.UpdateProject(creatorCtx, p.ID, "", "", project.ProjectStatusActive, nil, "", nil, nil, nil, 0, nil, "")
+	// Activate GroupBuy
+	_, err = svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, nil, "", nil, nil, nil, 0, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to activate project: %v", err)
 	}
 
-	orderA, err := svc.CreateOrder(userACtx, p.ID, nil, "Contact A", "Addr A", "", "")
+	orderA, err := svc.CreateOrder(userACtx, gb.ID, nil, "Contact A", "Addr A", "", "")
 	if err != nil {
 		t.Fatalf("User A failed to create order: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestProjectService_IDOR_Prevention(t *testing.T) {
 
 	// 6. Verify GetMyOrders Isolation
 	// Create an order for User B as well
-	_, err = svc.CreateOrder(userBCtx, p.ID, nil, "Contact B", "Addr B", "", "")
+	_, err = svc.CreateOrder(userBCtx, gb.ID, nil, "Contact B", "Addr B", "", "")
 	if err != nil {
 		t.Fatalf("User B failed to create order: %v", err)
 	}
@@ -92,6 +92,6 @@ func TestProjectService_IDOR_Prevention(t *testing.T) {
 
 	// 7. Verify Read by ID is not possible (Secure by Design)
 	// There is no GetOrder(ctx, id) RPC exposed to users in the ProjectService interface.
-	// Users can only access orders via GetMyOrders (list own) or GetMyProjectOrder (by project ID, returns own).
+	// Users can only access orders via GetMyOrders (list own) or GetMyGroupBuyOrder (by group buy ID, returns own).
 	// Thus, it is impossible for User B to request User A's order by ID.
 }

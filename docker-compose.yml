@@ -4,10 +4,12 @@ services:
   db:
     image: postgres:18-alpine
     container_name: buygo-db
+    env_file:
+      - .env.example
     environment:
       POSTGRES_USER: buygo
-      POSTGRES_PASSWORD: password
       POSTGRES_DB: buygo
+      # POSTGRES_PASSWORD will be read from .env (or .env.example here for demo purpose)
     ports:
       - "5432:5432"
     volumes:

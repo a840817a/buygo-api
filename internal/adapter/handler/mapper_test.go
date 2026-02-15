@@ -45,32 +45,32 @@ func TestToProtoUser_Nil(t *testing.T) {
 	assert.Nil(t, toProtoUser(nil))
 }
 
-func TestToProtoProject(t *testing.T) {
+func TestToProtoGroupBuy(t *testing.T) {
 	now := time.Now()
 	deadline := now.Add(24 * time.Hour)
 
-	p := &project.Project{
-		ID:          "proj-1",
-		Title:       "My Project",
-		Description: "Desc",
-		CoverImage:  "http://cover.jpg",
-		Status:      project.ProjectStatusActive,
-		CreatedAt:   now,
-		Deadline:    &deadline,
-		ExchangeRate: 0.25,
-		Rounding:     &project.RoundingConfig{Method: 2, Digit: 1},
+	gb := &groupbuy.GroupBuy{
+		ID:             "gb-1",
+		Title:          "My GroupBuy",
+		Description:    "Desc",
+		CoverImage:     "http://cover.jpg",
+		Status:         groupbuy.GroupBuyStatusActive,
+		CreatedAt:      now,
+		Deadline:       &deadline,
+		ExchangeRate:   0.25,
+		Rounding:       &groupbuy.RoundingConfig{Method: 2, Digit: 1},
 		SourceCurrency: "JPY",
-		ShippingConfigs: []*project.ShippingConfig{
+		ShippingConfigs: []*groupbuy.ShippingConfig{
 			{ID: "sc-1", Name: "Standard", Type: 1, Price: 100},
 		},
 	}
 
-	proto := toProtoProject(p)
-	assert.Equal(t, "proj-1", proto.Id)
-	assert.Equal(t, "My Project", proto.Title)
+	proto := toProtoGroupBuy(gb)
+	assert.Equal(t, "gb-1", proto.Id)
+	assert.Equal(t, "My GroupBuy", proto.Title)
 	assert.Equal(t, "Desc", proto.Description)
 	assert.Equal(t, "http://cover.jpg", proto.CoverImageUrl)
-	assert.Equal(t, v1.GroupBuyStatus(project.ProjectStatusActive), proto.Status)
+	assert.Equal(t, v1.GroupBuyStatus(groupbuy.GroupBuyStatusActive), proto.Status)
 	assert.Equal(t, 0.25, proto.ExchangeRate)
 	assert.Equal(t, "JPY", proto.SourceCurrency)
 	assert.NotNil(t, proto.Deadline)
@@ -81,45 +81,45 @@ func TestToProtoProject(t *testing.T) {
 	assert.Equal(t, "sc-1", proto.ShippingConfigs[0].Id)
 }
 
-func TestToProtoProject_Nil(t *testing.T) {
-	assert.Nil(t, toProtoProject(nil))
+func TestToProtoGroupBuy_Nil(t *testing.T) {
+	assert.Nil(t, toProtoGroupBuy(nil))
 }
 
-func TestToProtoProject_NoDeadline(t *testing.T) {
-	p := &project.Project{
-		ID:       "proj-2",
-		Rounding: &project.RoundingConfig{Method: 1, Digit: 0},
+func TestToProtoGroupBuy_NoDeadline(t *testing.T) {
+	gb := &groupbuy.GroupBuy{
+		ID:       "gb-2",
+		Rounding: &groupbuy.RoundingConfig{Method: 1, Digit: 0},
 	}
-	proto := toProtoProject(p)
+	proto := toProtoGroupBuy(gb)
 	assert.Nil(t, proto.Deadline)
 }
 
 func TestToProtoOrder(t *testing.T) {
 	paidAt := time.Now()
-	o := &project.Order{
-		ID:              "ord-1",
-		ProjectID:       "proj-1",
-		UserID:          "user-1",
-		TotalAmount:     5000,
-		PaymentStatus:   2,
-		ContactInfo:     "John",
-		ShippingAddress: "123 Main St",
+	o := &groupbuy.Order{
+		ID:               "ord-1",
+		GroupBuyID:       "gb-1",
+		UserID:           "user-1",
+		TotalAmount:      5000,
+		PaymentStatus:    groupbuy.PaymentStatusSubmitted,
+		ContactInfo:      "John",
+		ShippingAddress:  "123 Main St",
 		ShippingMethodID: "sm-1",
-		ShippingFee:     100,
-		Note:            "Rush",
-		Items: []*project.OrderItem{
+		ShippingFee:      100,
+		Note:             "Rush",
+		Items: []*groupbuy.OrderItem{
 			{
 				ID:          "oi-1",
 				ProductID:   "prod-1",
 				SpecID:      "spec-1",
 				Quantity:    3,
-				Status:      1,
+				Status:      groupbuy.OrderItemStatusUnordered,
 				ProductName: "Widget",
 				SpecName:    "Red",
 				Price:       1500,
 			},
 		},
-		PaymentInfo: &project.PaymentInfo{
+		PaymentInfo: &groupbuy.PaymentInfo{
 			Method:       "Bank Transfer",
 			AccountLast5: "12345",
 			PaidAt:       &paidAt,
@@ -129,7 +129,7 @@ func TestToProtoOrder(t *testing.T) {
 
 	proto := toProtoOrder(o)
 	assert.Equal(t, "ord-1", proto.Id)
-	assert.Equal(t, "proj-1", proto.GroupBuyId)
+	assert.Equal(t, "gb-1", proto.GroupBuyId)
 	assert.Equal(t, "user-1", proto.UserId)
 	assert.Equal(t, int64(5000), proto.TotalAmount)
 	assert.Equal(t, v1.PaymentStatus(2), proto.PaymentStatus)
@@ -160,27 +160,27 @@ func TestToProtoOrder_Nil(t *testing.T) {
 }
 
 func TestToProtoOrder_NoPaymentInfo(t *testing.T) {
-	o := &project.Order{
-		ID:        "ord-2",
-		ProjectID: "proj-1",
+	o := &groupbuy.Order{
+		ID:         "ord-2",
+		GroupBuyID: "gb-1",
 	}
 	proto := toProtoOrder(o)
 	assert.Nil(t, proto.PaymentInfo)
 }
 
 func TestToProtoProduct(t *testing.T) {
-	p := &project.Product{
+	p := &groupbuy.Product{
 		ID:            "prod-1",
-		ProjectID:     "proj-1",
+		GroupBuyID:    "gb-1",
 		Name:          "Gadget",
 		Description:   "Cool gadget",
 		ImageURL:      "http://img.jpg",
 		PriceOriginal: 1000,
 		ExchangeRate:  0.25,
-		Rounding:      &project.RoundingConfig{Method: 1, Digit: 0},
+		Rounding:      &groupbuy.RoundingConfig{Method: 1, Digit: 0},
 		PriceFinal:    250,
 		MaxQuantity:   10,
-		Specs: []*project.ProductSpec{
+		Specs: []*groupbuy.ProductSpec{
 			{ID: "s1", Name: "Large"},
 			{ID: "s2", Name: "Small"},
 		},
@@ -201,7 +201,7 @@ func TestToProtoProduct_Nil(t *testing.T) {
 }
 
 func TestToProtoShippingConfig(t *testing.T) {
-	c := &project.ShippingConfig{
+	c := &groupbuy.ShippingConfig{
 		ID:    "sc-1",
 		Name:  "Express",
 		Type:  2,
@@ -221,7 +221,7 @@ func TestToProtoShippingConfig_Nil(t *testing.T) {
 func TestFromProtoProduct(t *testing.T) {
 	proto := &v1.Product{
 		Id:            "prod-1",
-		GroupBuyId:     "proj-1",
+		GroupBuyId:    "gb-1",
 		Name:          "Widget",
 		PriceOriginal: 500,
 		ExchangeRate:  0.3,
@@ -239,7 +239,7 @@ func TestFromProtoProduct(t *testing.T) {
 	assert.Equal(t, "Widget", domain.Name)
 	assert.Equal(t, int64(500), domain.PriceOriginal)
 	assert.NotNil(t, domain.Rounding)
-	assert.Equal(t, 2, domain.Rounding.Method)
+	assert.Equal(t, groupbuy.RoundingMethodCeil, domain.Rounding.Method)
 	assert.Len(t, domain.Specs, 1)
 }
 

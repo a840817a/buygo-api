@@ -27,10 +27,10 @@ func (i *AuthInterceptor) NewUnaryInterceptor() connect.UnaryInterceptorFunc {
 			procedure := req.Spec().Procedure
 			// Public Endpoints
 			if strings.Contains(procedure, "Login") ||
-				strings.Contains(procedure, "ListProjects") ||
-				strings.Contains(procedure, "GetProject") ||
+				strings.Contains(procedure, "ListGroupBuys") ||
+				strings.Contains(procedure, "GetGroupBuy") ||
 				strings.Contains(procedure, "ListEvents") ||
-				strings.Contains(procedure, "GetEvent") { // GetEvent might conflict with RegisterEvent if not careful, but procedure is full path
+				strings.Contains(procedure, "GetEvent") {
 				// For List/Get, we still want to try parsing token if present (optional auth)
 				// to allow "GetMyOrders" mixed in or personalized views?
 				// Actually "GetMy..." are separate.

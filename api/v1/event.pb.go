@@ -775,15 +775,21 @@ func (x *GetEventResponse) GetEvent() *Event {
 }
 
 type CreateEventRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	StartTime     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
-	EndTime       *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
-	Discounts     []*DiscountRule        `protobuf:"bytes,5,rep,name=discounts,proto3" json:"discounts,omitempty"`
-	Items         []*EventItem           `protobuf:"bytes,6,rep,name=items,proto3" json:"items,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Title                string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description          string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	StartTime            *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime              *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Discounts            []*DiscountRule        `protobuf:"bytes,5,rep,name=discounts,proto3" json:"discounts,omitempty"`
+	Items                []*EventItem           `protobuf:"bytes,6,rep,name=items,proto3" json:"items,omitempty"`
+	Location             string                 `protobuf:"bytes,7,opt,name=location,proto3" json:"location,omitempty"`
+	CoverImageUrl        string                 `protobuf:"bytes,8,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`
+	RegistrationDeadline *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=registration_deadline,json=registrationDeadline,proto3" json:"registration_deadline,omitempty"`
+	PaymentMethods       []string               `protobuf:"bytes,10,rep,name=payment_methods,json=paymentMethods,proto3" json:"payment_methods,omitempty"`
+	AllowModification    bool                   `protobuf:"varint,11,opt,name=allow_modification,json=allowModification,proto3" json:"allow_modification,omitempty"`
+	ManagerIds           []string               `protobuf:"bytes,12,rep,name=manager_ids,json=managerIds,proto3" json:"manager_ids,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *CreateEventRequest) Reset() {
@@ -854,6 +860,48 @@ func (x *CreateEventRequest) GetDiscounts() []*DiscountRule {
 func (x *CreateEventRequest) GetItems() []*EventItem {
 	if x != nil {
 		return x.Items
+	}
+	return nil
+}
+
+func (x *CreateEventRequest) GetLocation() string {
+	if x != nil {
+		return x.Location
+	}
+	return ""
+}
+
+func (x *CreateEventRequest) GetCoverImageUrl() string {
+	if x != nil {
+		return x.CoverImageUrl
+	}
+	return ""
+}
+
+func (x *CreateEventRequest) GetRegistrationDeadline() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RegistrationDeadline
+	}
+	return nil
+}
+
+func (x *CreateEventRequest) GetPaymentMethods() []string {
+	if x != nil {
+		return x.PaymentMethods
+	}
+	return nil
+}
+
+func (x *CreateEventRequest) GetAllowModification() bool {
+	if x != nil {
+		return x.AllowModification
+	}
+	return false
+}
+
+func (x *CreateEventRequest) GetManagerIds() []string {
+	if x != nil {
+		return x.ManagerIds
 	}
 	return nil
 }
@@ -1991,7 +2039,7 @@ const file_api_v1_event_proto_rawDesc = "" +
 	"\x0fGetEventRequest\x12\x19\n" +
 	"\bevent_id\x18\x01 \x01(\tR\aeventId\"9\n" +
 	"\x10GetEventResponse\x12%\n" +
-	"\x05event\x18\x01 \x01(\v2\x0f.buygo.v1.EventR\x05event\"\x9f\x02\n" +
+	"\x05event\x18\x01 \x01(\v2\x0f.buygo.v1.EventR\x05event\"\xad\x04\n" +
 	"\x12CreateEventRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x129\n" +
@@ -1999,7 +2047,15 @@ const file_api_v1_event_proto_rawDesc = "" +
 	"start_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
 	"\bend_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x124\n" +
 	"\tdiscounts\x18\x05 \x03(\v2\x16.buygo.v1.DiscountRuleR\tdiscounts\x12)\n" +
-	"\x05items\x18\x06 \x03(\v2\x13.buygo.v1.EventItemR\x05items\"<\n" +
+	"\x05items\x18\x06 \x03(\v2\x13.buygo.v1.EventItemR\x05items\x12\x1a\n" +
+	"\blocation\x18\a \x01(\tR\blocation\x12&\n" +
+	"\x0fcover_image_url\x18\b \x01(\tR\rcoverImageUrl\x12O\n" +
+	"\x15registration_deadline\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\x14registrationDeadline\x12'\n" +
+	"\x0fpayment_methods\x18\n" +
+	" \x03(\tR\x0epaymentMethods\x12-\n" +
+	"\x12allow_modification\x18\v \x01(\bR\x11allowModification\x12\x1f\n" +
+	"\vmanager_ids\x18\f \x03(\tR\n" +
+	"managerIds\"<\n" +
 	"\x13CreateEventResponse\x12%\n" +
 	"\x05event\x18\x01 \x01(\v2\x0f.buygo.v1.EventR\x05event\"\xce\x03\n" +
 	"\x12UpdateEventRequest\x12\x19\n" +
@@ -2172,54 +2228,55 @@ var file_api_v1_event_proto_depIdxs = []int32{
 	32, // 18: buygo.v1.CreateEventRequest.end_time:type_name -> google.protobuf.Timestamp
 	8,  // 19: buygo.v1.CreateEventRequest.discounts:type_name -> buygo.v1.DiscountRule
 	7,  // 20: buygo.v1.CreateEventRequest.items:type_name -> buygo.v1.EventItem
-	6,  // 21: buygo.v1.CreateEventResponse.event:type_name -> buygo.v1.Event
-	32, // 22: buygo.v1.UpdateEventRequest.start_time:type_name -> google.protobuf.Timestamp
-	32, // 23: buygo.v1.UpdateEventRequest.end_time:type_name -> google.protobuf.Timestamp
-	7,  // 24: buygo.v1.UpdateEventRequest.items:type_name -> buygo.v1.EventItem
-	8,  // 25: buygo.v1.UpdateEventRequest.discounts:type_name -> buygo.v1.DiscountRule
-	6,  // 26: buygo.v1.UpdateEventResponse.event:type_name -> buygo.v1.Event
-	0,  // 27: buygo.v1.UpdateEventStatusRequest.status:type_name -> buygo.v1.EventStatus
-	6,  // 28: buygo.v1.UpdateEventStatusResponse.event:type_name -> buygo.v1.Event
-	6,  // 29: buygo.v1.ListEventsResponse.events:type_name -> buygo.v1.Event
-	6,  // 30: buygo.v1.ListManagerEventsResponse.events:type_name -> buygo.v1.Event
-	22, // 31: buygo.v1.RegisterEventRequest.items:type_name -> buygo.v1.RegisterItem
-	1,  // 32: buygo.v1.RegisterEventResponse.status:type_name -> buygo.v1.RegistrationStatus
-	1,  // 33: buygo.v1.CancelRegistrationResponse.status:type_name -> buygo.v1.RegistrationStatus
-	1,  // 34: buygo.v1.Registration.status:type_name -> buygo.v1.RegistrationStatus
-	31, // 35: buygo.v1.Registration.payment_status:type_name -> buygo.v1.PaymentStatus
-	22, // 36: buygo.v1.Registration.selected_items:type_name -> buygo.v1.RegisterItem
-	33, // 37: buygo.v1.Registration.user:type_name -> buygo.v1.User
-	26, // 38: buygo.v1.GetMyRegistrationsResponse.registrations:type_name -> buygo.v1.Registration
-	26, // 39: buygo.v1.ListEventRegistrationsResponse.registrations:type_name -> buygo.v1.Registration
-	11, // 40: buygo.v1.EventService.CreateEvent:input_type -> buygo.v1.CreateEventRequest
-	17, // 41: buygo.v1.EventService.ListEvents:input_type -> buygo.v1.ListEventsRequest
-	19, // 42: buygo.v1.EventService.ListManagerEvents:input_type -> buygo.v1.ListManagerEventsRequest
-	9,  // 43: buygo.v1.EventService.GetEvent:input_type -> buygo.v1.GetEventRequest
-	21, // 44: buygo.v1.EventService.RegisterEvent:input_type -> buygo.v1.RegisterEventRequest
-	2,  // 45: buygo.v1.EventService.UpdateRegistration:input_type -> buygo.v1.UpdateRegistrationRequest
-	4,  // 46: buygo.v1.EventService.UpdateRegistrationStatus:input_type -> buygo.v1.UpdateRegistrationStatusRequest
-	24, // 47: buygo.v1.EventService.CancelRegistration:input_type -> buygo.v1.CancelRegistrationRequest
-	27, // 48: buygo.v1.EventService.GetMyRegistrations:input_type -> buygo.v1.GetMyRegistrationsRequest
-	29, // 49: buygo.v1.EventService.ListEventRegistrations:input_type -> buygo.v1.ListEventRegistrationsRequest
-	13, // 50: buygo.v1.EventService.UpdateEvent:input_type -> buygo.v1.UpdateEventRequest
-	15, // 51: buygo.v1.EventService.UpdateEventStatus:input_type -> buygo.v1.UpdateEventStatusRequest
-	12, // 52: buygo.v1.EventService.CreateEvent:output_type -> buygo.v1.CreateEventResponse
-	18, // 53: buygo.v1.EventService.ListEvents:output_type -> buygo.v1.ListEventsResponse
-	20, // 54: buygo.v1.EventService.ListManagerEvents:output_type -> buygo.v1.ListManagerEventsResponse
-	10, // 55: buygo.v1.EventService.GetEvent:output_type -> buygo.v1.GetEventResponse
-	23, // 56: buygo.v1.EventService.RegisterEvent:output_type -> buygo.v1.RegisterEventResponse
-	3,  // 57: buygo.v1.EventService.UpdateRegistration:output_type -> buygo.v1.UpdateRegistrationResponse
-	5,  // 58: buygo.v1.EventService.UpdateRegistrationStatus:output_type -> buygo.v1.UpdateRegistrationStatusResponse
-	25, // 59: buygo.v1.EventService.CancelRegistration:output_type -> buygo.v1.CancelRegistrationResponse
-	28, // 60: buygo.v1.EventService.GetMyRegistrations:output_type -> buygo.v1.GetMyRegistrationsResponse
-	30, // 61: buygo.v1.EventService.ListEventRegistrations:output_type -> buygo.v1.ListEventRegistrationsResponse
-	14, // 62: buygo.v1.EventService.UpdateEvent:output_type -> buygo.v1.UpdateEventResponse
-	16, // 63: buygo.v1.EventService.UpdateEventStatus:output_type -> buygo.v1.UpdateEventStatusResponse
-	52, // [52:64] is the sub-list for method output_type
-	40, // [40:52] is the sub-list for method input_type
-	40, // [40:40] is the sub-list for extension type_name
-	40, // [40:40] is the sub-list for extension extendee
-	0,  // [0:40] is the sub-list for field type_name
+	32, // 21: buygo.v1.CreateEventRequest.registration_deadline:type_name -> google.protobuf.Timestamp
+	6,  // 22: buygo.v1.CreateEventResponse.event:type_name -> buygo.v1.Event
+	32, // 23: buygo.v1.UpdateEventRequest.start_time:type_name -> google.protobuf.Timestamp
+	32, // 24: buygo.v1.UpdateEventRequest.end_time:type_name -> google.protobuf.Timestamp
+	7,  // 25: buygo.v1.UpdateEventRequest.items:type_name -> buygo.v1.EventItem
+	8,  // 26: buygo.v1.UpdateEventRequest.discounts:type_name -> buygo.v1.DiscountRule
+	6,  // 27: buygo.v1.UpdateEventResponse.event:type_name -> buygo.v1.Event
+	0,  // 28: buygo.v1.UpdateEventStatusRequest.status:type_name -> buygo.v1.EventStatus
+	6,  // 29: buygo.v1.UpdateEventStatusResponse.event:type_name -> buygo.v1.Event
+	6,  // 30: buygo.v1.ListEventsResponse.events:type_name -> buygo.v1.Event
+	6,  // 31: buygo.v1.ListManagerEventsResponse.events:type_name -> buygo.v1.Event
+	22, // 32: buygo.v1.RegisterEventRequest.items:type_name -> buygo.v1.RegisterItem
+	1,  // 33: buygo.v1.RegisterEventResponse.status:type_name -> buygo.v1.RegistrationStatus
+	1,  // 34: buygo.v1.CancelRegistrationResponse.status:type_name -> buygo.v1.RegistrationStatus
+	1,  // 35: buygo.v1.Registration.status:type_name -> buygo.v1.RegistrationStatus
+	31, // 36: buygo.v1.Registration.payment_status:type_name -> buygo.v1.PaymentStatus
+	22, // 37: buygo.v1.Registration.selected_items:type_name -> buygo.v1.RegisterItem
+	33, // 38: buygo.v1.Registration.user:type_name -> buygo.v1.User
+	26, // 39: buygo.v1.GetMyRegistrationsResponse.registrations:type_name -> buygo.v1.Registration
+	26, // 40: buygo.v1.ListEventRegistrationsResponse.registrations:type_name -> buygo.v1.Registration
+	11, // 41: buygo.v1.EventService.CreateEvent:input_type -> buygo.v1.CreateEventRequest
+	17, // 42: buygo.v1.EventService.ListEvents:input_type -> buygo.v1.ListEventsRequest
+	19, // 43: buygo.v1.EventService.ListManagerEvents:input_type -> buygo.v1.ListManagerEventsRequest
+	9,  // 44: buygo.v1.EventService.GetEvent:input_type -> buygo.v1.GetEventRequest
+	21, // 45: buygo.v1.EventService.RegisterEvent:input_type -> buygo.v1.RegisterEventRequest
+	2,  // 46: buygo.v1.EventService.UpdateRegistration:input_type -> buygo.v1.UpdateRegistrationRequest
+	4,  // 47: buygo.v1.EventService.UpdateRegistrationStatus:input_type -> buygo.v1.UpdateRegistrationStatusRequest
+	24, // 48: buygo.v1.EventService.CancelRegistration:input_type -> buygo.v1.CancelRegistrationRequest
+	27, // 49: buygo.v1.EventService.GetMyRegistrations:input_type -> buygo.v1.GetMyRegistrationsRequest
+	29, // 50: buygo.v1.EventService.ListEventRegistrations:input_type -> buygo.v1.ListEventRegistrationsRequest
+	13, // 51: buygo.v1.EventService.UpdateEvent:input_type -> buygo.v1.UpdateEventRequest
+	15, // 52: buygo.v1.EventService.UpdateEventStatus:input_type -> buygo.v1.UpdateEventStatusRequest
+	12, // 53: buygo.v1.EventService.CreateEvent:output_type -> buygo.v1.CreateEventResponse
+	18, // 54: buygo.v1.EventService.ListEvents:output_type -> buygo.v1.ListEventsResponse
+	20, // 55: buygo.v1.EventService.ListManagerEvents:output_type -> buygo.v1.ListManagerEventsResponse
+	10, // 56: buygo.v1.EventService.GetEvent:output_type -> buygo.v1.GetEventResponse
+	23, // 57: buygo.v1.EventService.RegisterEvent:output_type -> buygo.v1.RegisterEventResponse
+	3,  // 58: buygo.v1.EventService.UpdateRegistration:output_type -> buygo.v1.UpdateRegistrationResponse
+	5,  // 59: buygo.v1.EventService.UpdateRegistrationStatus:output_type -> buygo.v1.UpdateRegistrationStatusResponse
+	25, // 60: buygo.v1.EventService.CancelRegistration:output_type -> buygo.v1.CancelRegistrationResponse
+	28, // 61: buygo.v1.EventService.GetMyRegistrations:output_type -> buygo.v1.GetMyRegistrationsResponse
+	30, // 62: buygo.v1.EventService.ListEventRegistrations:output_type -> buygo.v1.ListEventRegistrationsResponse
+	14, // 63: buygo.v1.EventService.UpdateEvent:output_type -> buygo.v1.UpdateEventResponse
+	16, // 64: buygo.v1.EventService.UpdateEventStatus:output_type -> buygo.v1.UpdateEventStatusResponse
+	53, // [53:65] is the sub-list for method output_type
+	41, // [41:53] is the sub-list for method input_type
+	41, // [41:41] is the sub-list for extension type_name
+	41, // [41:41] is the sub-list for extension extendee
+	0,  // [0:41] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_event_proto_init() }

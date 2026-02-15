@@ -12,14 +12,14 @@ enum UserRole {
 }
 ```
 
-### 1.2. Project Domain
+### 1.2. GroupBuy Domain
 ```go
-// Project Status
-enum ProjectStatus {
-  PROJECT_STATUS_DRAFT = 0;
-  PROJECT_STATUS_ACTIVE = 1;
-  PROJECT_STATUS_ENDED = 2;
-  PROJECT_STATUS_ARCHIVED = 3;
+// GroupBuy Status
+enum GroupBuyStatus {
+  GROUPBUY_STATUS_DRAFT = 0;
+  GROUPBUY_STATUS_ACTIVE = 1;
+  GROUPBUY_STATUS_ENDED = 2;
+  GROUPBUY_STATUS_ARCHIVED = 3;
 }
 
 // Order Item Status (Batch Workflows)
@@ -71,6 +71,14 @@ enum RegistrationStatus {
 **Formula**:
 `FinalPrice = Round(OriginalPrice * ExchangeRate, Config)`
 
+### 2.2. Price Template
+**PriceTemplate**
+- `Name`: String (e.g., "Japnese Yen Standard").
+- `SourceCurrency`: String (e.g., "JPY").
+- `ExchangeRate`: Float.
+- `RoundingConfig`: RoundingConfig.
+
+
 ### 2.2. Product Batch Logic (FIFO)
 **Scenario**: Manager inputs "5 items arrived".
 **Algorithm**:
@@ -82,31 +90,35 @@ enum RegistrationStatus {
 
 ## 3. API Definitions (Proto Summary)
 
-### 3.1. Project Service
+### 3.1. GroupBuy Service
 **RPCs**:
-- `CreateProject(CreateProjectRequest) returns (CreateProjectResponse)`
-- `ListProjects(ListProjectsRequest) returns (ListProjectsResponse)`
-- `GetProject(GetProjectRequest) returns (GetProjectResponse)`
-- `UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse)`
+- `CreateGroupBuy(CreateGroupBuyRequest) returns (CreateGroupBuyResponse)`
+- `ListGroupBuys(ListGroupBuysRequest) returns (ListGroupBuysResponse)`
+- `GetGroupBuy(GetGroupBuyRequest) returns (GetGroupBuyResponse)`
+- `UpdateGroupBuy(UpdateGroupBuyRequest) returns (UpdateGroupBuyResponse)`
 - `AddProduct(AddProductRequest) returns (AddProductResponse)`
 - `CreateOrder(CreateOrderRequest) returns (CreateOrderResponse)`
 - `CancelOrder(CancelOrderRequest) returns (CancelOrderResponse)`
 - `GetMyOrders(GetMyOrdersRequest) returns (GetMyOrdersResponse)`
-- `ListProjectOrders(ListProjectOrdersRequest) returns (ListProjectOrdersResponse)` (Manager Only)
+- `ListGroupBuyOrders(ListGroupBuyOrdersRequest) returns (ListGroupBuyOrdersResponse)` (Manager Only)
 - `ConfirmPayment(ConfirmPaymentRequest) returns (ConfirmPaymentResponse)` (Manager Only)
 - `BatchUpdateStatus(BatchUpdateStatusRequest) returns (BatchUpdateStatusResponse)` (Manager Only)
+- `CreatePriceTemplate(CreatePriceTemplateRequest) returns (CreatePriceTemplateResponse)` (Admin Only)
+- `ListPriceTemplates(ListPriceTemplatesRequest) returns (ListPriceTemplatesResponse)`
+- `UpdatePriceTemplate(UpdatePriceTemplateRequest) returns (UpdatePriceTemplateResponse)` (Admin Only)
+- `DeletePriceTemplate(DeletePriceTemplateRequest) returns (DeletePriceTemplateResponse)` (Admin Only)
 
 **Key Structures**:
 ```protobuf
 message CreateOrderRequest {
-  string project_id = 1;
+  string group_buy_id = 1;
   repeated CreateOrderItem items = 2;
   string contact_info = 3;
   string shipping_address = 4;
 }
 
 message BatchUpdateStatusRequest {
-  string project_id = 1;
+  string group_buy_id = 1;
   string spec_id = 2;
   OrderItemStatus target_status = 3;
   int32 count = 4; // Number of items to progress

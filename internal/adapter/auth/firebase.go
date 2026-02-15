@@ -11,16 +11,17 @@ import (
 )
 
 type FirebaseProvider struct {
-	app *firebase.App
+	app      *firebase.App
+	MockMode bool
 }
 
-func NewFirebaseProvider(credentialsJSON []byte) (*FirebaseProvider, error) {
+func NewFirebaseProvider(ctx context.Context, credentialsJSON []byte) (*FirebaseProvider, error) {
 	opts := []option.ClientOption{}
 	if len(credentialsJSON) > 0 {
 		opts = append(opts, option.WithCredentialsJSON(credentialsJSON))
 	}
 
-	app, err := firebase.NewApp(context.Background(), nil, opts...)
+	app, err := firebase.NewApp(ctx, nil, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing firebase app: %w", err)
 	}
@@ -29,8 +30,8 @@ func NewFirebaseProvider(credentialsJSON []byte) (*FirebaseProvider, error) {
 }
 
 func (fp *FirebaseProvider) VerifyToken(ctx context.Context, token string) (*auth.TokenInfo, error) {
-	// Dev Mode: If app is not initialized, return mock user
-	if fp.app == nil {
+	// Dev Mode: If MockMode is true
+	if fp.MockMode {
 		// Mock validation for development
 		// Check if token starts with "mock-token-"
 		uid := "test-user-id"

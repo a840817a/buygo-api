@@ -1,4 +1,4 @@
-package project
+package groupbuy
 
 import (
 	"context"
@@ -7,22 +7,22 @@ import (
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
-type ProjectStatus int
+type GroupBuyStatus int
 
 const (
-	ProjectStatusUnspecified ProjectStatus = 0
-	ProjectStatusDraft       ProjectStatus = 1
-	ProjectStatusActive      ProjectStatus = 2
-	ProjectStatusEnded       ProjectStatus = 3
-	ProjectStatusArchived    ProjectStatus = 4
+	GroupBuyStatusUnspecified GroupBuyStatus = 0
+	GroupBuyStatusDraft       GroupBuyStatus = 1
+	GroupBuyStatusActive      GroupBuyStatus = 2
+	GroupBuyStatusEnded       GroupBuyStatus = 3
+	GroupBuyStatusArchived    GroupBuyStatus = 4
 )
 
-type Project struct {
+type GroupBuy struct {
 	ID           string
 	Title        string
 	Description  string
 	CoverImage   string
-	Status       ProjectStatus
+	Status       GroupBuyStatus
 	ExchangeRate float64
 	Rounding     *RoundingConfig
 	CreatorID    string
@@ -40,7 +40,7 @@ type Project struct {
 
 type Product struct {
 	ID            string
-	ProjectID     string
+	GroupBuyID    string
 	Name          string
 	Description   string
 	ImageURL      string
@@ -52,8 +52,17 @@ type Product struct {
 	Specs         []*ProductSpec
 }
 
+type RoundingMethod int
+
+const (
+	RoundingMethodUnspecified RoundingMethod = 0
+	RoundingMethodFloor       RoundingMethod = 1
+	RoundingMethodCeil        RoundingMethod = 2
+	RoundingMethodRound       RoundingMethod = 3
+)
+
 type RoundingConfig struct {
-	Method int // 0: Unspecified, 1: Floor, 2: Ceil, 3: Round
+	Method RoundingMethod
 	Digit  int
 }
 
@@ -77,15 +86,38 @@ type ShippingConfig struct {
 	Name  string       `json:"name"`
 	Type  ShippingType `json:"type"`
 	Price int64        `json:"price"`
-} // Project update below
+}
+
+type OrderItemStatus int
+
+const (
+	OrderItemStatusUnspecified     OrderItemStatus = 0
+	OrderItemStatusUnordered       OrderItemStatus = 1
+	OrderItemStatusOrdered         OrderItemStatus = 2
+	OrderItemStatusArrivedOverseas OrderItemStatus = 3
+	OrderItemStatusArrivedDomestic OrderItemStatus = 4
+	OrderItemStatusReadyForPickup  OrderItemStatus = 5
+	OrderItemStatusSent            OrderItemStatus = 6
+	OrderItemStatusFailed          OrderItemStatus = 7
+)
+
+type PaymentStatus int
+
+const (
+	PaymentStatusUnspecified PaymentStatus = 0
+	PaymentStatusUnset       PaymentStatus = 1
+	PaymentStatusSubmitted   PaymentStatus = 2
+	PaymentStatusConfirmed   PaymentStatus = 3
+	PaymentStatusRejected    PaymentStatus = 4
+)
 
 // Order Entity
 type Order struct {
 	ID               string
-	ProjectID        string
+	GroupBuyID       string
 	UserID           string
 	TotalAmount      int64
-	PaymentStatus    int // enum
+	PaymentStatus    PaymentStatus
 	ContactInfo      string
 	ShippingAddress  string
 	PaymentInfo      *PaymentInfo
@@ -109,28 +141,41 @@ type OrderItem struct {
 	ProductID   string
 	SpecID      string
 	Quantity    int
-	Status      int // enum
+	Status      OrderItemStatus
 	ProductName string
 	SpecName    string
 	Price       int64
 }
 
+// IsManager checks if the given user is the creator or a manager of this group buy.
+func (gb *GroupBuy) IsManager(userID string) bool {
+	if gb.CreatorID == userID {
+		return true
+	}
+	for _, m := range gb.ManagerIDs {
+		if m == userID {
+			return true
+		}
+	}
+	return false
+}
+
 // Repository Port
 type Repository interface {
-	Create(ctx context.Context, p *Project) error
-	GetByID(ctx context.Context, id string) (*Project, error)
-	List(ctx context.Context, limit int, offset int, userID string, isSysAdmin bool, manageOnly bool) ([]*Project, error)
-	Update(ctx context.Context, p *Project) error
+	Create(ctx context.Context, gb *GroupBuy) error
+	GetByID(ctx context.Context, id string) (*GroupBuy, error)
+	List(ctx context.Context, limit int, offset int, userID string, isSysAdmin bool, manageOnly bool) ([]*GroupBuy, error)
+	Update(ctx context.Context, gb *GroupBuy) error
 
 	AddProduct(ctx context.Context, product *Product) error
-	DeleteProduct(ctx context.Context, projectID, productID string) error
+	DeleteProduct(ctx context.Context, groupBuyID, productID string) error
 
 	CreateOrder(ctx context.Context, order *Order) error
 	GetOrder(ctx context.Context, id string) (*Order, error)
-	ListOrders(ctx context.Context, projectID string, userID string) ([]*Order, error)
+	ListOrders(ctx context.Context, groupBuyID string, userID string) ([]*Order, error)
 	UpdateOrder(ctx context.Context, order *Order) error
-	UpdateOrderPaymentStatus(ctx context.Context, orderID string, status int) error
-	BatchUpdateOrderItemStatus(ctx context.Context, projectID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error)
+	UpdateOrderPaymentStatus(ctx context.Context, orderID string, status PaymentStatus) error
+	BatchUpdateOrderItemStatus(ctx context.Context, groupBuyID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error)
 
 	// Category
 	CreateCategory(ctx context.Context, c *Category) error

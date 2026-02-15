@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProjectService_AccessControl(t *testing.T) {
-	repo := memory.NewProjectRepository()
+func TestGroupBuyService_AccessControl(t *testing.T) {
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
 	// Contexts
@@ -23,67 +23,67 @@ func TestProjectService_AccessControl(t *testing.T) {
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	// 1. Create Project
+	// 1. Create GroupBuy
 	// Anon -> Fail
-	_, err := svc.CreateProject(anonCtx, "Title", "Desc")
+	_, err := svc.CreateGroupBuy(anonCtx, "Title", "Desc")
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Anon should not create project, got %v", err)
 	}
 
 	// User -> Fail
-	_, err = svc.CreateProject(userCtx, "Title", "Desc")
+	_, err = svc.CreateGroupBuy(userCtx, "Title", "Desc")
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Regular User should not create project, got %v", err)
 	}
 
 	// Creator -> Success
-	p, err := svc.CreateProject(creatorCtx, "My Project", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "My GroupBuy", "Desc")
 	if err != nil {
 		t.Fatalf("Creator should create project, got %v", err)
 	}
 
-	// 2. Update Project
+	// 2. Update GroupBuy
 	// Non-Manager User -> Fail (retained from original, as the provided snippet didn't explicitly remove it)
-	_, err = svc.UpdateProject(userCtx, p.ID, "Updated Title", "Updated Desc", project.ProjectStatusActive, nil, "http://new.jpg", nil, nil, nil, 0, nil, "")
+	_, err = svc.UpdateGroupBuy(userCtx, gb.ID, "Updated Title", "Updated Desc", groupbuy.GroupBuyStatusActive, nil, "http://new.jpg", nil, nil, nil, 0, nil, "")
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Non-Manager should not update project, got %v", err)
 	}
 
 	// Update (from provided snippet)
 	now := time.Now()
-	pUpdated, err := svc.UpdateProject(creatorCtx, p.ID, "New Title", "New Desc", project.ProjectStatusActive, nil, "http://new.com", &now, nil, nil, 0, nil, "")
+	gbUpdated, err := svc.UpdateGroupBuy(creatorCtx, gb.ID, "New Title", "New Desc", groupbuy.GroupBuyStatusActive, nil, "http://new.com", &now, nil, nil, 0, nil, "")
 	assert.NoError(t, err)
-	assert.Equal(t, "New Title", pUpdated.Title)
-	assert.Equal(t, project.ProjectStatusActive, pUpdated.Status)
-	assert.Equal(t, "http://new.com", pUpdated.CoverImage)
+	assert.Equal(t, "New Title", gbUpdated.Title)
+	assert.Equal(t, groupbuy.GroupBuyStatusActive, gbUpdated.Status)
+	assert.Equal(t, "http://new.com", gbUpdated.CoverImage)
 
 	// Update with products (from provided snippet)
-	prod := &project.Product{
+	prod := &groupbuy.Product{
 		Name:          "Prod 1",
 		PriceOriginal: 100,
 		ExchangeRate:  0.25,
 		MaxQuantity:   10,
 	}
-	pUpdated, err = svc.UpdateProject(creatorCtx, p.ID, "", "", project.ProjectStatusActive, []*project.Product{prod}, "", nil, nil, nil, 0, nil, "")
+	gbUpdated, err = svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, []*groupbuy.Product{prod}, "", nil, nil, nil, 0, nil, "")
 	if err != nil {
 		t.Errorf("Creator/Manager should update project, got %v", err)
 	}
 
-	// 3. Get Project (Public)
-	_, err = svc.GetProject(anonCtx, p.ID)
+	// 3. Get GroupBuy (Public)
+	_, err = svc.GetGroupBuy(anonCtx, gb.ID)
 	if err != nil {
 		t.Errorf("Anon should be able to get project, got %v", err)
 	}
 
 	// 4. Create Order
 	// Anon -> Fail
-	_, err = svc.CreateOrder(anonCtx, p.ID, nil, "Contact", "Addr", "", "")
+	_, err = svc.CreateOrder(anonCtx, gb.ID, nil, "Contact", "Addr", "", "")
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Anon should not create order, got %v", err)
 	}
 
 	// User -> Success
-	o, err := svc.CreateOrder(userCtx, p.ID, nil, "Contact", "Addr", "", "")
+	o, err := svc.CreateOrder(userCtx, gb.ID, nil, "Contact", "Addr", "", "")
 	if err != nil {
 		t.Errorf("User should create order, got %v", err)
 	}
@@ -102,21 +102,21 @@ func TestProjectService_AccessControl(t *testing.T) {
 		t.Errorf("Owner should cancel order, got %v", err)
 	}
 
-	// 6. List Project Orders (Manager Only)
+	// 6. List GroupBuy Orders (Manager Only)
 	// Anon -> Fail
-	_, err = svc.ListProjectOrders(anonCtx, p.ID)
+	_, err = svc.ListGroupBuyOrders(anonCtx, gb.ID)
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Anon should not list orders, got %v", err)
 	}
 
 	// User -> Fail
-	_, err = svc.ListProjectOrders(userCtx, p.ID)
+	_, err = svc.ListGroupBuyOrders(userCtx, gb.ID)
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("User should not list orders, got %v", err)
 	}
 
 	// Creator/Manager -> Success
-	orders, err := svc.ListProjectOrders(creatorCtx, p.ID)
+	orders, err := svc.ListGroupBuyOrders(creatorCtx, gb.ID)
 	if err != nil {
 		t.Errorf("Manager should list orders, got %v", err)
 	}
@@ -131,8 +131,8 @@ func TestProjectService_AccessControl(t *testing.T) {
 	}
 }
 
-func TestProjectService_ListPermissions(t *testing.T) {
-	repo := memory.NewProjectRepository()
+func TestGroupBuyService_ListPermissions(t *testing.T) {
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
 	// Contexts
@@ -143,65 +143,65 @@ func TestProjectService_ListPermissions(t *testing.T) {
 
 	// Setup Data
 	// P1: User1, Active
-	p1 := &project.Project{ID: "p1", Title: "P1", Status: project.ProjectStatusActive, CreatorID: "user-1", ManagerIDs: []string{"user-1"}}
-	repo.Create(adminCtx, p1)
+	gb1 := &groupbuy.GroupBuy{ID: "gb1", Title: "GB1", Status: groupbuy.GroupBuyStatusActive, CreatorID: "user-1", ManagerIDs: []string{"user-1"}}
+	repo.Create(adminCtx, gb1)
 	// P2: User1, Draft
-	p2 := &project.Project{ID: "p2", Title: "P2", Status: project.ProjectStatusDraft, CreatorID: "user-1", ManagerIDs: []string{"user-1"}}
-	repo.Create(adminCtx, p2)
+	gb2 := &groupbuy.GroupBuy{ID: "gb2", Title: "GB2", Status: groupbuy.GroupBuyStatusDraft, CreatorID: "user-1", ManagerIDs: []string{"user-1"}}
+	repo.Create(adminCtx, gb2)
 	// P3: User2, Draft
-	p3 := &project.Project{ID: "p3", Title: "P3", Status: project.ProjectStatusDraft, CreatorID: "user-2", ManagerIDs: []string{"user-2"}}
-	repo.Create(adminCtx, p3)
+	gb3 := &groupbuy.GroupBuy{ID: "gb3", Title: "GB3", Status: groupbuy.GroupBuyStatusDraft, CreatorID: "user-2", ManagerIDs: []string{"user-2"}}
+	repo.Create(adminCtx, gb3)
 
-	// 1. Public List: Should only see Active (P1)
-	list, err := svc.ListProjects(publicCtx, 100, 0)
+	// 1. Public List: Should only see Active (GB1)
+	list, err := svc.ListGroupBuys(publicCtx, 100, 0)
 	if err != nil {
 		t.Fatalf("Public list failed: %v", err)
 	}
-	if len(list) != 1 || list[0].ID != "p1" {
-		t.Errorf("Public list should return only P1, got %d items", len(list))
+	if len(list) != 1 || list[0].ID != "gb1" {
+		t.Errorf("Public list should return only GB1, got %d items", len(list))
 	}
 
-	// 2. Manager List (User1): Should see own projects (P1, P2)
-	list, err = svc.ListManagerProjects(u1Ctx, 100, 0)
+	// 2. Manager List (User1): Should see own projects (GB1, GB2)
+	list, err = svc.ListManagerGroupBuys(u1Ctx, 100, 0)
 	if err != nil {
 		t.Fatalf("Manager list failed: %v", err)
 	}
 	if len(list) != 2 {
-		t.Errorf("User1 should see 2 projects, got %d", len(list))
+		t.Errorf("User1 should see 2 group buys, got %d", len(list))
 	}
 	// Verify IDs
 	ids := make(map[string]bool)
-	for _, p := range list {
-		ids[p.ID] = true
+	for _, gb := range list {
+		ids[gb.ID] = true
 	}
-	if !ids["p1"] || !ids["p2"] {
-		t.Errorf("User1 missing expected projects (P1, P2), got %v", list)
+	if !ids["gb1"] || !ids["gb2"] {
+		t.Errorf("User1 missing expected group buys (GB1, GB2), got %v", list)
 	}
-	if ids["p3"] {
-		t.Errorf("User1 sees User2's P3")
+	if ids["gb3"] {
+		t.Errorf("User1 sees User2's GB3")
 	}
 
-	// 3. Manager List (User2): Should see own projects (P3)
-	list, err = svc.ListManagerProjects(u2Ctx, 100, 0)
+	// 3. Manager List (User2): Should see own group buys (GB3)
+	list, err = svc.ListManagerGroupBuys(u2Ctx, 100, 0)
 	if err != nil {
 		t.Fatalf("Manager list (u2) failed: %v", err)
 	}
-	if len(list) != 1 || list[0].ID != "p3" {
+	if len(list) != 1 || list[0].ID != "gb3" {
 		t.Errorf("User2 should see P3, got %v", list)
 	}
 
-	// 4. Admin List: Should see all (P1, P2, P3)
-	list, err = svc.ListManagerProjects(adminCtx, 100, 0)
+	// 4. Admin List: Should see all (GB1, GB2, GB3)
+	list, err = svc.ListManagerGroupBuys(adminCtx, 100, 0)
 	if err != nil {
 		t.Fatalf("Admin list failed: %v", err)
 	}
 	if len(list) != 3 {
-		t.Errorf("Admin should see 3 projects, got %d", len(list))
+		t.Errorf("Admin should see 3 group buys, got %d", len(list))
 	}
 
-	// 5. Anon ListManagerProjects -> Fail
-	_, err = svc.ListManagerProjects(publicCtx, 100, 0)
+	// 5. Anon ListManagerGroupBuys -> Fail
+	_, err = svc.ListManagerGroupBuys(publicCtx, 100, 0)
 	if !errors.Is(err, ErrPermissionDenied) {
-		t.Errorf("Anon ListManagerProjects should fail with PermissionDenied, got %v", err)
+		t.Errorf("Anon ListManagerGroupBuys should fail with PermissionDenied, got %v", err)
 	}
 }

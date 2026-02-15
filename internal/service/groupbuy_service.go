@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/buygo/buygo-api/internal/domain/auth"
 	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
@@ -19,36 +18,36 @@ var (
 )
 
 type GroupBuyService struct {
-	repo project.Repository
+	repo groupbuy.Repository
 }
 
-func NewGroupBuyService(repo project.Repository) *GroupBuyService {
+func NewGroupBuyService(repo groupbuy.Repository) *GroupBuyService {
 	return &GroupBuyService{
 		repo: repo,
 	}
 }
 
-// CreateProject: Only UserRoleCreator or Admin
-func (s *GroupBuyService) CreateProject(ctx context.Context, title string, description string) (*project.Project, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+// CreateGroupBuy: Only UserRoleCreator or Admin
+func (s *GroupBuyService) CreateGroupBuy(ctx context.Context, title string, description string) (*groupbuy.GroupBuy, error) {
+	usrID, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check Role
-	if role != int(user.UserRoleCreator) && role != int(user.UserRoleSysAdmin) {
-		return nil, ErrPermissionDenied
+	if _, _, err := requireRole(ctx, user.UserRoleCreator); err != nil {
+		return nil, err
 	}
 
 	now := time.Now()
 	// Default rounding config
-	rounding := &project.RoundingConfig{Method: 1, Digit: 0} // Default Floor, Ones
+	rounding := &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0}
 
-	p := &project.Project{
+	gb := &groupbuy.GroupBuy{
 		ID:           uuid.New().String(),
 		Title:        title,
 		Description:  description,
-		Status:       project.ProjectStatusDraft,
+		Status:       groupbuy.GroupBuyStatusDraft,
 		ExchangeRate: 0.23, // Default Rate? Or 0
 		Rounding:     rounding,
 		CreatorID:    usrID,
@@ -56,15 +55,15 @@ func (s *GroupBuyService) CreateProject(ctx context.Context, title string, descr
 		CreatedAt:    now,
 	}
 
-	if err := s.repo.Create(ctx, p); err != nil {
+	if err := s.repo.Create(ctx, gb); err != nil {
 		return nil, err
 	}
 
-	return p, nil
+	return gb, nil
 }
 
-// GetProject: Public Read
-func (s *GroupBuyService) GetProject(ctx context.Context, id string) (*project.Project, error) {
+// GetGroupBuy: Public Read
+func (s *GroupBuyService) GetGroupBuy(ctx context.Context, id string) (*groupbuy.GroupBuy, error) {
 	p, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -74,9 +73,8 @@ func (s *GroupBuyService) GetProject(ctx context.Context, id string) (*project.P
 	return p, nil
 }
 
-// ListProjects: Public List
-// ListProjects: Public Only
-func (s *GroupBuyService) ListProjects(ctx context.Context, limit, offset int) ([]*project.Project, error) {
+// ListGroupBuys: Public Only
+func (s *GroupBuyService) ListGroupBuys(ctx context.Context, limit, offset int) ([]*groupbuy.GroupBuy, error) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -84,24 +82,24 @@ func (s *GroupBuyService) ListProjects(ctx context.Context, limit, offset int) (
 	return s.repo.List(ctx, limit, offset, "", false, false)
 }
 
-// ListManagerProjects: Authenticated Manager/Admin View
-func (s *GroupBuyService) ListManagerProjects(ctx context.Context, limit, offset int) ([]*project.Project, error) {
+// ListManagerGroupBuys: Authenticated Manager/Admin View
+func (s *GroupBuyService) ListManagerGroupBuys(ctx context.Context, limit, offset int) ([]*groupbuy.GroupBuy, error) {
 	if limit <= 0 {
 		limit = 10
 	}
-	userID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	userID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 	isSysAdmin := role == int(user.UserRoleSysAdmin)
 	return s.repo.List(ctx, limit, offset, userID, isSysAdmin, true)
 }
 
-// UpdateProject: Manager Only
-func (s *GroupBuyService) UpdateProject(ctx context.Context, id string, title, desc string, status project.ProjectStatus, products []*project.Product, coverImage string, deadline *time.Time, shippingConfigs []*project.ShippingConfig, managerIDs []string, exchangeRate float64, rounding *project.RoundingConfig, sourceCurrency string) (*project.Project, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+// UpdateGroupBuy: Manager Only
+func (s *GroupBuyService) UpdateGroupBuy(ctx context.Context, id string, title, desc string, status groupbuy.GroupBuyStatus, products []*groupbuy.Product, coverImage string, deadline *time.Time, shippingConfigs []*groupbuy.ShippingConfig, managerIDs []string, exchangeRate float64, rounding *groupbuy.RoundingConfig, sourceCurrency string) (*groupbuy.GroupBuy, error) {
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	p, err := s.repo.GetByID(ctx, id)
@@ -113,16 +111,7 @@ func (s *GroupBuyService) UpdateProject(ctx context.Context, id string, title, d
 	// 1. SysAdmin -> OK
 	// 2. Creator -> OK
 	// 3. Manager -> OK
-	isAuth := false
-	if role == int(user.UserRoleSysAdmin) {
-		isAuth = true
-	} else if p.CreatorID == usrID {
-		isAuth = true
-	} else if isManager(p, usrID) {
-		isAuth = true
-	}
-
-	if !isAuth {
+	if !canManage(role, usrID, p) && p.CreatorID != usrID {
 		return nil, ErrPermissionDenied
 	}
 
@@ -133,7 +122,7 @@ func (s *GroupBuyService) UpdateProject(ctx context.Context, id string, title, d
 	if desc != "" {
 		p.Description = desc
 	}
-	if status != project.ProjectStatusUnspecified {
+	if status != groupbuy.GroupBuyStatusUnspecified {
 		p.Status = status
 	}
 	if coverImage != "" {
@@ -190,7 +179,7 @@ func (s *GroupBuyService) UpdateProject(ctx context.Context, id string, title, d
 
 			// Always Recalculate Final Price to ensure consistency/updates
 			item.PriceFinal = s.CalculateFinalPrice(item.PriceOriginal, item.ExchangeRate, item.Rounding)
-			item.ProjectID = p.ID
+			item.GroupBuyID = p.ID
 
 			// Ensure specs have IDs
 			for _, spec := range item.Specs {
@@ -213,13 +202,13 @@ func (s *GroupBuyService) UpdateProject(ctx context.Context, id string, title, d
 	return p, nil
 }
 
-func (s *GroupBuyService) GetMyProjectOrder(ctx context.Context, projectID string) (*project.Order, error) {
-	userId, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) GetMyGroupBuyOrder(ctx context.Context, groupBuyID string) (*groupbuy.Order, error) {
+	userId, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	orders, err := s.repo.ListOrders(ctx, projectID, userId)
+	orders, err := s.repo.ListOrders(ctx, groupBuyID, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -234,10 +223,10 @@ func (s *GroupBuyService) GetMyProjectOrder(ctx context.Context, projectID strin
 	return orders[0], nil
 }
 
-func (s *GroupBuyService) UpdateOrder(ctx context.Context, orderID string, items []*project.OrderItem, note string) (*project.Order, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) UpdateOrder(ctx context.Context, orderID string, items []*groupbuy.OrderItem, note string) (*groupbuy.Order, error) {
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	order, err := s.repo.GetOrder(ctx, orderID)
@@ -246,52 +235,39 @@ func (s *GroupBuyService) UpdateOrder(ctx context.Context, orderID string, items
 	}
 
 	// Verify Owner or Manager
-	p, err := s.repo.GetByID(ctx, order.ProjectID)
+	gb, err := s.repo.GetByID(ctx, order.GroupBuyID)
 	if err != nil {
 		return nil, err
 	}
 
-	if role != int(user.UserRoleSysAdmin) && order.UserID != usrID && !isManager(p, usrID) {
+	if role != int(user.UserRoleSysAdmin) && order.UserID != usrID && !gb.IsManager(usrID) {
 		return nil, ErrPermissionDenied
 	}
 
 	// Validate Status - Allow edit only if not paid/locked?
 	// Or if Items are not ordered yet.
-	// For now, if PaymentStatus is CONFIRMED (3), disallow.
-	if order.PaymentStatus == 3 {
+	if order.PaymentStatus == groupbuy.PaymentStatusConfirmed {
 		return nil, errors.New("cannot update order: payment confirmed")
 	}
 
-	// Check if any items are already processed (Status > 1)
-	// If Manager is editing, maybe allow?
-	// Requirement: "If Manager updated it, User cannot edit".
-	// If caller is Manager, we skip this check?
-	// s.UpdateOrder is called by User (UpdateOrder RPC) and Manager (via my new calling code?).
-	// Wait, I updated permissions to allow Manager.
-	// So if Manager calls this, they SHOULD be allowed to edit even if processed?
-	// "Manager can edit user order (add/remove items)" (Req 13).
-	// So if `isManager`, skip this check.
-	// If `!isManager`, enforce it.
-
-	isMgr := isManager(p, usrID)
+	isMgr := gb.IsManager(usrID)
 	if !isMgr {
 		for _, i := range order.Items {
-			if i.Status > 1 {
+			if i.Status > groupbuy.OrderItemStatusUnordered {
 				return nil, errors.New("cannot update order: items already processed by manager")
 			}
 		}
 	}
 
 	// Update Items
-	validItems, total, err := s.prepareOrderItems(ctx, order.ProjectID, items)
+	validItems, total, err := s.prepareOrderItems(ctx, order.GroupBuyID, items)
 	if err != nil {
 		return nil, err
 	}
 
-	// For non-managers, force status reset to Unordered
 	if !isMgr {
 		for _, item := range validItems {
-			item.Status = 1
+			item.Status = groupbuy.OrderItemStatusUnordered
 		}
 	}
 
@@ -308,23 +284,23 @@ func (s *GroupBuyService) UpdateOrder(ctx context.Context, orderID string, items
 	return order, nil
 }
 
-func (s *GroupBuyService) prepareOrderItems(ctx context.Context, projectID string, inputItems []*project.OrderItem) ([]*project.OrderItem, int64, error) {
-	p, err := s.repo.GetByID(ctx, projectID)
+func (s *GroupBuyService) prepareOrderItems(ctx context.Context, groupBuyID string, inputItems []*groupbuy.OrderItem) ([]*groupbuy.OrderItem, int64, error) {
+	gb, err := s.repo.GetByID(ctx, groupBuyID)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	if p.Status != project.ProjectStatusActive {
-		return nil, 0, errors.New("project is not active")
+	if gb.Status != groupbuy.GroupBuyStatusActive {
+		return nil, 0, errors.New("group buy is not active")
 	}
 
-	productMap := make(map[string]*project.Product)
-	for _, prod := range p.Products {
+	productMap := make(map[string]*groupbuy.Product)
+	for _, prod := range gb.Products {
 		productMap[prod.ID] = prod
 	}
 
 	var total int64
-	var validItems []*project.OrderItem
+	var validItems []*groupbuy.OrderItem
 
 	for _, item := range inputItems {
 		prod, ok := productMap[item.ProductID]
@@ -354,10 +330,8 @@ func (s *GroupBuyService) prepareOrderItems(ctx context.Context, projectID strin
 		item.Price = prod.PriceFinal
 		item.OrderID = "" // Will be set by caller or Repo
 
-		// Status defaults to Unspecified or Created?
-		// Usually 0 is fine, or set explicitly if needed.
-		if item.Status == 0 {
-			item.Status = 1 // ITEM_STATUS_UNORDERED
+		if item.Status == groupbuy.OrderItemStatusUnspecified {
+			item.Status = groupbuy.OrderItemStatusUnordered
 		}
 
 		if item.Quantity <= 0 {
@@ -371,10 +345,10 @@ func (s *GroupBuyService) prepareOrderItems(ctx context.Context, projectID strin
 	return validItems, total, nil
 }
 
-func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string, method, account string, contact, shipping string, paidAt *time.Time, amount int64) (*project.Order, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string, method, account string, contact, shipping string, paidAt *time.Time, amount int64) (*groupbuy.Order, error) {
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	order, err := s.repo.GetOrder(ctx, orderID)
@@ -382,24 +356,23 @@ func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string,
 		return nil, err
 	}
 
-	p, err := s.repo.GetByID(ctx, order.ProjectID)
+	p, err := s.repo.GetByID(ctx, order.GroupBuyID)
 	if err != nil {
 		return nil, err
 	}
 
-	if role != int(user.UserRoleSysAdmin) && order.UserID != usrID && !isManager(p, usrID) {
+	if role != int(user.UserRoleSysAdmin) && order.UserID != usrID && !p.IsManager(usrID) {
 		return nil, ErrPermissionDenied
 	}
 
-	// allowed to update payment info anytime? Yes, until confirmed maybe?
-	if order.PaymentStatus == 3 {
+	if order.PaymentStatus == groupbuy.PaymentStatusConfirmed {
 		return nil, errors.New("cannot update payment info: payment already confirmed")
 	}
 
 	updated := false
 	if method != "" || account != "" || paidAt != nil || amount != 0 {
 		if order.PaymentInfo == nil {
-			order.PaymentInfo = &project.PaymentInfo{}
+			order.PaymentInfo = &groupbuy.PaymentInfo{}
 		}
 		if method != "" {
 			order.PaymentInfo.Method = method
@@ -414,9 +387,8 @@ func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string,
 			order.PaymentInfo.Amount = amount
 		}
 
-		// If both set (or valid), maybe set status to Submitted?
-		if order.PaymentInfo.Method != "" && (order.PaymentInfo.AccountLast5 != "" || order.PaymentInfo.Method == "Cash") { // Basic check
-			order.PaymentStatus = 2 // SUBMITTED
+		if order.PaymentInfo.Method != "" && (order.PaymentInfo.AccountLast5 != "" || order.PaymentInfo.Method == "Cash") {
+			order.PaymentStatus = groupbuy.PaymentStatusSubmitted
 		}
 		updated = true
 	}
@@ -440,19 +412,19 @@ func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string,
 }
 
 // CreateOrder: User Only
-func (s *GroupBuyService) CreateOrder(ctx context.Context, projectID string, items []*project.OrderItem, contactInfo, shippingAddr, shippingMethodID, note string) (*project.Order, error) {
-	usrID, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
-	}
-
-	// Validate and Snapshot Items
-	validItems, total, err := s.prepareOrderItems(ctx, projectID, items)
+func (s *GroupBuyService) CreateOrder(ctx context.Context, groupBuyID string, items []*groupbuy.OrderItem, contactInfo, shippingAddr, shippingMethodID, note string) (*groupbuy.Order, error) {
+	usrID, _, err := checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	p, err := s.repo.GetByID(ctx, projectID)
+	// Validate and Snapshot Items
+	validItems, total, err := s.prepareOrderItems(ctx, groupBuyID, items)
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := s.repo.GetByID(ctx, groupBuyID)
 	if err != nil {
 		return nil, err
 	}
@@ -475,14 +447,14 @@ func (s *GroupBuyService) CreateOrder(ctx context.Context, projectID string, ite
 		}
 	}
 
-	order := &project.Order{
+	order := &groupbuy.Order{
 		ID:               uuid.New().String(),
-		ProjectID:        projectID,
+		GroupBuyID:       groupBuyID,
 		UserID:           usrID,
 		Items:            validItems,
 		TotalAmount:      total + shippingFee,
 		CreatedAt:        time.Now(),
-		PaymentStatus:    2, // SUBMITTED
+		PaymentStatus:    groupbuy.PaymentStatusUnset,
 		ContactInfo:      contactInfo,
 		ShippingAddress:  shippingAddr,
 		ShippingMethodID: shippingMethodID,
@@ -497,33 +469,33 @@ func (s *GroupBuyService) CreateOrder(ctx context.Context, projectID string, ite
 	return order, nil
 }
 
-// ListProjectOrders: Manager Only
-func (s *GroupBuyService) ListProjectOrders(ctx context.Context, projectID string) ([]*project.Order, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+// ListGroupBuyOrders: Manager Only
+func (s *GroupBuyService) ListGroupBuyOrders(ctx context.Context, groupBuyID string) ([]*groupbuy.Order, error) {
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	p, err := s.repo.GetByID(ctx, projectID)
+	p, err := s.repo.GetByID(ctx, groupBuyID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Verify Manager Access
-	if role != int(user.UserRoleSysAdmin) && !isManager(p, usrID) {
+	if !canManage(role, usrID, p) {
 		return nil, ErrPermissionDenied
 	}
 
 	// Fetch orders for this project
-	// Note: repo.ListOrders filters by projectID and userID (if strict)
-	// Here we want ALL orders for the project, regardless of user
-	return s.repo.ListOrders(ctx, projectID, "")
+	// Note: repo.ListOrders filters by groupBuyID and userID (if strict)
+	// Here we want ALL orders for the group buy, regardless of user
+	return s.repo.ListOrders(ctx, groupBuyID, "")
 }
 
-func (s *GroupBuyService) ConfirmPayment(ctx context.Context, orderID string, status int) error {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return ErrPermissionDenied
+func (s *GroupBuyService) ConfirmPayment(ctx context.Context, orderID string, status groupbuy.PaymentStatus) error {
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return err
 	}
 
 	order, err := s.repo.GetOrder(ctx, orderID)
@@ -531,23 +503,23 @@ func (s *GroupBuyService) ConfirmPayment(ctx context.Context, orderID string, st
 		return err
 	}
 
-	p, err := s.repo.GetByID(ctx, order.ProjectID)
+	p, err := s.repo.GetByID(ctx, order.GroupBuyID)
 	if err != nil {
 		return err
 	}
 
-	if role != int(user.UserRoleSysAdmin) && !isManager(p, usrID) {
+	if !canManage(role, usrID, p) {
 		return ErrPermissionDenied
 	}
 
 	return s.repo.UpdateOrderPaymentStatus(ctx, orderID, status)
 }
 
-// CancelOrder: Owner Only, and only if Status allowed
+// CancelOrder: Owner or Admin. Only if items not yet processed beyond UNORDERED.
 func (s *GroupBuyService) CancelOrder(ctx context.Context, orderID string) error {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return ErrPermissionDenied
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return err
 	}
 
 	order, err := s.repo.GetOrder(ctx, orderID)
@@ -555,40 +527,52 @@ func (s *GroupBuyService) CancelOrder(ctx context.Context, orderID string) error
 		return err
 	}
 
-	// Verify Ownership or Admin
 	if role != int(user.UserRoleSysAdmin) && order.UserID != usrID {
 		return ErrPermissionDenied
 	}
 
-	// Verify Status (Example: Allow cancel if not yet SHIPPED)
-	// For simplicity, let's say PaymentStatus Unset or Submitted
-	// Or define specific OrderStatus logic
-
-	// order.Status = Cancelled ...
-	// Need update repo logic
-	// s.repo.UpdateOrder(ctx, order)
-
-	return nil
-}
-
-func (s *GroupBuyService) AddProduct(ctx context.Context, projectID string, name string, priceOriginal int64, exchangeRate float64, specs []string) (*project.Product, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	// Cannot cancel if payment is already confirmed
+	if order.PaymentStatus == groupbuy.PaymentStatusConfirmed {
+		return errors.New("cannot cancel order: payment already confirmed")
 	}
 
-	p, err := s.repo.GetByID(ctx, projectID)
+	// Cannot cancel if any items have been processed (ordered from supplier or beyond)
+	for _, item := range order.Items {
+		if item.Status > groupbuy.OrderItemStatusUnordered &&
+			item.Status != groupbuy.OrderItemStatusFailed {
+			return errors.New("cannot cancel order: items already being processed")
+		}
+	}
+
+	// Mark all items as failed (cancelled)
+	for _, item := range order.Items {
+		item.Status = groupbuy.OrderItemStatusFailed
+	}
+
+	// Reset payment status
+	order.PaymentStatus = groupbuy.PaymentStatusRejected
+
+	return s.repo.UpdateOrder(ctx, order)
+}
+
+func (s *GroupBuyService) AddProduct(ctx context.Context, groupBuyID string, name string, priceOriginal int64, exchangeRate float64, specs []string) (*groupbuy.Product, error) {
+	usrID, role, err := checkLogin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if role != int(user.UserRoleSysAdmin) && !isManager(p, usrID) {
+	p, err := s.repo.GetByID(ctx, groupBuyID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !canManage(role, usrID, p) {
 		return nil, ErrPermissionDenied
 	}
 
 	// Default rounding config logic
-	rounding := &project.RoundingConfig{Method: 1, Digit: 0} // Default Floor, ones
-	// Use Project Defaults if not provided (Wait, params only have rate? AddProduct signature might need update or infer from project if 0)
+	rounding := &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0}
+	// Use Group Buy Defaults if not provided (Wait, params only have rate? AddProduct signature might need update or infer from project if 0)
 
 	rate := exchangeRate
 	if rate == 0 {
@@ -599,12 +583,12 @@ func (s *GroupBuyService) AddProduct(ctx context.Context, projectID string, name
 	}
 
 	productID := uuid.New().String()
-	var productSpecs []*project.ProductSpec
+	var productSpecs []*groupbuy.ProductSpec
 	for _, specName := range specs {
 		if specName == "" {
 			continue
 		}
-		productSpecs = append(productSpecs, &project.ProductSpec{
+		productSpecs = append(productSpecs, &groupbuy.ProductSpec{
 			ID:        uuid.New().String(),
 			ProductID: productID,
 			Name:      specName,
@@ -614,9 +598,9 @@ func (s *GroupBuyService) AddProduct(ctx context.Context, projectID string, name
 	// Calculate Final Price
 	priceFinal := s.CalculateFinalPrice(priceOriginal, rate, rounding)
 
-	prod := &project.Product{
+	prod := &groupbuy.Product{
 		ID:            productID,
-		ProjectID:     projectID,
+		GroupBuyID:    groupBuyID,
 		Name:          name,
 		PriceOriginal: priceOriginal,
 		ExchangeRate:  rate,
@@ -632,78 +616,61 @@ func (s *GroupBuyService) AddProduct(ctx context.Context, projectID string, name
 	return prod, nil
 }
 
-func (s *GroupBuyService) DeleteProduct(ctx context.Context, projectID, productID string) error {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return ErrPermissionDenied
-	}
-
-	p, err := s.repo.GetByID(ctx, projectID)
+func (s *GroupBuyService) DeleteProduct(ctx context.Context, groupBuyID, productID string) error {
+	usrID, role, err := checkLogin(ctx)
 	if err != nil {
 		return err
 	}
 
-	if role != int(user.UserRoleSysAdmin) && !isManager(p, usrID) {
+	p, err := s.repo.GetByID(ctx, groupBuyID)
+	if err != nil {
+		return err
+	}
+
+	if !canManage(role, usrID, p) {
 		return ErrPermissionDenied
 	}
 
-	return s.repo.DeleteProduct(ctx, projectID, productID)
+	return s.repo.DeleteProduct(ctx, groupBuyID, productID)
 }
 
-func (s *GroupBuyService) GetMyOrders(ctx context.Context) ([]*project.Order, error) {
-	usrID, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) GetMyOrders(ctx context.Context) ([]*groupbuy.Order, error) {
+	usrID, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return s.repo.ListOrders(ctx, "", usrID)
 }
 
-func isManager(p *project.Project, userID string) bool {
-	if p.CreatorID == userID {
-		return true
-	}
-	for _, m := range p.ManagerIDs {
-		if m == userID {
-			return true
-		}
-	}
-	return false
-}
-
-func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, projectID string, specID string, targetStatus int, count int32) (int32, []string, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return 0, nil, ErrPermissionDenied
-	}
-
-	p, err := s.repo.GetByID(ctx, projectID)
+func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, groupBuyID string, specID string, targetStatus int, count int32) (int32, []string, error) {
+	usrID, role, err := checkLogin(ctx)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	if role != int(user.UserRoleSysAdmin) && !isManager(p, usrID) {
+	p, err := s.repo.GetByID(ctx, groupBuyID)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if !canManage(role, usrID, p) {
 		return 0, nil, ErrPermissionDenied
 	}
 
-	// State Transition Logic (Strict Chain)
-	// 1: Unordered -> 2: Ordered
-	// 2: Ordered -> 3: Arrived Overseas
-	// 3: Arrived Overseas -> 4: Arrived Domestic
-	// 4: Arrived Domestic -> 5: Ready for Pickup
-	// 5: Ready -> 6: Sent
+	// State Transition Logic (Strict FIFO Chain)
 	var fromStatuses []int
-	switch targetStatus {
-	case 2:
-		fromStatuses = []int{1, 0} // Allow 0 (Unspecified) for legacy/migrated data
-	case 3:
-		fromStatuses = []int{2}
-	case 4:
-		fromStatuses = []int{3}
-	case 5:
-		fromStatuses = []int{4}
-	case 6:
-		fromStatuses = []int{5}
+	switch groupbuy.OrderItemStatus(targetStatus) {
+	case groupbuy.OrderItemStatusOrdered:
+		fromStatuses = []int{int(groupbuy.OrderItemStatusUnordered), int(groupbuy.OrderItemStatusUnspecified)}
+	case groupbuy.OrderItemStatusArrivedOverseas:
+		fromStatuses = []int{int(groupbuy.OrderItemStatusOrdered)}
+	case groupbuy.OrderItemStatusArrivedDomestic:
+		fromStatuses = []int{int(groupbuy.OrderItemStatusArrivedOverseas)}
+	case groupbuy.OrderItemStatusReadyForPickup:
+		fromStatuses = []int{int(groupbuy.OrderItemStatusArrivedDomestic)}
+	case groupbuy.OrderItemStatusSent:
+		fromStatuses = []int{int(groupbuy.OrderItemStatusReadyForPickup)}
 	default:
 		return 0, nil, errors.New("invalid target status for batch update")
 	}
@@ -712,7 +679,7 @@ func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, projectID strin
 		return 0, nil, nil
 	}
 
-	n, ids, err := s.repo.BatchUpdateOrderItemStatus(ctx, projectID, specID, fromStatuses, targetStatus, int(count))
+	n, ids, err := s.repo.BatchUpdateOrderItemStatus(ctx, groupBuyID, specID, fromStatuses, targetStatus, int(count))
 	if err != nil {
 		return 0, nil, err
 	}
@@ -720,16 +687,13 @@ func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, projectID strin
 	return int32(n), ids, nil
 }
 
-func (s *GroupBuyService) CreateCategory(ctx context.Context, name string, specNames []string) (*project.Category, error) {
-	_, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
-	}
-	if role != int(user.UserRoleSysAdmin) {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) CreateCategory(ctx context.Context, name string, specNames []string) (*groupbuy.Category, error) {
+	_, _, err := requireRole(ctx, user.UserRoleSysAdmin)
+	if err != nil {
+		return nil, err
 	}
 
-	c, err := project.NewCategory(name, specNames)
+	c, err := groupbuy.NewCategory(name, specNames)
 	if err != nil {
 		return nil, err
 	}
@@ -740,43 +704,41 @@ func (s *GroupBuyService) CreateCategory(ctx context.Context, name string, specN
 	return c, nil
 }
 
-func (s *GroupBuyService) ListCategories(ctx context.Context) ([]*project.Category, error) {
+func (s *GroupBuyService) ListCategories(ctx context.Context) ([]*groupbuy.Category, error) {
 	// Public access allowed? Or Authenticated?
 	// Add Product form is manager only (Auth required).
 	// Let's require Auth at least.
-	_, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	_, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 	return s.repo.ListCategories(ctx)
 }
 
-func (s *GroupBuyService) CalculateFinalPrice(original int64, rate float64, rounding *project.RoundingConfig) int64 {
+func (s *GroupBuyService) CalculateFinalPrice(original int64, rate float64, rounding *groupbuy.RoundingConfig) int64 {
 	if original == 0 || rate == 0 {
 		return 0
 	}
 
 	val := float64(original) * rate
 
-	// Default Rounding: Floor, Ones
-	method := 1 // Floor
-	digit := 0  // Ones
+	method := groupbuy.RoundingMethodFloor
+	digit := 0
 
 	if rounding != nil {
 		method = rounding.Method
 		digit = rounding.Digit
 	}
 
-	// Calculate Power of 10
 	pow := math.Pow(10, float64(digit))
 	val = val / pow
 
 	switch method {
-	case 2: // Ceil
+	case groupbuy.RoundingMethodCeil:
 		val = math.Ceil(val)
-	case 3: // Round
+	case groupbuy.RoundingMethodRound:
 		val = math.Round(val)
-	default: // Floor (1)
+	default:
 		val = math.Floor(val)
 	}
 

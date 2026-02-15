@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	"connectrpc.com/connect"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+
+	"github.com/joho/godotenv"
 
 	"github.com/buygo/buygo-api/api/v1/buygov1connect"
 	"github.com/buygo/buygo-api/internal/adapter/auth"
@@ -22,14 +25,38 @@ import (
 )
 
 func main() {
+	// 0. Load .env
+	_ = godotenv.Load()
+
 	port := envOrDefault("PORT", "8080")
+	appEnv := envOrDefault("APP_ENV", "development")
+
+	dbPassword := os.Getenv("DB_PASSWORD")
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	if appEnv == "production" {
+		if dbPassword == "" {
+			log.Fatal("DB_PASSWORD is required in production")
+		}
+		if len(jwtSecret) < 32 {
+			log.Fatal("JWT_SECRET must be at least 32 characters in production")
+		}
+	} else {
+		// Development defaults for convenience if not set
+		if dbPassword == "" {
+			dbPassword = "password"
+		}
+		if jwtSecret == "" {
+			jwtSecret = "secret-key"
+		}
+	}
 
 	// 1. DB Connection
 	dbConfig := db.Config{
 		Host:     envOrDefault("DB_HOST", "localhost"),
 		Port:     envOrDefault("DB_PORT", "5432"),
 		User:     envOrDefault("DB_USER", "buygo"),
-		Password: envOrDefault("DB_PASSWORD", "password"),
+		Password: dbPassword,
 		DBName:   envOrDefault("DB_NAME", "buygo"),
 		SSLMode:  envOrDefault("DB_SSLMODE", "disable"),
 	}
@@ -43,7 +70,7 @@ func main() {
 	log.Println("Running AutoMigrate...")
 	if err := database.AutoMigrate(
 		&model.User{},
-		&model.Project{},
+		&model.GroupBuy{},
 		&model.Product{},
 		&model.ProductSpec{},
 		&model.Order{},
@@ -60,23 +87,48 @@ func main() {
 	}
 
 	// 3. Infrastructure (Auth)
-	jwtSecret := envOrDefault("JWT_SECRET", "secret-key")
-	tokenProvider := &auth.FirebaseProvider{}
+	var tokenProvider *auth.FirebaseProvider
+	firebaseCreds := os.Getenv("FIREBASE_CREDENTIALS_JSON")
+
+	if appEnv == "production" {
+		if firebaseCreds == "" {
+			log.Fatal("FIREBASE_CREDENTIALS_JSON is required in production")
+		}
+		// Init real firebase
+		tp, err := auth.NewFirebaseProvider(context.Background(), []byte(firebaseCreds))
+		if err != nil {
+			log.Fatalf("Failed to init firebase: %v", err)
+		}
+		tokenProvider = tp
+	} else {
+		// Development
+		if firebaseCreds != "" {
+			tp, err := auth.NewFirebaseProvider(context.Background(), []byte(firebaseCreds))
+			if err != nil {
+				log.Fatalf("Failed to init firebase: %v", err)
+			}
+			tokenProvider = tp
+		} else {
+			// Mock mode
+			log.Println("WARNING: Using Firebase Mock Mode")
+			tokenProvider = &auth.FirebaseProvider{MockMode: true}
+		}
+	}
 	tokenManager := auth.NewJWTGenerator(jwtSecret, "buygo", 24*time.Hour)
 
 	// 4. Repositories
 	userRepo := postgres.NewUserRepository(database)
-	projectRepo := postgres.NewProjectRepository(database)
+	groupBuyRepo := postgres.NewGroupBuyRepository(database)
 	eventRepo := postgres.NewEventRepository(database)
 
 	// 5. Services
 	authSvc := service.NewAuthService(userRepo, tokenProvider, tokenManager)
-	projectSvc := service.NewGroupBuyService(projectRepo)
+	groupBuySvc := service.NewGroupBuyService(groupBuyRepo)
 	eventSvc := service.NewEventService(eventRepo)
 
 	// 6. Handlers
 	authHandler := handler.NewAuthHandler(authSvc)
-	projectHandler := handler.NewGroupBuyHandler(projectSvc)
+	groupBuyHandler := handler.NewGroupBuyHandler(groupBuySvc)
 	eventHandler := handler.NewEventHandler(eventSvc)
 
 	// 7. Interceptors
@@ -89,7 +141,7 @@ func main() {
 		connect.WithInterceptors(authInterceptor.NewUnaryInterceptor()))
 	mux.Handle(path, handler)
 
-	path, handler = buygov1connect.NewGroupBuyServiceHandler(projectHandler,
+	path, handler = buygov1connect.NewGroupBuyServiceHandler(groupBuyHandler,
 		connect.WithInterceptors(authInterceptor.NewUnaryInterceptor()))
 	mux.Handle(path, handler)
 

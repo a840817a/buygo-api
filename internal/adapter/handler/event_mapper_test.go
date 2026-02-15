@@ -103,7 +103,7 @@ func TestToProtoRegistration(t *testing.T) {
 		EventID:         "evt-1",
 		UserID:          "user-1",
 		Status:          event.RegistrationStatusConfirmed,
-		PaymentStatus:   2,
+		PaymentStatus:   event.PaymentStatusSubmitted,
 		ContactInfo:     "0912345678",
 		Notes:           "notes here",
 		TotalAmount:     500,

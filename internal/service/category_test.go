@@ -11,8 +11,8 @@ import (
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
-func TestProjectService_CategoryAccessControl(t *testing.T) {
-	repo := memory.NewProjectRepository()
+func TestGroupBuyService_CategoryAccessControl(t *testing.T) {
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
 	// Contexts

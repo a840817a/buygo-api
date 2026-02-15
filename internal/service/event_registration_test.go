@@ -27,8 +27,8 @@ func setupActiveEvent(t *testing.T) (*EventService, *event.Event, context.Contex
 		{ID: "item-2", Name: "Ticket B", Price: 200, MaxParticipants: 30, AllowMultiple: false},
 	}
 
-	e, err := svc.CreateEvent(creatorCtx, "Test Event", "Desc",
-		time.Now(), time.Now().Add(24*time.Hour), items, nil)
+	e, err := svc.CreateEvent(creatorCtx, "Test Event", "Desc", "", "",
+		time.Now(), time.Now().Add(24*time.Hour), nil, nil, false, nil, items, nil)
 	require.NoError(t, err)
 
 	// Set registration deadline far in the future
@@ -52,8 +52,8 @@ func TestRegisterEvent_InactiveEvent(t *testing.T) {
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 
-	e, _ := svc.CreateEvent(creatorCtx, "Draft Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Draft Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 	// Event stays in Draft status
 
 	_, err := svc.RegisterEvent(userCtx, e.ID, nil, "C", "N")
@@ -70,8 +70,8 @@ func TestRegisterEvent_DeadlinePassed(t *testing.T) {
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 
-	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc",
-		time.Now(), time.Now().Add(time.Hour), nil, nil)
+	e, _ := svc.CreateEvent(creatorCtx, "Event", "Desc", "", "",
+		time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 	e, _ = svc.UpdateEventStatus(creatorCtx, e.ID, event.EventStatusActive)
 
 	// Set deadline in the past

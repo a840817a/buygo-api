@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"connectrpc.com/connect"
@@ -26,9 +25,14 @@ func NewEventHandler(svc *service.EventService) *EventHandler {
 var _ buygov1connect.EventServiceHandler = (*EventHandler)(nil)
 
 func (h *EventHandler) CreateEvent(ctx context.Context, req *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error) {
-	// TODO: map time
 	start := req.Msg.StartTime.AsTime()
 	end := req.Msg.EndTime.AsTime()
+
+	var registrationDeadline *time.Time
+	if req.Msg.RegistrationDeadline != nil {
+		t := req.Msg.RegistrationDeadline.AsTime()
+		registrationDeadline = &t
+	}
 
 	var discounts []*event.DiscountRule
 	for _, d := range req.Msg.Discounts {
@@ -41,8 +45,6 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *connect.Request[v1.
 
 	var items []*event.EventItem
 	for _, i := range req.Msg.Items {
-		// Basic validation or default handling could go here
-		// For creation, ID might be empty, service handles it
 		items = append(items, &event.EventItem{
 			ID:              i.Id,
 			Name:            i.Name,
@@ -55,12 +57,21 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *connect.Request[v1.
 		})
 	}
 
-	e, err := h.svc.CreateEvent(ctx, req.Msg.Title, req.Msg.Description, start, end, items, discounts)
+	e, err := h.svc.CreateEvent(ctx,
+		req.Msg.Title,
+		req.Msg.Description,
+		req.Msg.Location,
+		req.Msg.CoverImageUrl,
+		start, end,
+		registrationDeadline,
+		req.Msg.PaymentMethods,
+		req.Msg.AllowModification,
+		req.Msg.ManagerIds,
+		items,
+		discounts,
+	)
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.CreateEventResponse{
@@ -122,10 +133,7 @@ func (h *EventHandler) RegisterEvent(ctx context.Context, req *connect.Request[v
 
 	reg, err := h.svc.RegisterEvent(ctx, req.Msg.EventId, items, req.Msg.ContactInfo, req.Msg.Notes)
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.RegisterEventResponse{
@@ -145,11 +153,7 @@ func (h *EventHandler) UpdateRegistration(ctx context.Context, req *connect.Requ
 
 	reg, err := h.svc.UpdateRegistration(ctx, req.Msg.RegistrationId, items, req.Msg.ContactInfo, req.Msg.Notes)
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		// return BadRequest for deadline?
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.UpdateRegistrationResponse{
@@ -159,12 +163,9 @@ func (h *EventHandler) UpdateRegistration(ctx context.Context, req *connect.Requ
 }
 
 func (h *EventHandler) UpdateRegistrationStatus(ctx context.Context, req *connect.Request[v1.UpdateRegistrationStatusRequest]) (*connect.Response[v1.UpdateRegistrationStatusResponse], error) {
-	reg, err := h.svc.UpdateRegistrationStatus(ctx, req.Msg.RegistrationId, event.RegistrationStatus(req.Msg.Status), int(req.Msg.PaymentStatus))
+	reg, err := h.svc.UpdateRegistrationStatus(ctx, req.Msg.RegistrationId, event.RegistrationStatus(req.Msg.Status), event.PaymentStatus(req.Msg.PaymentStatus))
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.UpdateRegistrationStatusResponse{
@@ -176,10 +177,7 @@ func (h *EventHandler) UpdateRegistrationStatus(ctx context.Context, req *connec
 
 func (h *EventHandler) CancelRegistration(ctx context.Context, req *connect.Request[v1.CancelRegistrationRequest]) (*connect.Response[v1.CancelRegistrationResponse], error) {
 	if err := h.svc.CancelRegistration(ctx, req.Msg.RegistrationId); err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 	return connect.NewResponse(&v1.CancelRegistrationResponse{
 		RegistrationId: req.Msg.RegistrationId,
@@ -190,10 +188,7 @@ func (h *EventHandler) CancelRegistration(ctx context.Context, req *connect.Requ
 func (h *EventHandler) GetMyRegistrations(ctx context.Context, req *connect.Request[v1.GetMyRegistrationsRequest]) (*connect.Response[v1.GetMyRegistrationsResponse], error) {
 	regs, err := h.svc.GetMyRegistrations(ctx)
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoRegs []*v1.Registration
@@ -209,10 +204,7 @@ func (h *EventHandler) GetMyRegistrations(ctx context.Context, req *connect.Requ
 func (h *EventHandler) ListEventRegistrations(ctx context.Context, req *connect.Request[v1.ListEventRegistrationsRequest]) (*connect.Response[v1.ListEventRegistrationsResponse], error) {
 	regs, err := h.svc.ListEventRegistrations(ctx, req.Msg.EventId)
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoRegs []*v1.Registration
@@ -265,10 +257,7 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *connect.Request[v1.
 	)
 
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.UpdateEventResponse{
@@ -279,10 +268,7 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *connect.Request[v1.
 func (h *EventHandler) UpdateEventStatus(ctx context.Context, req *connect.Request[v1.UpdateEventStatusRequest]) (*connect.Response[v1.UpdateEventStatusResponse], error) {
 	e, err := h.svc.UpdateEventStatus(ctx, req.Msg.EventId, event.EventStatus(req.Msg.Status))
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.UpdateEventStatusResponse{

@@ -10,36 +10,36 @@ import (
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
-func TestProjectService_OrderFlow(t *testing.T) {
-	repo := memory.NewProjectRepository()
+func TestGroupBuyService_OrderFlow(t *testing.T) {
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
-	// Setup: Creator, Project, Product
+	// Setup: Creator, GroupBuy, Product
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	p, err := svc.CreateProject(creatorCtx, "Test Project", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "Test GroupBuy", "Desc")
 	if err != nil {
 		t.Fatalf("Failed to create project: %v", err)
 	}
-	// Activate project (default might be draft? logic says NewProject status=0 usually, CreateProject implementation sets it?
-	// Looking at CreateProject in service: p.Status = Active (1) or Draft?
+	// Activate GroupBuy
+	// Looking at CreateGroupBuy in service: p.Status = Active (1) or Draft?
 	// Let's assume we need to update it to Active if logic requires it.
-	// Actually, CreateProject sets Status=0 usually?
+	// Actually, CreateGroupBuy sets Status=0 usually?
 	// Let's explicitly update to Active just in case.
-	p, err = svc.UpdateProject(creatorCtx, p.ID, "", "", project.ProjectStatusActive, nil, "", nil, nil, nil, 0, nil, "")
+	gb, err = svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, nil, "", nil, nil, nil, 0, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to activate project: %v", err)
 	}
 
 	// Add Product
 	specs := []string{"Spec A", "Spec B"}
-	prod, err := svc.AddProduct(creatorCtx, p.ID, "Product 1", 100, 1.0, specs)
+	prod, err := svc.AddProduct(creatorCtx, gb.ID, "Product 1", 100, 1.0, specs)
 	if err != nil {
 		t.Fatalf("Failed to add product: %v", err)
 	}
 
 	// Test: User Creates Order
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
-	items := []*project.OrderItem{
+	items := []*groupbuy.OrderItem{
 		{
 			ProductID: prod.ID,
 			SpecID:    prod.Specs[0].ID, // Spec A
@@ -47,7 +47,7 @@ func TestProjectService_OrderFlow(t *testing.T) {
 		},
 	}
 
-	order, err := svc.CreateOrder(userCtx, p.ID, items, "Contact", "Address", "", "")
+	order, err := svc.CreateOrder(userCtx, gb.ID, items, "Contact", "Address", "", "")
 	if err != nil {
 		t.Fatalf("Failed to create order: %v", err)
 	}
@@ -75,7 +75,7 @@ func TestProjectService_OrderFlow(t *testing.T) {
 	}
 
 	// Test: Update Order (Change Qty, Change Spec)
-	newItems := []*project.OrderItem{
+	newItems := []*groupbuy.OrderItem{
 		{
 			ProductID: prod.ID,
 			SpecID:    prod.Specs[1].ID, // Spec B

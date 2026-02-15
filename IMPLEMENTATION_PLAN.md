@@ -17,7 +17,7 @@ buygo-api/
 ├── internal/
 │   ├── domain/          # Entities & Business Logic (Pure Go)
 │   │   ├── user/
-│   │   ├── project/
+│   │   ├── groupbuy/
 │   │   └── event/
 │   ├── port/            # Interfaces (Input/Output Ports)
 │   │   ├── repository/  # DB Interfaces
@@ -37,12 +37,13 @@ buygo-api/
     - Verify 3rd party tokens (Firebase).
     - Manage Profiles and Roles.
 
-### 2. Project Domain (Group Buying)
+### 2. GroupBuy Domain
 - **Entities**:
-    - `Project`: Status (`DRAFT`...`ARCHIVED`), PaymentMethods, ShippingOptions.
+    - `GroupBuy`: Status (`DRAFT`...`ARCHIVED`), PaymentMethods, ShippingOptions.
     - `Product`: Batch Logic, Rounding Config (`CEIL/FLOOR`, `Digit`).
     - `OrderItem`: Status (`UNORDERED` -> `ORDERED` -> ... -> `SENT`).
     - `PaymentRecord`: Status (`SUBMITTED` -> `CONFIRMED`).
+    - `PriceTemplate`: Reusable pricing configuration.
 - **Core Logic**:
     - **FIFO Batch Update**: Update oldest `UNORDERED` items first when Manager confirms order with supplier.
 
@@ -50,8 +51,10 @@ buygo-api/
 - **Entities**: `Event`, `EventItem` (Limits, Discounts).
 - **Features**: Registration with item limits.
 
-## Next Steps
-1.  **Specification**: Refer to `SPECIFICATION.md` for full Protobuf definitions and Logic.
-2.  **Codegen**: Update `.proto` files and run buf generate.
-3.  **Core**: Implement `User`, `Project`, `Order` domains with new Enums/Structs.
-4.  **Service**: Implement `BatchUpdate` logic.
+## Completed Milestones
+- [x] **Specification**: Refer to `SPECIFICATION.md` for full Protobuf definitions and Logic.
+- [x] **Codegen**: Update `.proto` files and run buf generate.
+- [x] **Core**: Implement `User`, `GroupBuy`, `Order` domains with new Enums/Structs.
+- [x] **Service**: Implement `BatchUpdate` logic.
+- [x] **Refactoring**: Rename Project to GroupBuy.
+- [x] **Testing**: Add PriceTemplate tests.

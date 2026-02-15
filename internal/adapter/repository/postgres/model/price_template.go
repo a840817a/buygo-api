@@ -17,13 +17,13 @@ type PriceTemplate struct {
 	UpdatedAt      time.Time
 }
 
-func FromDomainPriceTemplate(pt *project.PriceTemplate) *PriceTemplate {
+func FromDomainPriceTemplate(pt *groupbuy.PriceTemplate) *PriceTemplate {
 	if pt == nil {
 		return nil
 	}
 	var rm, rd int
 	if pt.Rounding != nil {
-		rm = pt.Rounding.Method
+		rm = int(pt.Rounding.Method)
 		rd = pt.Rounding.Digit
 	}
 	return &PriceTemplate{
@@ -38,17 +38,17 @@ func FromDomainPriceTemplate(pt *project.PriceTemplate) *PriceTemplate {
 	}
 }
 
-func (m *PriceTemplate) ToDomain() *project.PriceTemplate {
+func (m *PriceTemplate) ToDomain() *groupbuy.PriceTemplate {
 	if m == nil {
 		return nil
 	}
-	return &project.PriceTemplate{
+	return &groupbuy.PriceTemplate{
 		ID:             m.ID,
 		Name:           m.Name,
 		SourceCurrency: m.SourceCurrency,
 		ExchangeRate:   m.ExchangeRate,
-		Rounding: &project.RoundingConfig{
-			Method: m.RoundingMethod,
+		Rounding: &groupbuy.RoundingConfig{
+			Method: groupbuy.RoundingMethod(m.RoundingMethod),
 			Digit:  m.RoundingDigit,
 		},
 	}

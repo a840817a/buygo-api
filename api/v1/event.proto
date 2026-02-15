@@ -125,6 +125,12 @@ message CreateEventRequest {
   google.protobuf.Timestamp end_time = 4;
   repeated DiscountRule discounts = 5;
   repeated EventItem items = 6;
+  string location = 7;
+  string cover_image_url = 8;
+  google.protobuf.Timestamp registration_deadline = 9;
+  repeated string payment_methods = 10;
+  bool allow_modification = 11;
+  repeated string manager_ids = 12;
 }
 
 message CreateEventResponse {

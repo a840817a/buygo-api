@@ -55,10 +55,21 @@ func (g *JWTGenerator) ParseToken(tokenStr string) (*auth.Claims, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		roleFloat, _ := claims["role"].(float64)
+		sub, ok := claims["sub"].(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid subject in token")
+		}
+
+		var role user.UserRole
+		if roleFloat, ok := claims["role"].(float64); ok {
+			role = user.UserRole(roleFloat)
+		} else {
+			role = user.UserRoleUnspecified
+		}
+
 		return &auth.Claims{
-			UserID: claims["sub"].(string),
-			Role:   user.UserRole(roleFloat),
+			UserID: sub,
+			Role:   role,
 		}, nil
 	}
 

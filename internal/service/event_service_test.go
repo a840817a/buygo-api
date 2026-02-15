@@ -23,13 +23,13 @@ func TestEventService_AccessControl(t *testing.T) {
 
 	// 1. Create Event
 	// Anon -> Fail
-	_, err := svc.CreateEvent(anonCtx, "Title", "Desc", time.Now(), time.Now(), nil, nil)
+	_, err := svc.CreateEvent(anonCtx, "Title", "Desc", "", "", time.Now(), time.Now(), nil, nil, false, nil, nil, nil)
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Anon should not create event, got %v", err)
 	}
 
 	// Creator -> Success
-	e, err := svc.CreateEvent(creatorCtx, "My Event", "Desc", time.Now(), time.Now(), nil, nil)
+	e, err := svc.CreateEvent(creatorCtx, "My Event", "Desc", "", "", time.Now(), time.Now(), nil, nil, false, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Creator should create event, got %v", err)
 	}

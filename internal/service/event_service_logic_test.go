@@ -116,20 +116,20 @@ func TestEventService_Logic_UpdateStatus(t *testing.T) {
 	}
 
 	// 2. Creator Update -> Success
-	upd, err := svc.UpdateRegistrationStatus(creatorCtx, reg.ID, event.RegistrationStatusConfirmed, 2)
+	upd, err := svc.UpdateRegistrationStatus(creatorCtx, reg.ID, event.RegistrationStatusConfirmed, event.PaymentStatusSubmitted)
 	if err != nil {
 		t.Errorf("Creator should update status, got %v", err)
 	}
-	if upd.Status != event.RegistrationStatusConfirmed || upd.PaymentStatus != 2 {
+	if upd.Status != event.RegistrationStatusConfirmed || upd.PaymentStatus != event.PaymentStatusSubmitted {
 		t.Errorf("Status mismatch")
 	}
 
 	// 3. Manager Update -> Success
 	// Reset
-	reg.PaymentStatus = 1
+	reg.PaymentStatus = event.PaymentStatusUnpaid
 	repo.UpdateRegistration(context.Background(), reg)
 
-	upd, err = svc.UpdateRegistrationStatus(managerCtx, reg.ID, 0, 3)
+	upd, err = svc.UpdateRegistrationStatus(managerCtx, reg.ID, 0, event.PaymentStatusPaid)
 	if err != nil {
 		t.Errorf("Manager should update status, got %v", err)
 	}
@@ -138,12 +138,12 @@ func TestEventService_Logic_UpdateStatus(t *testing.T) {
 	if upd.Status != event.RegistrationStatusConfirmed {
 		t.Errorf("Status should persist if unspecified passed")
 	}
-	if upd.PaymentStatus != 3 {
+	if upd.PaymentStatus != event.PaymentStatusPaid {
 		t.Errorf("Payment status should update")
 	}
 
 	// 4. Admin Update -> Success
-	upd, err = svc.UpdateRegistrationStatus(adminCtx, reg.ID, event.RegistrationStatusCancelled, 4)
+	upd, err = svc.UpdateRegistrationStatus(adminCtx, reg.ID, event.RegistrationStatusCancelled, event.PaymentStatusRefunded)
 	if err != nil {
 		t.Errorf("Admin should update status, got %v", err)
 	}

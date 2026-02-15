@@ -18,7 +18,7 @@ func newTestDB(t *testing.T) *gorm.DB {
 
 	err = db.AutoMigrate(
 		&model.User{},
-		&model.Project{},
+		&model.GroupBuy{},
 		&model.Product{},
 		&model.ProductSpec{},
 		&model.Order{},
@@ -29,24 +29,24 @@ func newTestDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func TestProjectRepository_UpdateShippingConfigs(t *testing.T) {
+func TestGroupBuyRepository_UpdateShippingConfigs(t *testing.T) {
 	db := newTestDB(t)
-	repo := NewProjectRepository(db)
+	repo := NewGroupBuyRepository(db)
 	ctx := context.Background()
 
 	// 1. Create Initial Project
 	creatorID := "user-1"
 	db.Create(&model.User{ID: creatorID, Name: "Creator"})
 
-	proj := &project.Project{
+	proj := &groupbuy.GroupBuy{
 		ID:          "proj-1",
 		Title:       "Test Project",
 		Description: "Desc",
-		Status:      project.ProjectStatusActive,
+		Status:      groupbuy.GroupBuyStatusActive,
 		CreatorID:   creatorID,
 		CreatedAt:   time.Now(),
-		ShippingConfigs: []*project.ShippingConfig{
-			{ID: "sc-1", Name: "Initial Meetup", Type: project.ShippingTypeMeetup, Price: 0},
+		ShippingConfigs: []*groupbuy.ShippingConfig{
+			{ID: "sc-1", Name: "Initial Meetup", Type: groupbuy.ShippingTypeMeetup, Price: 0},
 		},
 	}
 	err := repo.Create(ctx, proj)
@@ -56,13 +56,13 @@ func TestProjectRepository_UpdateShippingConfigs(t *testing.T) {
 	saved, err := repo.GetByID(ctx, "proj-1")
 	assert.NoError(t, err)
 	assert.Len(t, saved.ShippingConfigs, 1)
-	assert.Equal(t, project.ShippingTypeMeetup, saved.ShippingConfigs[0].Type)
+	assert.Equal(t, groupbuy.ShippingTypeMeetup, saved.ShippingConfigs[0].Type)
 
 	// 2. Update with New Shipping Config (Simulate Type Change / Add)
 	// Changing "Initial Meetup" to "Delivery" type (Type 1), adding "Store Pickup" (Type 2)
-	updatedConfigs := []*project.ShippingConfig{
-		{ID: "sc-1", Name: "Changed to Delivery", Type: project.ShippingTypeDelivery, Price: 100},
-		{ID: "sc-2", Name: "New Store Pickup", Type: project.ShippingTypeStorePickup, Price: 60},
+	updatedConfigs := []*groupbuy.ShippingConfig{
+		{ID: "sc-1", Name: "Changed to Delivery", Type: groupbuy.ShippingTypeDelivery, Price: 100},
+		{ID: "sc-2", Name: "New Store Pickup", Type: groupbuy.ShippingTypeStorePickup, Price: 60},
 	}
 	proj.ShippingConfigs = updatedConfigs
 
@@ -76,8 +76,8 @@ func TestProjectRepository_UpdateShippingConfigs(t *testing.T) {
 	assert.Len(t, final.ShippingConfigs, 2)
 
 	// Check Types
-	var delivery *project.ShippingConfig
-	var pickup *project.ShippingConfig
+	var delivery *groupbuy.ShippingConfig
+	var pickup *groupbuy.ShippingConfig
 
 	for _, sc := range final.ShippingConfigs {
 		if sc.ID == "sc-1" {
@@ -88,15 +88,15 @@ func TestProjectRepository_UpdateShippingConfigs(t *testing.T) {
 	}
 
 	assert.NotNil(t, delivery)
-	assert.Equal(t, project.ShippingTypeDelivery, delivery.Type, "Type should be Delivery (1)")
+	assert.Equal(t, groupbuy.ShippingTypeDelivery, delivery.Type, "Type should be Delivery (1)")
 	assert.Equal(t, int64(100), delivery.Price)
 
 	assert.NotNil(t, pickup)
-	assert.Equal(t, project.ShippingTypeStorePickup, pickup.Type, "Type should be Store Pickup (2)")
+	assert.Equal(t, groupbuy.ShippingTypeStorePickup, pickup.Type, "Type should be Store Pickup (2)")
 
 	// 4. Test Meetup Again
-	proj.ShippingConfigs = []*project.ShippingConfig{
-		{ID: "sc-3", Name: "Meetup Only", Type: project.ShippingTypeMeetup, Price: 0},
+	proj.ShippingConfigs = []*groupbuy.ShippingConfig{
+		{ID: "sc-3", Name: "Meetup Only", Type: groupbuy.ShippingTypeMeetup, Price: 0},
 	}
 	err = repo.Update(ctx, proj)
 	assert.NoError(t, err)
@@ -104,5 +104,5 @@ func TestProjectRepository_UpdateShippingConfigs(t *testing.T) {
 	final2, err := repo.GetByID(ctx, "proj-1")
 	assert.NoError(t, err)
 	assert.Len(t, final2.ShippingConfigs, 1)
-	assert.Equal(t, project.ShippingTypeMeetup, final2.ShippingConfigs[0].Type, "Type should be Meetup (3)")
+	assert.Equal(t, groupbuy.ShippingTypeMeetup, final2.ShippingConfigs[0].Type, "Type should be Meetup (3)")
 }

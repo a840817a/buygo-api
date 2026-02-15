@@ -12,39 +12,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Helper to create a fully setup project with an active product
-func setupProjectWithProduct(t *testing.T) (*GroupBuyService, *project.Project, *project.Product, context.Context, context.Context) {
+// Helper to create a fully setup group buy with an active product
+func setupGroupBuyWithProduct(t *testing.T) (*GroupBuyService, *groupbuy.GroupBuy, *groupbuy.Product, context.Context, context.Context) {
 	t.Helper()
-	repo := memory.NewProjectRepository()
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 
-	p, err := svc.CreateProject(creatorCtx, "Proj", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
 	require.NoError(t, err)
 
 	// Add a shipping config
-	_, err = svc.UpdateProject(creatorCtx, p.ID, "", "", project.ProjectStatusActive, nil, "", nil,
-		[]*project.ShippingConfig{
+	_, err = svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, nil, "", nil,
+		[]*groupbuy.ShippingConfig{
 			{ID: "ship-1", Name: "Standard", Price: 60},
 			{ID: "ship-2", Name: "Express", Price: 150},
 		}, nil, 0, nil, "")
 	require.NoError(t, err)
 
-	prod, err := svc.AddProduct(creatorCtx, p.ID, "Widget", 100, 1.0, []string{"Red", "Blue"})
+	prod, err := svc.AddProduct(creatorCtx, gb.ID, "Widget", 100, 1.0, []string{"Red", "Blue"})
 	require.NoError(t, err)
 
-	return svc, p, prod, creatorCtx, userCtx
+	return svc, gb, prod, creatorCtx, userCtx
 }
 
 // --- UpdateOrder: PaymentConfirmed Lock ---
 
 func TestUpdateOrder_PaymentConfirmedLock(t *testing.T) {
-	svc, p, prod, creatorCtx, userCtx := setupProjectWithProduct(t)
+	svc, gb, prod, creatorCtx, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
-	order, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "", "")
+	items := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
+	order, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "", "")
 	require.NoError(t, err)
 
 	// Manager confirms payment
@@ -60,10 +60,10 @@ func TestUpdateOrder_PaymentConfirmedLock(t *testing.T) {
 // --- UpdateOrder: Manager vs User on Processed Items ---
 
 func TestUpdateOrder_ManagerCanEditProcessedItems(t *testing.T) {
-	svc, p, prod, creatorCtx, userCtx := setupProjectWithProduct(t)
+	svc, gb, prod, creatorCtx, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
-	order, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "", "")
+	items := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
+	order, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "", "")
 	require.NoError(t, err)
 
 	// Simulate item processing: set status > 1 by updating via repo directly
@@ -75,7 +75,7 @@ func TestUpdateOrder_ManagerCanEditProcessedItems(t *testing.T) {
 	// So let's test via manager updating item status first
 
 	// Manager can update even with processed items (manager privilege)
-	newItems := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[1].ID, Quantity: 2}}
+	newItems := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[1].ID, Quantity: 2}}
 	_, err = svc.UpdateOrder(creatorCtx, order.ID, newItems, "manager edit")
 	assert.NoError(t, err, "Manager should be able to edit even processed items")
 }
@@ -83,28 +83,28 @@ func TestUpdateOrder_ManagerCanEditProcessedItems(t *testing.T) {
 // --- UpdateOrder: Non-Manager Status Reset ---
 
 func TestUpdateOrder_NonManagerStatusReset(t *testing.T) {
-	svc, p, prod, _, userCtx := setupProjectWithProduct(t)
+	svc, gb, prod, _, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
-	order, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "", "")
+	items := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
+	order, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "", "")
 	require.NoError(t, err)
 
 	// User updates order → items should be reset to UNORDERED (1)
-	newItems := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[1].ID, Quantity: 3}}
+	newItems := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[1].ID, Quantity: 3}}
 	updated, err := svc.UpdateOrder(userCtx, order.ID, newItems, "changed spec")
 	require.NoError(t, err)
 	for _, item := range updated.Items {
-		assert.Equal(t, 1, item.Status, "Non-manager items should be reset to UNORDERED")
+		assert.Equal(t, groupbuy.OrderItemStatusUnordered, item.Status, "Non-manager items should be reset to UNORDERED")
 	}
 }
 
 // --- UpdatePaymentInfo: Confirmed Lock ---
 
 func TestUpdatePaymentInfo_ConfirmedLock(t *testing.T) {
-	svc, p, prod, creatorCtx, userCtx := setupProjectWithProduct(t)
+	svc, gb, prod, creatorCtx, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
-	order, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "", "")
+	items := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 1}}
+	order, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "", "")
 	require.NoError(t, err)
 
 	// Confirm payment
@@ -119,45 +119,45 @@ func TestUpdatePaymentInfo_ConfirmedLock(t *testing.T) {
 // --- UpdatePaymentInfo: Auto-SUBMITTED ---
 
 func TestUpdatePaymentInfo_AutoSubmitted(t *testing.T) {
-	svc, p, _, _, userCtx := setupProjectWithProduct(t)
+	svc, gb, _, _, userCtx := setupGroupBuyWithProduct(t)
 
-	order, err := svc.CreateOrder(userCtx, p.ID, nil, "C", "A", "", "")
+	order, err := svc.CreateOrder(userCtx, gb.ID, nil, "C", "A", "", "")
 	require.NoError(t, err)
 
 	// Set method + account → should auto-set PaymentStatus to SUBMITTED (2)
 	updated, err := svc.UpdatePaymentInfo(userCtx, order.ID, "Bank Transfer", "12345", "", "", nil, 0)
 	require.NoError(t, err)
-	assert.Equal(t, 2, updated.PaymentStatus, "Payment with method+account should auto-submit")
+	assert.Equal(t, groupbuy.PaymentStatusSubmitted, updated.PaymentStatus, "Payment with method+account should auto-submit")
 }
 
 func TestUpdatePaymentInfo_CashMethod(t *testing.T) {
-	svc, p, _, _, userCtx := setupProjectWithProduct(t)
+	svc, gb, _, _, userCtx := setupGroupBuyWithProduct(t)
 
-	order, err := svc.CreateOrder(userCtx, p.ID, nil, "C", "A", "", "")
+	order, err := svc.CreateOrder(userCtx, gb.ID, nil, "C", "A", "", "")
 	require.NoError(t, err)
 
 	// Cash method → should auto-submit even without account
 	updated, err := svc.UpdatePaymentInfo(userCtx, order.ID, "Cash", "", "", "", nil, 0)
 	require.NoError(t, err)
-	assert.Equal(t, 2, updated.PaymentStatus, "Cash method should auto-submit without account")
+	assert.Equal(t, groupbuy.PaymentStatusSubmitted, updated.PaymentStatus, "Cash method should auto-submit without account")
 }
 
 // --- CreateOrder: Shipping Fee ---
 
 func TestCreateOrder_ShippingFee(t *testing.T) {
-	svc, p, prod, _, userCtx := setupProjectWithProduct(t)
+	svc, gb, prod, _, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 2}}
+	items := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: prod.Specs[0].ID, Quantity: 2}}
 
 	// Valid shipping method
-	order, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "ship-1", "")
+	order, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "ship-1", "")
 	require.NoError(t, err)
 	assert.Equal(t, int64(60), order.ShippingFee)
 	expectedTotal := int64(100*2) + 60
 	assert.Equal(t, expectedTotal, order.TotalAmount, "Total should include shipping fee")
 
 	// Invalid shipping method → error
-	_, err = svc.CreateOrder(userCtx, p.ID, items, "C", "A", "ship-invalid", "")
+	_, err = svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "ship-invalid", "")
 	assert.Error(t, err, "Invalid shipping method should error")
 	assert.Contains(t, err.Error(), "invalid shipping method")
 }
@@ -165,10 +165,10 @@ func TestCreateOrder_ShippingFee(t *testing.T) {
 // --- CreateOrder: Invalid Product ---
 
 func TestCreateOrder_InvalidProduct(t *testing.T) {
-	svc, p, _, _, userCtx := setupProjectWithProduct(t)
+	svc, gb, _, _, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: "non-existent", Quantity: 1}}
-	_, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "", "")
+	items := []*groupbuy.OrderItem{{ProductID: "non-existent", Quantity: 1}}
+	_, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "", "")
 	assert.Error(t, err, "Non-existent product should error")
 	assert.Contains(t, err.Error(), "product not found")
 }
@@ -176,27 +176,27 @@ func TestCreateOrder_InvalidProduct(t *testing.T) {
 // --- CreateOrder: Invalid Spec ---
 
 func TestCreateOrder_InvalidSpec(t *testing.T) {
-	svc, p, prod, _, userCtx := setupProjectWithProduct(t)
+	svc, gb, prod, _, userCtx := setupGroupBuyWithProduct(t)
 
-	items := []*project.OrderItem{{ProductID: prod.ID, SpecID: "bad-spec", Quantity: 1}}
-	_, err := svc.CreateOrder(userCtx, p.ID, items, "C", "A", "", "")
+	items := []*groupbuy.OrderItem{{ProductID: prod.ID, SpecID: "bad-spec", Quantity: 1}}
+	_, err := svc.CreateOrder(userCtx, gb.ID, items, "C", "A", "", "")
 	assert.Error(t, err, "Non-existent spec should error")
 	assert.Contains(t, err.Error(), "spec not found")
 }
 
 // --- CreateOrder: Inactive Project ---
 
-func TestCreateOrder_InactiveProject(t *testing.T) {
-	repo := memory.NewProjectRepository()
+func TestCreateOrder_InactiveGroupBuy(t *testing.T) {
+	repo := memory.NewGroupBuyRepository()
 	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 
-	p, _ := svc.CreateProject(creatorCtx, "Proj", "Desc")
-	// Project stays in Draft status (not activated)
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	// GroupBuy stays in Draft status (not activated)
 
-	_, err := svc.CreateOrder(userCtx, p.ID, nil, "C", "A", "", "")
+	_, err := svc.CreateOrder(userCtx, gb.ID, nil, "C", "A", "", "")
 	assert.Error(t, err, "Should not create order on inactive project")
 	assert.Contains(t, err.Error(), "not active")
 }

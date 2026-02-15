@@ -61,14 +61,10 @@ func (h *AuthHandler) GetMe(ctx context.Context, req *connect.Request[v1.GetMeRe
 }
 
 func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
-	// TODO: Implement Admin check (though Service might handle it via Context, Handler should ideally check too or Service does)
-	// Service checks context? No, Service ListUsers just calls repo.
-	// The Service *should* check permission if it's a protected business logic.
-	// But usually we check at Handler or Interceptor layer for role.
-	// For now, let's assume Interceptor populates context, and Service or Handler checks.
-	// Since I'm not adding auth middleware to this specific handler in main.go yet (it's global),
-	// I should probably check here or rely on Service.
-	// Let's implement basics first.
+	_, role, ok := auth.FromContext(ctx)
+	if !ok || role != int(user.UserRoleSysAdmin) {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("admin access required"))
+	}
 
 	limit := int(req.Msg.PageSize)
 	offset := 0 // Parse PageToken if implemented
@@ -91,7 +87,10 @@ func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.Lis
 }
 
 func (h *AuthHandler) UpdateUserRole(ctx context.Context, req *connect.Request[v1.UpdateUserRoleRequest]) (*connect.Response[v1.UpdateUserRoleResponse], error) {
-	// TODO: Implement Admin check
+	_, role, ok := auth.FromContext(ctx)
+	if !ok || role != int(user.UserRoleSysAdmin) {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("admin access required"))
+	}
 
 	targetUserID := req.Msg.UserId
 	newRole := user.UserRole(req.Msg.Role) // Proto enum to Domain enum mapping
@@ -114,10 +113,7 @@ func (h *AuthHandler) UpdateUserRole(ctx context.Context, req *connect.Request[v
 func (h *AuthHandler) ListAssignableManagers(ctx context.Context, req *connect.Request[v1.ListAssignableManagersRequest]) (*connect.Response[v1.ListAssignableManagersResponse], error) {
 	managers, err := h.authService.ListAssignableManagers(ctx, req.Msg.Query)
 	if err != nil {
-		if errors.Is(err, service.ErrPermissionDenied) {
-			return nil, connect.NewError(connect.CodePermissionDenied, err)
-		}
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoManagers []*v1.User

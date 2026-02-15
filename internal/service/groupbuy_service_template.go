@@ -3,22 +3,17 @@ package service
 import (
 	"context"
 
-	"github.com/buygo/buygo-api/internal/domain/auth"
 	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
 
 // CreatePriceTemplate: Admin Only
-func (s *GroupBuyService) CreatePriceTemplate(ctx context.Context, name, sourceCurrency string, rate float64, rounding *project.RoundingConfig) (*project.PriceTemplate, error) {
-	_, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
-	}
-	if role != int(user.UserRoleSysAdmin) {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) CreatePriceTemplate(ctx context.Context, name, sourceCurrency string, rate float64, rounding *groupbuy.RoundingConfig) (*groupbuy.PriceTemplate, error) {
+	if _, _, err := requireRole(ctx, user.UserRoleSysAdmin); err != nil {
+		return nil, err
 	}
 
-	pt := project.NewPriceTemplate(name, sourceCurrency, rate, rounding)
+	pt := groupbuy.NewPriceTemplate(name, sourceCurrency, rate, rounding)
 	if err := s.repo.CreatePriceTemplate(ctx, pt); err != nil {
 		return nil, err
 	}
@@ -27,31 +22,25 @@ func (s *GroupBuyService) CreatePriceTemplate(ctx context.Context, name, sourceC
 }
 
 // ListPriceTemplates: Authenticated (Managers need to see them to select)
-func (s *GroupBuyService) ListPriceTemplates(ctx context.Context) ([]*project.PriceTemplate, error) {
-	_, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) ListPriceTemplates(ctx context.Context) ([]*groupbuy.PriceTemplate, error) {
+	if _, _, err := checkLogin(ctx); err != nil {
+		return nil, err
 	}
 	return s.repo.ListPriceTemplates(ctx)
 }
 
 // GetPriceTemplate: Authenticated
-func (s *GroupBuyService) GetPriceTemplate(ctx context.Context, id string) (*project.PriceTemplate, error) {
-	_, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) GetPriceTemplate(ctx context.Context, id string) (*groupbuy.PriceTemplate, error) {
+	if _, _, err := checkLogin(ctx); err != nil {
+		return nil, err
 	}
 	return s.repo.GetPriceTemplate(ctx, id)
 }
 
 // UpdatePriceTemplate: Admin Only
-func (s *GroupBuyService) UpdatePriceTemplate(ctx context.Context, id, name, sourceCurrency string, rate float64, rounding *project.RoundingConfig) (*project.PriceTemplate, error) {
-	_, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
-	}
-	if role != int(user.UserRoleSysAdmin) {
-		return nil, ErrPermissionDenied
+func (s *GroupBuyService) UpdatePriceTemplate(ctx context.Context, id, name, sourceCurrency string, rate float64, rounding *groupbuy.RoundingConfig) (*groupbuy.PriceTemplate, error) {
+	if _, _, err := requireRole(ctx, user.UserRoleSysAdmin); err != nil {
+		return nil, err
 	}
 
 	pt, err := s.repo.GetPriceTemplate(ctx, id)
@@ -83,12 +72,8 @@ func (s *GroupBuyService) UpdatePriceTemplate(ctx context.Context, id, name, sou
 
 // DeletePriceTemplate: Admin Only
 func (s *GroupBuyService) DeletePriceTemplate(ctx context.Context, id string) error {
-	_, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return ErrPermissionDenied
-	}
-	if role != int(user.UserRoleSysAdmin) {
-		return ErrPermissionDenied
+	if _, _, err := requireRole(ctx, user.UserRoleSysAdmin); err != nil {
+		return err
 	}
 
 	return s.repo.DeletePriceTemplate(ctx, id)

@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/buygo/buygo-api/internal/domain/auth"
 	"github.com/buygo/buygo-api/internal/domain/event"
 	"github.com/buygo/buygo-api/internal/domain/user"
 )
@@ -23,14 +22,14 @@ func NewEventService(repo event.Repository) *EventService {
 }
 
 // CreateEvent: Creator/Admin Only
-func (s *EventService) CreateEvent(ctx context.Context, title, description string, start, end time.Time, items []*event.EventItem, discounts []*event.DiscountRule) (*event.Event, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *EventService) CreateEvent(ctx context.Context, title, description, location, coverImage string, start, end time.Time, registrationDeadline *time.Time, paymentMethods []string, allowModification bool, managerIDs []string, items []*event.EventItem, discounts []*event.DiscountRule) (*event.Event, error) {
+	usrID, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if role != int(user.UserRoleCreator) && role != int(user.UserRoleSysAdmin) {
-		return nil, ErrPermissionDenied
+	if _, _, err := requireRole(ctx, user.UserRoleCreator); err != nil {
+		return nil, err
 	}
 
 	eventID := uuid.New().String()
@@ -41,18 +40,36 @@ func (s *EventService) CreateEvent(ctx context.Context, title, description strin
 		item.EventID = eventID
 	}
 
+	mgrs := append([]string{usrID}, managerIDs...)
+	// Deduplicate manager IDs
+	seen := make(map[string]bool)
+	uniqueMgrs := make([]string, 0, len(mgrs))
+	for _, m := range mgrs {
+		if !seen[m] {
+			seen[m] = true
+			uniqueMgrs = append(uniqueMgrs, m)
+		}
+	}
+
 	e := &event.Event{
-		ID:          eventID,
-		Title:       title,
-		Description: description,
-		StartTime:   start,
-		EndTime:     end,
-		CreatorID:   usrID,
-		Status:      event.EventStatusDraft,
-		ManagerIDs:  []string{usrID},
-		Discounts:   discounts,
-		Items:       items,
-		CreatedAt:   time.Now(),
+		ID:             eventID,
+		Title:          title,
+		Description:    description,
+		Location:       location,
+		CoverImage:     coverImage,
+		StartTime:      start,
+		EndTime:        end,
+		CreatorID:      usrID,
+		Status:         event.EventStatusDraft,
+		ManagerIDs:     uniqueMgrs,
+		PaymentMethods: paymentMethods,
+		AllowException: allowModification,
+		Discounts:      discounts,
+		Items:          items,
+		CreatedAt:      time.Now(),
+	}
+	if registrationDeadline != nil {
+		e.RegistrationDeadline = *registrationDeadline
 	}
 	if err := s.repo.Create(ctx, e); err != nil {
 		return nil, err
@@ -68,9 +85,9 @@ func (s *EventService) ListEvents(ctx context.Context, limit, offset int) ([]*ev
 
 // ListManagerEvents: Authenticated Manager/Admin View
 func (s *EventService) ListManagerEvents(ctx context.Context, limit, offset int) ([]*event.Event, error) {
-	userID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	userID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 	isSysAdmin := role == int(user.UserRoleSysAdmin)
 	return s.repo.List(ctx, limit, offset, userID, isSysAdmin, true)
@@ -83,9 +100,9 @@ func (s *EventService) GetEvent(ctx context.Context, id string) (*event.Event, e
 
 // RegisterEvent: User Only
 func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items []*event.RegistrationItem, contactInfo, notes string) (*event.Registration, error) {
-	usrID, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	usrID, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	// Check Event Status
@@ -143,7 +160,7 @@ func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items 
 		ContactInfo:   contactInfo,
 		Notes:         notes,
 		SelectedItems: items,
-		PaymentStatus: int(event.PaymentStatusUnpaid), // Default to Unpaid (1) instead of 0
+		PaymentStatus: event.PaymentStatusUnpaid,
 	}
 
 	// Calculate Totals & Discounts
@@ -157,9 +174,9 @@ func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items 
 
 // UpdateRegistration: User Only (with checks)
 func (s *EventService) UpdateRegistration(ctx context.Context, regID string, items []*event.RegistrationItem, contactInfo, notes string) (*event.Registration, error) {
-	usrID, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	usrID, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	reg, err := s.repo.GetRegistration(ctx, regID)
@@ -252,10 +269,10 @@ func (s *EventService) UpdateRegistration(ctx context.Context, regID string, ite
 }
 
 // UpdateRegistrationStatus: Manager/Admin Only
-func (s *EventService) UpdateRegistrationStatus(ctx context.Context, regID string, status event.RegistrationStatus, paymentStatus int) (*event.Registration, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+func (s *EventService) UpdateRegistrationStatus(ctx context.Context, regID string, status event.RegistrationStatus, paymentStatus event.PaymentStatus) (*event.Registration, error) {
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	reg, err := s.repo.GetRegistration(ctx, regID)
@@ -265,27 +282,20 @@ func (s *EventService) UpdateRegistrationStatus(ctx context.Context, regID strin
 
 	// Check permissions
 	// Must be Admin OR Event Manager
-	isAuth := false
-	if role == int(user.UserRoleSysAdmin) {
-		isAuth = true
-	} else {
+	if !isSysAdmin(role) {
 		e, err := s.repo.GetByID(ctx, reg.EventID)
 		if err != nil {
 			return nil, err
 		}
-		if isEventManager(e, usrID) {
-			isAuth = true
+		if !canManage(role, usrID, e) {
+			return nil, ErrPermissionDenied
 		}
-	}
-
-	if !isAuth {
-		return nil, ErrPermissionDenied
 	}
 
 	if status != event.RegistrationStatusUnspecified {
 		reg.Status = status
 	}
-	if paymentStatus != 0 {
+	if paymentStatus != event.PaymentStatusUnspecified {
 		reg.PaymentStatus = paymentStatus
 	}
 
@@ -297,9 +307,9 @@ func (s *EventService) UpdateRegistrationStatus(ctx context.Context, regID strin
 
 // CancelRegistration: Owner Only
 func (s *EventService) CancelRegistration(ctx context.Context, regID string) error {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return ErrPermissionDenied
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return err
 	}
 
 	reg, err := s.repo.GetRegistration(ctx, regID)
@@ -317,9 +327,9 @@ func (s *EventService) CancelRegistration(ctx context.Context, regID string) err
 
 // GetMyRegistrations: User Only
 func (s *EventService) GetMyRegistrations(ctx context.Context) ([]*event.Registration, error) {
-	usrID, _, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	usrID, _, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return s.repo.ListRegistrations(ctx, "", usrID)
@@ -327,9 +337,9 @@ func (s *EventService) GetMyRegistrations(ctx context.Context) ([]*event.Registr
 
 // ListEventRegistrations: Manager/Admin Only
 func (s *EventService) ListEventRegistrations(ctx context.Context, eventID string) ([]*event.Registration, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	e, err := s.repo.GetByID(ctx, eventID)
@@ -338,16 +348,7 @@ func (s *EventService) ListEventRegistrations(ctx context.Context, eventID strin
 	}
 
 	// Check permissions
-	isAuth := false
-	if role == int(user.UserRoleSysAdmin) {
-		isAuth = true
-	} else {
-		if isEventManager(e, usrID) {
-			isAuth = true
-		}
-	}
-
-	if !isAuth {
+	if !canManage(role, usrID, e) {
 		return nil, ErrPermissionDenied
 	}
 
@@ -356,9 +357,9 @@ func (s *EventService) ListEventRegistrations(ctx context.Context, eventID strin
 
 // UpdateEvent: Manager/Admin Only
 func (s *EventService) UpdateEvent(ctx context.Context, id string, title, desc, location, cover string, start, end time.Time, allowMod bool, items []*event.EventItem, managerIDs []string, discounts []*event.DiscountRule) (*event.Event, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	e, err := s.repo.GetByID(ctx, id)
@@ -367,15 +368,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, id string, title, desc, 
 	}
 
 	// Permission Check
-	isAuth := false
-	if role == int(user.UserRoleSysAdmin) {
-		isAuth = true
-	} else {
-		if isEventManager(e, usrID) {
-			isAuth = true
-		}
-	}
-	if !isAuth {
+	if !canManage(role, usrID, e) {
 		return nil, ErrPermissionDenied
 	}
 
@@ -417,9 +410,9 @@ func (s *EventService) UpdateEvent(ctx context.Context, id string, title, desc, 
 
 // UpdateEventStatus: Manager/Admin Only
 func (s *EventService) UpdateEventStatus(ctx context.Context, id string, status event.EventStatus) (*event.Event, error) {
-	usrID, role, ok := auth.FromContext(ctx)
-	if !ok {
-		return nil, ErrPermissionDenied
+	usrID, role, err := checkLogin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	e, err := s.repo.GetByID(ctx, id)
@@ -428,15 +421,7 @@ func (s *EventService) UpdateEventStatus(ctx context.Context, id string, status 
 	}
 
 	// Permission Check
-	isAuth := false
-	if role == int(user.UserRoleSysAdmin) {
-		isAuth = true
-	} else {
-		if isEventManager(e, usrID) {
-			isAuth = true
-		}
-	}
-	if !isAuth {
+	if !canManage(role, usrID, e) {
 		return nil, ErrPermissionDenied
 	}
 
@@ -448,21 +433,7 @@ func (s *EventService) UpdateEventStatus(ctx context.Context, id string, status 
 	return e, nil
 }
 
-// Helper
-func isEventManager(e *event.Event, userID string) bool {
-	if e.CreatorID == userID {
-		return true
-	}
-	for _, m := range e.ManagerIDs {
-		if m == userID {
-			return true
-		}
-	}
-	return false
-}
-
-// Calculate Total Logic
-// Calculate Total Logic
+// calculateTotal computes the subtotal and best applicable discount for the given items.
 func (s *EventService) calculateTotal(e *event.Event, items []*event.RegistrationItem) (int64, int64) {
 	var subtotal int64
 	var totalQty int32

@@ -80,7 +80,7 @@ type Registration struct {
 	EventID         string
 	UserID          string
 	Status          RegistrationStatus
-	PaymentStatus   int // 1=Unset, 2=Submitted, 3=Confirmed, 4=Rejected (Use Project enum or new one)
+	PaymentStatus   PaymentStatus
 	ContactInfo     string
 	Notes           string
 	SelectedItems   []*RegistrationItem
@@ -92,6 +92,19 @@ type Registration struct {
 type RegistrationItem struct {
 	EventItemID string
 	Quantity    int
+}
+
+// IsManager checks if the given user is the creator or a manager of this event.
+func (e *Event) IsManager(userID string) bool {
+	if e.CreatorID == userID {
+		return true
+	}
+	for _, m := range e.ManagerIDs {
+		if m == userID {
+			return true
+		}
+	}
+	return false
 }
 
 type Repository interface {
