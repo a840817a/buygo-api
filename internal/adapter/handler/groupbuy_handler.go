@@ -23,7 +23,28 @@ func NewGroupBuyHandler(svc *service.GroupBuyService) *GroupBuyHandler {
 var _ buygov1connect.GroupBuyServiceHandler = (*GroupBuyHandler)(nil)
 
 func (h *GroupBuyHandler) CreateGroupBuy(ctx context.Context, req *connect.Request[v1.CreateGroupBuyRequest]) (*connect.Response[v1.CreateGroupBuyResponse], error) {
-	gb, err := h.svc.CreateGroupBuy(ctx, req.Msg.Title, req.Msg.Description)
+	var deadline *time.Time
+	if req.Msg.Deadline != nil {
+		t := req.Msg.Deadline.AsTime()
+		deadline = &t
+	}
+	var rounding *groupbuy.RoundingConfig
+	if req.Msg.RoundingConfig != nil {
+		rounding = &groupbuy.RoundingConfig{
+			Method: groupbuy.RoundingMethod(req.Msg.RoundingConfig.Method),
+			Digit:  int(req.Msg.RoundingConfig.Digit),
+		}
+	}
+	shippingConfigs := make([]*groupbuy.ShippingConfig, 0, len(req.Msg.ShippingConfigs))
+	for _, sc := range req.Msg.ShippingConfigs {
+		shippingConfigs = append(shippingConfigs, fromProtoShippingConfig(sc))
+	}
+	products := make([]*groupbuy.Product, 0, len(req.Msg.Products))
+	for _, p := range req.Msg.Products {
+		products = append(products, fromProtoProduct(p))
+	}
+
+	gb, err := h.svc.CreateGroupBuy(ctx, req.Msg.Title, req.Msg.Description, products, req.Msg.CoverImageUrl, deadline, shippingConfigs, req.Msg.ManagerIds, req.Msg.ExchangeRate, rounding, req.Msg.SourceCurrency)
 	if err != nil {
 		return nil, mapError(err)
 	}

@@ -16,7 +16,7 @@ func TestGroupBuyService_OrderFlow(t *testing.T) {
 
 	// Setup: Creator, GroupBuy, Product
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	gb, err := svc.CreateGroupBuy(creatorCtx, "Test GroupBuy", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "Test GroupBuy", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to create project: %v", err)
 	}

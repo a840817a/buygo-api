@@ -813,11 +813,19 @@ func (x *ProductSpec) GetName() string {
 }
 
 type CreateGroupBuyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Title           string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description     string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Products        []*Product             `protobuf:"bytes,4,rep,name=products,proto3" json:"products,omitempty"`
+	CoverImageUrl   string                 `protobuf:"bytes,5,opt,name=cover_image_url,json=coverImageUrl,proto3" json:"cover_image_url,omitempty"`
+	Deadline        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=deadline,proto3" json:"deadline,omitempty"`
+	ShippingConfigs []*ShippingConfig      `protobuf:"bytes,7,rep,name=shipping_configs,json=shippingConfigs,proto3" json:"shipping_configs,omitempty"`
+	ManagerIds      []string               `protobuf:"bytes,8,rep,name=manager_ids,json=managerIds,proto3" json:"manager_ids,omitempty"`
+	ExchangeRate    float64                `protobuf:"fixed64,9,opt,name=exchange_rate,json=exchangeRate,proto3" json:"exchange_rate,omitempty"`
+	RoundingConfig  *RoundingConfig        `protobuf:"bytes,10,opt,name=rounding_config,json=roundingConfig,proto3" json:"rounding_config,omitempty"`
+	SourceCurrency  string                 `protobuf:"bytes,11,opt,name=source_currency,json=sourceCurrency,proto3" json:"source_currency,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CreateGroupBuyRequest) Reset() {
@@ -860,6 +868,62 @@ func (x *CreateGroupBuyRequest) GetTitle() string {
 func (x *CreateGroupBuyRequest) GetDescription() string {
 	if x != nil {
 		return x.Description
+	}
+	return ""
+}
+
+func (x *CreateGroupBuyRequest) GetProducts() []*Product {
+	if x != nil {
+		return x.Products
+	}
+	return nil
+}
+
+func (x *CreateGroupBuyRequest) GetCoverImageUrl() string {
+	if x != nil {
+		return x.CoverImageUrl
+	}
+	return ""
+}
+
+func (x *CreateGroupBuyRequest) GetDeadline() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Deadline
+	}
+	return nil
+}
+
+func (x *CreateGroupBuyRequest) GetShippingConfigs() []*ShippingConfig {
+	if x != nil {
+		return x.ShippingConfigs
+	}
+	return nil
+}
+
+func (x *CreateGroupBuyRequest) GetManagerIds() []string {
+	if x != nil {
+		return x.ManagerIds
+	}
+	return nil
+}
+
+func (x *CreateGroupBuyRequest) GetExchangeRate() float64 {
+	if x != nil {
+		return x.ExchangeRate
+	}
+	return 0
+}
+
+func (x *CreateGroupBuyRequest) GetRoundingConfig() *RoundingConfig {
+	if x != nil {
+		return x.RoundingConfig
+	}
+	return nil
+}
+
+func (x *CreateGroupBuyRequest) GetSourceCurrency() string {
+	if x != nil {
+		return x.SourceCurrency
 	}
 	return ""
 }
@@ -3613,10 +3677,20 @@ const file_api_v1_groupbuy_proto_rawDesc = "" +
 	"\x0frounding_config\x18\x05 \x01(\v2\x18.buygo.v1.RoundingConfigR\x0eroundingConfig\"1\n" +
 	"\vProductSpec\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"U\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"\xdb\x03\n" +
 	"\x15CreateGroupBuyRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescriptionJ\x04\b\x03\x10\x04\"I\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12-\n" +
+	"\bproducts\x18\x04 \x03(\v2\x11.buygo.v1.ProductR\bproducts\x12&\n" +
+	"\x0fcover_image_url\x18\x05 \x01(\tR\rcoverImageUrl\x126\n" +
+	"\bdeadline\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bdeadline\x12C\n" +
+	"\x10shipping_configs\x18\a \x03(\v2\x18.buygo.v1.ShippingConfigR\x0fshippingConfigs\x12\x1f\n" +
+	"\vmanager_ids\x18\b \x03(\tR\n" +
+	"managerIds\x12#\n" +
+	"\rexchange_rate\x18\t \x01(\x01R\fexchangeRate\x12A\n" +
+	"\x0frounding_config\x18\n" +
+	" \x01(\v2\x18.buygo.v1.RoundingConfigR\x0eroundingConfig\x12'\n" +
+	"\x0fsource_currency\x18\v \x01(\tR\x0esourceCurrencyJ\x04\b\x03\x10\x04\"I\n" +
 	"\x16CreateGroupBuyResponse\x12/\n" +
 	"\tgroup_buy\x18\x01 \x01(\v2\x12.buygo.v1.GroupBuyR\bgroupBuy\"R\n" +
 	"\x14ListGroupBuysRequest\x12\x1b\n" +
@@ -3957,94 +4031,98 @@ var file_api_v1_groupbuy_proto_depIdxs = []int32{
 	10, // 9: buygo.v1.Product.specs:type_name -> buygo.v1.ProductSpec
 	3,  // 10: buygo.v1.RoundingConfig.method:type_name -> buygo.v1.RoundingMethod
 	8,  // 11: buygo.v1.PriceTemplate.rounding_config:type_name -> buygo.v1.RoundingConfig
-	6,  // 12: buygo.v1.CreateGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
-	6,  // 13: buygo.v1.ListGroupBuysResponse.group_buys:type_name -> buygo.v1.GroupBuy
-	6,  // 14: buygo.v1.GetGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
-	7,  // 15: buygo.v1.GetGroupBuyResponse.products:type_name -> buygo.v1.Product
-	2,  // 16: buygo.v1.Order.payment_status:type_name -> buygo.v1.PaymentStatus
-	19, // 17: buygo.v1.Order.payment_info:type_name -> buygo.v1.PaymentInfo
-	18, // 18: buygo.v1.Order.items:type_name -> buygo.v1.OrderItem
-	1,  // 19: buygo.v1.OrderItem.status:type_name -> buygo.v1.OrderItemStatus
-	60, // 20: buygo.v1.PaymentInfo.paid_at:type_name -> google.protobuf.Timestamp
-	34, // 21: buygo.v1.CreateOrderRequest.items:type_name -> buygo.v1.CreateOrderItem
-	0,  // 22: buygo.v1.UpdateGroupBuyRequest.status:type_name -> buygo.v1.GroupBuyStatus
-	7,  // 23: buygo.v1.UpdateGroupBuyRequest.products:type_name -> buygo.v1.Product
-	60, // 24: buygo.v1.UpdateGroupBuyRequest.deadline:type_name -> google.protobuf.Timestamp
-	8,  // 25: buygo.v1.UpdateGroupBuyRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
-	5,  // 26: buygo.v1.UpdateGroupBuyRequest.shipping_configs:type_name -> buygo.v1.ShippingConfig
-	6,  // 27: buygo.v1.UpdateGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
-	8,  // 28: buygo.v1.AddProductRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
-	7,  // 29: buygo.v1.AddProductResponse.product:type_name -> buygo.v1.Product
-	25, // 30: buygo.v1.CreateCategoryResponse.category:type_name -> buygo.v1.Category
-	25, // 31: buygo.v1.ListCategoriesResponse.categories:type_name -> buygo.v1.Category
-	17, // 32: buygo.v1.ListGroupBuyOrdersResponse.orders:type_name -> buygo.v1.Order
-	6,  // 33: buygo.v1.ListManagerGroupBuysResponse.group_buys:type_name -> buygo.v1.GroupBuy
-	1,  // 34: buygo.v1.CreateOrderItem.status:type_name -> buygo.v1.OrderItemStatus
-	1,  // 35: buygo.v1.CancelOrderResponse.status:type_name -> buygo.v1.OrderItemStatus
-	17, // 36: buygo.v1.GetMyGroupBuyOrderResponse.order:type_name -> buygo.v1.Order
-	34, // 37: buygo.v1.UpdateOrderRequest.items:type_name -> buygo.v1.CreateOrderItem
-	17, // 38: buygo.v1.UpdateOrderResponse.order:type_name -> buygo.v1.Order
-	60, // 39: buygo.v1.UpdatePaymentInfoRequest.paid_at:type_name -> google.protobuf.Timestamp
-	17, // 40: buygo.v1.UpdatePaymentInfoResponse.order:type_name -> buygo.v1.Order
-	17, // 41: buygo.v1.GetMyOrdersResponse.orders:type_name -> buygo.v1.Order
-	1,  // 42: buygo.v1.BatchUpdateStatusRequest.target_status:type_name -> buygo.v1.OrderItemStatus
-	2,  // 43: buygo.v1.ConfirmPaymentRequest.status:type_name -> buygo.v1.PaymentStatus
-	2,  // 44: buygo.v1.ConfirmPaymentResponse.status:type_name -> buygo.v1.PaymentStatus
-	8,  // 45: buygo.v1.CreatePriceTemplateRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
-	9,  // 46: buygo.v1.CreatePriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
-	9,  // 47: buygo.v1.ListPriceTemplatesResponse.templates:type_name -> buygo.v1.PriceTemplate
-	9,  // 48: buygo.v1.GetPriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
-	8,  // 49: buygo.v1.UpdatePriceTemplateRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
-	9,  // 50: buygo.v1.UpdatePriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
-	11, // 51: buygo.v1.GroupBuyService.CreateGroupBuy:input_type -> buygo.v1.CreateGroupBuyRequest
-	13, // 52: buygo.v1.GroupBuyService.ListGroupBuys:input_type -> buygo.v1.ListGroupBuysRequest
-	32, // 53: buygo.v1.GroupBuyService.ListManagerGroupBuys:input_type -> buygo.v1.ListManagerGroupBuysRequest
-	15, // 54: buygo.v1.GroupBuyService.GetGroupBuy:input_type -> buygo.v1.GetGroupBuyRequest
-	21, // 55: buygo.v1.GroupBuyService.UpdateGroupBuy:input_type -> buygo.v1.UpdateGroupBuyRequest
-	23, // 56: buygo.v1.GroupBuyService.AddProduct:input_type -> buygo.v1.AddProductRequest
-	26, // 57: buygo.v1.GroupBuyService.CreateCategory:input_type -> buygo.v1.CreateCategoryRequest
-	28, // 58: buygo.v1.GroupBuyService.ListCategories:input_type -> buygo.v1.ListCategoriesRequest
-	20, // 59: buygo.v1.GroupBuyService.CreateOrder:input_type -> buygo.v1.CreateOrderRequest
-	36, // 60: buygo.v1.GroupBuyService.CancelOrder:input_type -> buygo.v1.CancelOrderRequest
-	38, // 61: buygo.v1.GroupBuyService.GetMyGroupBuyOrder:input_type -> buygo.v1.GetMyGroupBuyOrderRequest
-	40, // 62: buygo.v1.GroupBuyService.UpdateOrder:input_type -> buygo.v1.UpdateOrderRequest
-	42, // 63: buygo.v1.GroupBuyService.UpdatePaymentInfo:input_type -> buygo.v1.UpdatePaymentInfoRequest
-	44, // 64: buygo.v1.GroupBuyService.GetMyOrders:input_type -> buygo.v1.GetMyOrdersRequest
-	46, // 65: buygo.v1.GroupBuyService.BatchUpdateStatus:input_type -> buygo.v1.BatchUpdateStatusRequest
-	48, // 66: buygo.v1.GroupBuyService.ConfirmPayment:input_type -> buygo.v1.ConfirmPaymentRequest
-	30, // 67: buygo.v1.GroupBuyService.ListGroupBuyOrders:input_type -> buygo.v1.ListGroupBuyOrdersRequest
-	50, // 68: buygo.v1.GroupBuyService.CreatePriceTemplate:input_type -> buygo.v1.CreatePriceTemplateRequest
-	52, // 69: buygo.v1.GroupBuyService.ListPriceTemplates:input_type -> buygo.v1.ListPriceTemplatesRequest
-	54, // 70: buygo.v1.GroupBuyService.GetPriceTemplate:input_type -> buygo.v1.GetPriceTemplateRequest
-	56, // 71: buygo.v1.GroupBuyService.UpdatePriceTemplate:input_type -> buygo.v1.UpdatePriceTemplateRequest
-	58, // 72: buygo.v1.GroupBuyService.DeletePriceTemplate:input_type -> buygo.v1.DeletePriceTemplateRequest
-	12, // 73: buygo.v1.GroupBuyService.CreateGroupBuy:output_type -> buygo.v1.CreateGroupBuyResponse
-	14, // 74: buygo.v1.GroupBuyService.ListGroupBuys:output_type -> buygo.v1.ListGroupBuysResponse
-	33, // 75: buygo.v1.GroupBuyService.ListManagerGroupBuys:output_type -> buygo.v1.ListManagerGroupBuysResponse
-	16, // 76: buygo.v1.GroupBuyService.GetGroupBuy:output_type -> buygo.v1.GetGroupBuyResponse
-	22, // 77: buygo.v1.GroupBuyService.UpdateGroupBuy:output_type -> buygo.v1.UpdateGroupBuyResponse
-	24, // 78: buygo.v1.GroupBuyService.AddProduct:output_type -> buygo.v1.AddProductResponse
-	27, // 79: buygo.v1.GroupBuyService.CreateCategory:output_type -> buygo.v1.CreateCategoryResponse
-	29, // 80: buygo.v1.GroupBuyService.ListCategories:output_type -> buygo.v1.ListCategoriesResponse
-	35, // 81: buygo.v1.GroupBuyService.CreateOrder:output_type -> buygo.v1.CreateOrderResponse
-	37, // 82: buygo.v1.GroupBuyService.CancelOrder:output_type -> buygo.v1.CancelOrderResponse
-	39, // 83: buygo.v1.GroupBuyService.GetMyGroupBuyOrder:output_type -> buygo.v1.GetMyGroupBuyOrderResponse
-	41, // 84: buygo.v1.GroupBuyService.UpdateOrder:output_type -> buygo.v1.UpdateOrderResponse
-	43, // 85: buygo.v1.GroupBuyService.UpdatePaymentInfo:output_type -> buygo.v1.UpdatePaymentInfoResponse
-	45, // 86: buygo.v1.GroupBuyService.GetMyOrders:output_type -> buygo.v1.GetMyOrdersResponse
-	47, // 87: buygo.v1.GroupBuyService.BatchUpdateStatus:output_type -> buygo.v1.BatchUpdateStatusResponse
-	49, // 88: buygo.v1.GroupBuyService.ConfirmPayment:output_type -> buygo.v1.ConfirmPaymentResponse
-	31, // 89: buygo.v1.GroupBuyService.ListGroupBuyOrders:output_type -> buygo.v1.ListGroupBuyOrdersResponse
-	51, // 90: buygo.v1.GroupBuyService.CreatePriceTemplate:output_type -> buygo.v1.CreatePriceTemplateResponse
-	53, // 91: buygo.v1.GroupBuyService.ListPriceTemplates:output_type -> buygo.v1.ListPriceTemplatesResponse
-	55, // 92: buygo.v1.GroupBuyService.GetPriceTemplate:output_type -> buygo.v1.GetPriceTemplateResponse
-	57, // 93: buygo.v1.GroupBuyService.UpdatePriceTemplate:output_type -> buygo.v1.UpdatePriceTemplateResponse
-	59, // 94: buygo.v1.GroupBuyService.DeletePriceTemplate:output_type -> buygo.v1.DeletePriceTemplateResponse
-	73, // [73:95] is the sub-list for method output_type
-	51, // [51:73] is the sub-list for method input_type
-	51, // [51:51] is the sub-list for extension type_name
-	51, // [51:51] is the sub-list for extension extendee
-	0,  // [0:51] is the sub-list for field type_name
+	7,  // 12: buygo.v1.CreateGroupBuyRequest.products:type_name -> buygo.v1.Product
+	60, // 13: buygo.v1.CreateGroupBuyRequest.deadline:type_name -> google.protobuf.Timestamp
+	5,  // 14: buygo.v1.CreateGroupBuyRequest.shipping_configs:type_name -> buygo.v1.ShippingConfig
+	8,  // 15: buygo.v1.CreateGroupBuyRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
+	6,  // 16: buygo.v1.CreateGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
+	6,  // 17: buygo.v1.ListGroupBuysResponse.group_buys:type_name -> buygo.v1.GroupBuy
+	6,  // 18: buygo.v1.GetGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
+	7,  // 19: buygo.v1.GetGroupBuyResponse.products:type_name -> buygo.v1.Product
+	2,  // 20: buygo.v1.Order.payment_status:type_name -> buygo.v1.PaymentStatus
+	19, // 21: buygo.v1.Order.payment_info:type_name -> buygo.v1.PaymentInfo
+	18, // 22: buygo.v1.Order.items:type_name -> buygo.v1.OrderItem
+	1,  // 23: buygo.v1.OrderItem.status:type_name -> buygo.v1.OrderItemStatus
+	60, // 24: buygo.v1.PaymentInfo.paid_at:type_name -> google.protobuf.Timestamp
+	34, // 25: buygo.v1.CreateOrderRequest.items:type_name -> buygo.v1.CreateOrderItem
+	0,  // 26: buygo.v1.UpdateGroupBuyRequest.status:type_name -> buygo.v1.GroupBuyStatus
+	7,  // 27: buygo.v1.UpdateGroupBuyRequest.products:type_name -> buygo.v1.Product
+	60, // 28: buygo.v1.UpdateGroupBuyRequest.deadline:type_name -> google.protobuf.Timestamp
+	8,  // 29: buygo.v1.UpdateGroupBuyRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
+	5,  // 30: buygo.v1.UpdateGroupBuyRequest.shipping_configs:type_name -> buygo.v1.ShippingConfig
+	6,  // 31: buygo.v1.UpdateGroupBuyResponse.group_buy:type_name -> buygo.v1.GroupBuy
+	8,  // 32: buygo.v1.AddProductRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
+	7,  // 33: buygo.v1.AddProductResponse.product:type_name -> buygo.v1.Product
+	25, // 34: buygo.v1.CreateCategoryResponse.category:type_name -> buygo.v1.Category
+	25, // 35: buygo.v1.ListCategoriesResponse.categories:type_name -> buygo.v1.Category
+	17, // 36: buygo.v1.ListGroupBuyOrdersResponse.orders:type_name -> buygo.v1.Order
+	6,  // 37: buygo.v1.ListManagerGroupBuysResponse.group_buys:type_name -> buygo.v1.GroupBuy
+	1,  // 38: buygo.v1.CreateOrderItem.status:type_name -> buygo.v1.OrderItemStatus
+	1,  // 39: buygo.v1.CancelOrderResponse.status:type_name -> buygo.v1.OrderItemStatus
+	17, // 40: buygo.v1.GetMyGroupBuyOrderResponse.order:type_name -> buygo.v1.Order
+	34, // 41: buygo.v1.UpdateOrderRequest.items:type_name -> buygo.v1.CreateOrderItem
+	17, // 42: buygo.v1.UpdateOrderResponse.order:type_name -> buygo.v1.Order
+	60, // 43: buygo.v1.UpdatePaymentInfoRequest.paid_at:type_name -> google.protobuf.Timestamp
+	17, // 44: buygo.v1.UpdatePaymentInfoResponse.order:type_name -> buygo.v1.Order
+	17, // 45: buygo.v1.GetMyOrdersResponse.orders:type_name -> buygo.v1.Order
+	1,  // 46: buygo.v1.BatchUpdateStatusRequest.target_status:type_name -> buygo.v1.OrderItemStatus
+	2,  // 47: buygo.v1.ConfirmPaymentRequest.status:type_name -> buygo.v1.PaymentStatus
+	2,  // 48: buygo.v1.ConfirmPaymentResponse.status:type_name -> buygo.v1.PaymentStatus
+	8,  // 49: buygo.v1.CreatePriceTemplateRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
+	9,  // 50: buygo.v1.CreatePriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
+	9,  // 51: buygo.v1.ListPriceTemplatesResponse.templates:type_name -> buygo.v1.PriceTemplate
+	9,  // 52: buygo.v1.GetPriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
+	8,  // 53: buygo.v1.UpdatePriceTemplateRequest.rounding_config:type_name -> buygo.v1.RoundingConfig
+	9,  // 54: buygo.v1.UpdatePriceTemplateResponse.template:type_name -> buygo.v1.PriceTemplate
+	11, // 55: buygo.v1.GroupBuyService.CreateGroupBuy:input_type -> buygo.v1.CreateGroupBuyRequest
+	13, // 56: buygo.v1.GroupBuyService.ListGroupBuys:input_type -> buygo.v1.ListGroupBuysRequest
+	32, // 57: buygo.v1.GroupBuyService.ListManagerGroupBuys:input_type -> buygo.v1.ListManagerGroupBuysRequest
+	15, // 58: buygo.v1.GroupBuyService.GetGroupBuy:input_type -> buygo.v1.GetGroupBuyRequest
+	21, // 59: buygo.v1.GroupBuyService.UpdateGroupBuy:input_type -> buygo.v1.UpdateGroupBuyRequest
+	23, // 60: buygo.v1.GroupBuyService.AddProduct:input_type -> buygo.v1.AddProductRequest
+	26, // 61: buygo.v1.GroupBuyService.CreateCategory:input_type -> buygo.v1.CreateCategoryRequest
+	28, // 62: buygo.v1.GroupBuyService.ListCategories:input_type -> buygo.v1.ListCategoriesRequest
+	20, // 63: buygo.v1.GroupBuyService.CreateOrder:input_type -> buygo.v1.CreateOrderRequest
+	36, // 64: buygo.v1.GroupBuyService.CancelOrder:input_type -> buygo.v1.CancelOrderRequest
+	38, // 65: buygo.v1.GroupBuyService.GetMyGroupBuyOrder:input_type -> buygo.v1.GetMyGroupBuyOrderRequest
+	40, // 66: buygo.v1.GroupBuyService.UpdateOrder:input_type -> buygo.v1.UpdateOrderRequest
+	42, // 67: buygo.v1.GroupBuyService.UpdatePaymentInfo:input_type -> buygo.v1.UpdatePaymentInfoRequest
+	44, // 68: buygo.v1.GroupBuyService.GetMyOrders:input_type -> buygo.v1.GetMyOrdersRequest
+	46, // 69: buygo.v1.GroupBuyService.BatchUpdateStatus:input_type -> buygo.v1.BatchUpdateStatusRequest
+	48, // 70: buygo.v1.GroupBuyService.ConfirmPayment:input_type -> buygo.v1.ConfirmPaymentRequest
+	30, // 71: buygo.v1.GroupBuyService.ListGroupBuyOrders:input_type -> buygo.v1.ListGroupBuyOrdersRequest
+	50, // 72: buygo.v1.GroupBuyService.CreatePriceTemplate:input_type -> buygo.v1.CreatePriceTemplateRequest
+	52, // 73: buygo.v1.GroupBuyService.ListPriceTemplates:input_type -> buygo.v1.ListPriceTemplatesRequest
+	54, // 74: buygo.v1.GroupBuyService.GetPriceTemplate:input_type -> buygo.v1.GetPriceTemplateRequest
+	56, // 75: buygo.v1.GroupBuyService.UpdatePriceTemplate:input_type -> buygo.v1.UpdatePriceTemplateRequest
+	58, // 76: buygo.v1.GroupBuyService.DeletePriceTemplate:input_type -> buygo.v1.DeletePriceTemplateRequest
+	12, // 77: buygo.v1.GroupBuyService.CreateGroupBuy:output_type -> buygo.v1.CreateGroupBuyResponse
+	14, // 78: buygo.v1.GroupBuyService.ListGroupBuys:output_type -> buygo.v1.ListGroupBuysResponse
+	33, // 79: buygo.v1.GroupBuyService.ListManagerGroupBuys:output_type -> buygo.v1.ListManagerGroupBuysResponse
+	16, // 80: buygo.v1.GroupBuyService.GetGroupBuy:output_type -> buygo.v1.GetGroupBuyResponse
+	22, // 81: buygo.v1.GroupBuyService.UpdateGroupBuy:output_type -> buygo.v1.UpdateGroupBuyResponse
+	24, // 82: buygo.v1.GroupBuyService.AddProduct:output_type -> buygo.v1.AddProductResponse
+	27, // 83: buygo.v1.GroupBuyService.CreateCategory:output_type -> buygo.v1.CreateCategoryResponse
+	29, // 84: buygo.v1.GroupBuyService.ListCategories:output_type -> buygo.v1.ListCategoriesResponse
+	35, // 85: buygo.v1.GroupBuyService.CreateOrder:output_type -> buygo.v1.CreateOrderResponse
+	37, // 86: buygo.v1.GroupBuyService.CancelOrder:output_type -> buygo.v1.CancelOrderResponse
+	39, // 87: buygo.v1.GroupBuyService.GetMyGroupBuyOrder:output_type -> buygo.v1.GetMyGroupBuyOrderResponse
+	41, // 88: buygo.v1.GroupBuyService.UpdateOrder:output_type -> buygo.v1.UpdateOrderResponse
+	43, // 89: buygo.v1.GroupBuyService.UpdatePaymentInfo:output_type -> buygo.v1.UpdatePaymentInfoResponse
+	45, // 90: buygo.v1.GroupBuyService.GetMyOrders:output_type -> buygo.v1.GetMyOrdersResponse
+	47, // 91: buygo.v1.GroupBuyService.BatchUpdateStatus:output_type -> buygo.v1.BatchUpdateStatusResponse
+	49, // 92: buygo.v1.GroupBuyService.ConfirmPayment:output_type -> buygo.v1.ConfirmPaymentResponse
+	31, // 93: buygo.v1.GroupBuyService.ListGroupBuyOrders:output_type -> buygo.v1.ListGroupBuyOrdersResponse
+	51, // 94: buygo.v1.GroupBuyService.CreatePriceTemplate:output_type -> buygo.v1.CreatePriceTemplateResponse
+	53, // 95: buygo.v1.GroupBuyService.ListPriceTemplates:output_type -> buygo.v1.ListPriceTemplatesResponse
+	55, // 96: buygo.v1.GroupBuyService.GetPriceTemplate:output_type -> buygo.v1.GetPriceTemplateResponse
+	57, // 97: buygo.v1.GroupBuyService.UpdatePriceTemplate:output_type -> buygo.v1.UpdatePriceTemplateResponse
+	59, // 98: buygo.v1.GroupBuyService.DeletePriceTemplate:output_type -> buygo.v1.DeletePriceTemplateResponse
+	77, // [77:99] is the sub-list for method output_type
+	55, // [55:77] is the sub-list for method input_type
+	55, // [55:55] is the sub-list for extension type_name
+	55, // [55:55] is the sub-list for extension extendee
+	0,  // [0:55] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_groupbuy_proto_init() }

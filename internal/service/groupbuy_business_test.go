@@ -24,7 +24,7 @@ func TestConfirmPayment_ManagerOnly(t *testing.T) {
 	anonCtx := context.Background()
 
 	// Setup
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, nil, "", nil, nil, nil, 0, nil, "")
 	order, _ := svc.CreateOrder(userCtx, gb.ID, nil, "C", "A", "", "")
 
@@ -56,7 +56,7 @@ func TestBatchUpdateStatus_AccessControl(t *testing.T) {
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 
 	// Anon → denied
 	_, _, err := svc.BatchUpdateStatus(anonCtx, gb.ID, "", 2, 10)
@@ -77,7 +77,7 @@ func TestBatchUpdateStatus_InvalidTarget(t *testing.T) {
 	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 
 	// Invalid target status (e.g. 99)
 	_, _, err := svc.BatchUpdateStatus(creatorCtx, gb.ID, "", 99, 10)
@@ -99,7 +99,7 @@ func TestBatchUpdateStatus_ValidTransitions(t *testing.T) {
 	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 
 	// All valid transitions should call repo without error
 	validTargets := []int{2, 3, 4, 5, 6}
@@ -119,7 +119,7 @@ func TestAddProduct_AccessControl(t *testing.T) {
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 
 	// Anon → denied
 	_, err := svc.AddProduct(anonCtx, gb.ID, "Prod", 100, 0, nil)
@@ -141,7 +141,7 @@ func TestAddProduct_DefaultsFromGroupBuy(t *testing.T) {
 	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 
 	// GroupBuy has default rate 0.23 and rounding Floor/Ones
 	svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", 0, nil, "", nil, nil, nil, 0.23, &groupbuy.RoundingConfig{Method: 1, Digit: 0}, "")
@@ -158,7 +158,7 @@ func TestAddProduct_SpecGeneration(t *testing.T) {
 	svc := NewGroupBuyService(repo)
 
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 
 	prod, err := svc.AddProduct(creatorCtx, gb.ID, "Item", 100, 1.0, []string{"S", "M", "", "L"})
 	require.NoError(t, err)
@@ -184,7 +184,7 @@ func TestGetMyGroupBuyOrder(t *testing.T) {
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, nil, "", nil, nil, nil, 0, nil, "")
 
 	// Anon → denied
@@ -215,7 +215,7 @@ func TestGetMyOrders(t *testing.T) {
 	userBCtx := auth.NewContext(context.Background(), "user-b", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	svc.UpdateGroupBuy(creatorCtx, gb.ID, "", "", groupbuy.GroupBuyStatusActive, nil, "", nil, nil, nil, 0, nil, "")
 
 	// Anon → denied

@@ -23,7 +23,7 @@ func NewGroupBuyService(repo groupbuy.Repository) *GroupBuyService {
 }
 
 // CreateGroupBuy: Only UserRoleCreator or Admin
-func (s *GroupBuyService) CreateGroupBuy(ctx context.Context, title string, description string) (*groupbuy.GroupBuy, error) {
+func (s *GroupBuyService) CreateGroupBuy(ctx context.Context, title, description string, products []*groupbuy.Product, coverImage string, deadline *time.Time, shippingConfigs []*groupbuy.ShippingConfig, managerIDs []string, exchangeRate float64, rounding *groupbuy.RoundingConfig, sourceCurrency string) (*groupbuy.GroupBuy, error) {
 	usrID, _, err := checkLogin(ctx)
 	if err != nil {
 		return nil, err
@@ -36,18 +36,70 @@ func (s *GroupBuyService) CreateGroupBuy(ctx context.Context, title string, desc
 
 	now := time.Now()
 	// Default rounding config
-	rounding := &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0}
+	if rounding == nil {
+		rounding = &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0}
+	}
+	// Default exchange rate
+	if exchangeRate == 0 {
+		exchangeRate = 0.23
+	}
+	// Default source currency
+	if sourceCurrency == "" {
+		sourceCurrency = "JPY"
+	}
+
+	// Default manager logic
+	finalManagerIDs := []string{usrID}
+	for _, id := range managerIDs {
+		// Simple dedup could be good, but for now just appending
+		if id != usrID {
+			finalManagerIDs = append(finalManagerIDs, id)
+		}
+	}
 
 	gb := &groupbuy.GroupBuy{
-		ID:           uuid.New().String(),
-		Title:        title,
-		Description:  description,
-		Status:       groupbuy.GroupBuyStatusDraft,
-		ExchangeRate: 0.23, // Default Rate? Or 0
-		Rounding:     rounding,
-		CreatorID:    usrID,
-		ManagerIDs:   []string{usrID}, // Creator is default manager
-		CreatedAt:    now,
+		ID:              uuid.New().String(),
+		Title:           title,
+		Description:     description,
+		Status:          groupbuy.GroupBuyStatusDraft,
+		ExchangeRate:    exchangeRate,
+		Rounding:        rounding,
+		SourceCurrency:  sourceCurrency,
+		CoverImage:      coverImage,
+		Deadline:        deadline,
+		CreatorID:       usrID,
+		ManagerIDs:      finalManagerIDs,
+		ShippingConfigs: shippingConfigs,
+		CreatedAt:       now,
+	}
+
+	if len(products) > 0 {
+		for _, item := range products {
+			// Apply Defaults if Missing
+			if item.ExchangeRate == 0 {
+				item.ExchangeRate = gb.ExchangeRate
+			}
+			if item.Rounding == nil {
+				item.Rounding = gb.Rounding
+			}
+
+			if item.ID == "" {
+				item.ID = uuid.New().String()
+			}
+
+			// Always Calculate Final Price
+			item.PriceFinal = s.CalculateFinalPrice(item.PriceOriginal, item.ExchangeRate, item.Rounding)
+			item.GroupBuyID = gb.ID
+
+			// Ensure specs have IDs
+			for _, spec := range item.Specs {
+				if spec.ID == "" {
+					spec.ID = uuid.New().String()
+				}
+				spec.ProductID = item.ID
+			}
+		}
+		gb.Products = products
 	}
 
 	if err := s.repo.Create(ctx, gb); err != nil {

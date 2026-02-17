@@ -25,19 +25,19 @@ func TestGroupBuyService_AccessControl(t *testing.T) {
 
 	// 1. Create GroupBuy
 	// Anon -> Fail
-	_, err := svc.CreateGroupBuy(anonCtx, "Title", "Desc")
+	_, err := svc.CreateGroupBuy(anonCtx, "Title", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Anon should not create project, got %v", err)
 	}
 
 	// User -> Fail
-	_, err = svc.CreateGroupBuy(userCtx, "Title", "Desc")
+	_, err = svc.CreateGroupBuy(userCtx, "Title", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	if !errors.Is(err, ErrPermissionDenied) {
 		t.Errorf("Regular User should not create project, got %v", err)
 	}
 
 	// Creator -> Success
-	gb, err := svc.CreateGroupBuy(creatorCtx, "My GroupBuy", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "My GroupBuy", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	if err != nil {
 		t.Fatalf("Creator should create project, got %v", err)
 	}

@@ -22,7 +22,7 @@ func setupGroupBuyWithProduct(t *testing.T) (*GroupBuyService, *groupbuy.GroupBu
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 
-	gb, err := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	require.NoError(t, err)
 
 	// Add a shipping config
@@ -194,7 +194,7 @@ func TestCreateOrder_InactiveGroupBuy(t *testing.T) {
 	creatorCtx := auth.NewContext(context.Background(), "creator-1", int(user.UserRoleCreator))
 	userCtx := auth.NewContext(context.Background(), "user-1", int(user.UserRoleUser))
 
-	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc")
+	gb, _ := svc.CreateGroupBuy(creatorCtx, "GB", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	// GroupBuy stays in Draft status (not activated)
 
 	_, err := svc.CreateOrder(userCtx, gb.ID, nil, "C", "A", "", "")

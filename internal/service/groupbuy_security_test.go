@@ -21,7 +21,7 @@ func TestGroupBuyService_IDOR_Prevention(t *testing.T) {
 	userBCtx := auth.NewContext(context.Background(), "user-B", int(user.UserRoleUser))
 
 	// 1. Setup: Create GroupBuy and Order for User A
-	gb, err := svc.CreateGroupBuy(creatorCtx, "IDOR Test GroupBuy", "Desc")
+	gb, err := svc.CreateGroupBuy(creatorCtx, "IDOR Test GroupBuy", "Desc", nil, "", nil, nil, nil, 0, nil, "")
 	if err != nil {
 		t.Fatalf("Failed to create project: %v", err)
 	}

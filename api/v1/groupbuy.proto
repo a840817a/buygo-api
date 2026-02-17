@@ -164,7 +164,14 @@ message CreateGroupBuyRequest {
   string title = 1;
   string description = 2;
   reserved 3; // payment_methods
-
+  repeated Product products = 4;
+  string cover_image_url = 5;
+  google.protobuf.Timestamp deadline = 6;
+  repeated ShippingConfig shipping_configs = 7;
+  repeated string manager_ids = 8;
+  double exchange_rate = 9;
+  RoundingConfig rounding_config = 10;
+  string source_currency = 11;
 }
 
 message CreateGroupBuyResponse {

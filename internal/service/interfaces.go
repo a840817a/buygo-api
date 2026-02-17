@@ -11,7 +11,7 @@ import (
 
 // GroupBuyServiceInterface defines the contract for group buy operations.
 type GroupBuyServiceInterface interface {
-	CreateGroupBuy(ctx context.Context, title, description string) (*groupbuy.GroupBuy, error)
+	CreateGroupBuy(ctx context.Context, title, description string, products []*groupbuy.Product, coverImage string, deadline *time.Time, shippingConfigs []*groupbuy.ShippingConfig, managerIDs []string, exchangeRate float64, rounding *groupbuy.RoundingConfig, sourceCurrency string) (*groupbuy.GroupBuy, error)
 	GetGroupBuy(ctx context.Context, id string) (*groupbuy.GroupBuy, error)
 	ListGroupBuys(ctx context.Context, limit, offset int) ([]*groupbuy.GroupBuy, error)
 	ListManagerGroupBuys(ctx context.Context, limit, offset int) ([]*groupbuy.GroupBuy, error)
