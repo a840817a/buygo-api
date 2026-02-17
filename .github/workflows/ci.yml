@@ -53,12 +53,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: bufbuild/buf-action@v1
         with:
           lint: true
           breaking: true
-          breaking_against: '.git#branch=main'
+          breaking_against: '.git#branch=${{ github.event.repository.default_branch }}'
 
   docker:
     runs-on: ubuntu-latest
