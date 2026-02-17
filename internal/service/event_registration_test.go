@@ -135,7 +135,7 @@ func TestRegisterEvent_AnonDenied(t *testing.T) {
 	anonCtx := context.Background()
 
 	_, err := svc.RegisterEvent(anonCtx, e.ID, nil, "C", "N")
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 }
 
 // --- GetMyRegistrations ---
@@ -147,7 +147,7 @@ func TestGetMyRegistrations(t *testing.T) {
 
 	// Anon → denied
 	_, err := svc.GetMyRegistrations(anonCtx)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 
 	// No registrations → empty
 	regs, err := svc.GetMyRegistrations(userCtx)

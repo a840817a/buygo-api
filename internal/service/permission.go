@@ -12,7 +12,7 @@ import (
 func checkLogin(ctx context.Context) (string, int, error) {
 	userID, role, ok := auth.FromContext(ctx)
 	if !ok {
-		return "", 0, ErrPermissionDenied
+		return "", 0, ErrUnauthorized
 	}
 	return userID, role, nil
 }
@@ -20,7 +20,7 @@ func checkLogin(ctx context.Context) (string, int, error) {
 func requireRole(ctx context.Context, allowed ...user.UserRole) (string, int, error) {
 	userID, role, ok := auth.FromContext(ctx)
 	if !ok {
-		return "", 0, ErrPermissionDenied
+		return "", 0, ErrUnauthorized
 	}
 
 	for _, r := range allowed {

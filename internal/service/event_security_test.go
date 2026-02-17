@@ -24,8 +24,8 @@ func TestEventService_Security(t *testing.T) {
 
 	// 1. Create Event: Creator Only
 	_, err := svc.CreateEvent(anonCtx, "Title", "Desc", "", "", time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
-	if !errors.Is(err, ErrPermissionDenied) {
-		t.Errorf("Anon should not create event")
+	if !errors.Is(err, ErrUnauthorized) {
+		t.Errorf("Anon should not create event, got %v", err)
 	}
 	_, err = svc.CreateEvent(userACtx, "Title", "Desc", "", "", time.Now(), time.Now().Add(time.Hour), nil, nil, false, nil, nil, nil)
 	if !errors.Is(err, ErrPermissionDenied) {

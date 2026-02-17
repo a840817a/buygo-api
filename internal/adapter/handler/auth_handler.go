@@ -63,7 +63,10 @@ func (h *AuthHandler) GetMe(ctx context.Context, req *connect.Request[v1.GetMeRe
 
 func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
 	_, role, ok := auth.FromContext(ctx)
-	if !ok || role != int(user.UserRoleSysAdmin) {
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+	}
+	if role != int(user.UserRoleSysAdmin) {
 		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("admin access required"))
 	}
 
@@ -127,7 +130,10 @@ func normalizePageSize(limit int) int {
 
 func (h *AuthHandler) UpdateUserRole(ctx context.Context, req *connect.Request[v1.UpdateUserRoleRequest]) (*connect.Response[v1.UpdateUserRoleResponse], error) {
 	_, role, ok := auth.FromContext(ctx)
-	if !ok || role != int(user.UserRoleSysAdmin) {
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+	}
+	if role != int(user.UserRoleSysAdmin) {
 		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("admin access required"))
 	}
 

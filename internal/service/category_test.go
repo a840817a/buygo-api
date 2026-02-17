@@ -24,7 +24,7 @@ func TestGroupBuyService_CategoryAccessControl(t *testing.T) {
 	// 1. Create Category
 	// Anon -> Fail
 	_, err := svc.CreateCategory(anonCtx, "Cat1", []string{"Color"})
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not create category, got %v", err)
 	}
 
@@ -55,7 +55,7 @@ func TestGroupBuyService_CategoryAccessControl(t *testing.T) {
 
 	// Anon -> Fail (Service requires Auth)
 	_, err = svc.ListCategories(anonCtx)
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not list categories (requires auth), got %v", err)
 	}
 

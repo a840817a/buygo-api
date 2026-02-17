@@ -30,7 +30,7 @@ func TestConfirmPayment_ManagerOnly(t *testing.T) {
 
 	// Anon → denied
 	err := svc.ConfirmPayment(anonCtx, order.ID, 3)
-	assert.True(t, errors.Is(err, ErrPermissionDenied), "Anon should not confirm payment")
+	assert.True(t, errors.Is(err, ErrUnauthorized), "Anon should not confirm payment")
 
 	// User → denied
 	err = svc.ConfirmPayment(userCtx, order.ID, 3)
@@ -60,7 +60,7 @@ func TestBatchUpdateStatus_AccessControl(t *testing.T) {
 
 	// Anon → denied
 	_, _, err := svc.BatchUpdateStatus(anonCtx, gb.ID, "", 2, 10)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 
 	// User → denied
 	_, _, err = svc.BatchUpdateStatus(userCtx, gb.ID, "", 2, 10)
@@ -123,7 +123,7 @@ func TestAddProduct_AccessControl(t *testing.T) {
 
 	// Anon → denied
 	_, err := svc.AddProduct(anonCtx, gb.ID, "Prod", 100, 0, nil)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 
 	// User → denied
 	_, err = svc.AddProduct(userCtx, gb.ID, "Prod", 100, 0, nil)
@@ -189,7 +189,7 @@ func TestGetMyGroupBuyOrder(t *testing.T) {
 
 	// Anon → denied
 	_, err := svc.GetMyGroupBuyOrder(anonCtx, gb.ID)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 
 	// No order → nil
 	order, err := svc.GetMyGroupBuyOrder(userCtx, gb.ID)
@@ -220,7 +220,7 @@ func TestGetMyOrders(t *testing.T) {
 
 	// Anon → denied
 	_, err := svc.GetMyOrders(anonCtx)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 
 	// User A creates order
 	svc.CreateOrder(userACtx, gb.ID, nil, "C", "A", "", "")

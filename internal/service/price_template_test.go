@@ -23,7 +23,7 @@ func TestGroupBuyService_PriceTemplate_AccessControl(t *testing.T) {
 	// Create: Admin Only
 	t.Run("Create Access", func(t *testing.T) {
 		_, err := svc.CreatePriceTemplate(anonCtx, "T1", "USD", 1.0, nil)
-		assert.ErrorIs(t, err, ErrPermissionDenied)
+		assert.ErrorIs(t, err, ErrUnauthorized)
 
 		_, err = svc.CreatePriceTemplate(creatorCtx, "T1", "USD", 1.0, nil)
 		assert.ErrorIs(t, err, ErrPermissionDenied)
@@ -36,7 +36,7 @@ func TestGroupBuyService_PriceTemplate_AccessControl(t *testing.T) {
 	// List: Authenticated
 	t.Run("List Access", func(t *testing.T) {
 		_, err := svc.ListPriceTemplates(anonCtx)
-		assert.ErrorIs(t, err, ErrPermissionDenied)
+		assert.ErrorIs(t, err, ErrUnauthorized)
 
 		list, err := svc.ListPriceTemplates(creatorCtx)
 		require.NoError(t, err)
@@ -48,7 +48,7 @@ func TestGroupBuyService_PriceTemplate_AccessControl(t *testing.T) {
 		pt, _ := svc.CreatePriceTemplate(adminCtx, "ToUpdate", "USD", 1.0, nil)
 
 		_, err := svc.UpdatePriceTemplate(anonCtx, pt.ID, "NewName", "", 0, nil)
-		assert.ErrorIs(t, err, ErrPermissionDenied)
+		assert.ErrorIs(t, err, ErrUnauthorized)
 
 		_, err = svc.UpdatePriceTemplate(creatorCtx, pt.ID, "NewName", "", 0, nil)
 		assert.ErrorIs(t, err, ErrPermissionDenied)
@@ -64,7 +64,7 @@ func TestGroupBuyService_PriceTemplate_AccessControl(t *testing.T) {
 		pt, _ := svc.CreatePriceTemplate(adminCtx, "ToDelete", "USD", 1.0, nil)
 
 		err := svc.DeletePriceTemplate(anonCtx, pt.ID)
-		assert.ErrorIs(t, err, ErrPermissionDenied)
+		assert.ErrorIs(t, err, ErrUnauthorized)
 
 		err = svc.DeletePriceTemplate(creatorCtx, pt.ID)
 		assert.ErrorIs(t, err, ErrPermissionDenied)

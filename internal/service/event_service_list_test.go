@@ -77,7 +77,7 @@ func TestEventService_ListPermissions(t *testing.T) {
 
 	// 5. Anon ListManagerEvents -> Fail
 	_, err = svc.ListManagerEvents(publicCtx, 100, 0)
-	if !errors.Is(err, ErrPermissionDenied) {
-		t.Errorf("Anon ListManagerEvents should fail with PermissionDenied, got %v", err)
+	if !errors.Is(err, ErrUnauthorized) {
+		t.Errorf("Anon ListManagerEvents should fail with ErrUnauthorized, got %v", err)
 	}
 }

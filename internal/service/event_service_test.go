@@ -24,7 +24,7 @@ func TestEventService_AccessControl(t *testing.T) {
 	// 1. Create Event
 	// Anon -> Fail
 	_, err := svc.CreateEvent(anonCtx, "Title", "Desc", "", "", time.Now(), time.Now(), nil, nil, false, nil, nil, nil)
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not create event, got %v", err)
 	}
 
@@ -51,7 +51,7 @@ func TestEventService_AccessControl(t *testing.T) {
 	// 3. Register Event
 	// Anon -> Fail
 	_, err = svc.RegisterEvent(anonCtx, e.ID, nil, "Contact", "")
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not register, got %v", err)
 	}
 

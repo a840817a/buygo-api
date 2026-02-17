@@ -38,10 +38,10 @@ func TestAuthHandler_ListUsers_AccessAndPaging(t *testing.T) {
 
 	_, err := h.ListUsers(context.Background(), connect.NewRequest(&v1.ListUsersRequest{}))
 	if err == nil {
-		t.Fatal("expected permission denied for anonymous request")
+		t.Fatal("expected unauthenticated for anonymous request")
 	}
-	if connect.CodeOf(err) != connect.CodePermissionDenied {
-		t.Fatalf("anonymous code = %v, want %v", connect.CodeOf(err), connect.CodePermissionDenied)
+	if connect.CodeOf(err) != connect.CodeUnauthenticated {
+		t.Fatalf("anonymous code = %v, want %v", connect.CodeOf(err), connect.CodeUnauthenticated)
 	}
 
 	userCtx := domainAuth.NewContext(context.Background(), "u-1", int(user.UserRoleUser))
@@ -139,10 +139,10 @@ func TestGroupBuyHandler_UpdateGroupBuy_AccessControl(t *testing.T) {
 		Title:      "New Title",
 	}))
 	if err == nil {
-		t.Fatal("expected permission denied for anonymous update")
+		t.Fatal("expected unauthenticated for anonymous update")
 	}
-	if connect.CodeOf(err) != connect.CodePermissionDenied {
-		t.Fatalf("anonymous code = %v, want %v", connect.CodeOf(err), connect.CodePermissionDenied)
+	if connect.CodeOf(err) != connect.CodeUnauthenticated {
+		t.Fatalf("anonymous code = %v, want %v", connect.CodeOf(err), connect.CodeUnauthenticated)
 	}
 
 	otherCtx := domainAuth.NewContext(context.Background(), "other", int(user.UserRoleUser))
@@ -191,10 +191,10 @@ func TestEventHandler_ListEventRegistrations_AccessControl(t *testing.T) {
 		EventId: "evt-1",
 	}))
 	if err == nil {
-		t.Fatal("expected permission denied for anonymous request")
+		t.Fatal("expected unauthenticated for anonymous request")
 	}
-	if connect.CodeOf(err) != connect.CodePermissionDenied {
-		t.Fatalf("anonymous code = %v, want %v", connect.CodeOf(err), connect.CodePermissionDenied)
+	if connect.CodeOf(err) != connect.CodeUnauthenticated {
+		t.Fatalf("anonymous code = %v, want %v", connect.CodeOf(err), connect.CodeUnauthenticated)
 	}
 
 	otherCtx := domainAuth.NewContext(context.Background(), "other", int(user.UserRoleUser))

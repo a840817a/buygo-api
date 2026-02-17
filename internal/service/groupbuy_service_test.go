@@ -26,7 +26,7 @@ func TestGroupBuyService_AccessControl(t *testing.T) {
 	// 1. Create GroupBuy
 	// Anon -> Fail
 	_, err := svc.CreateGroupBuy(anonCtx, "Title", "Desc", nil, "", nil, nil, nil, 0, nil, "")
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not create project, got %v", err)
 	}
 
@@ -78,7 +78,7 @@ func TestGroupBuyService_AccessControl(t *testing.T) {
 	// 4. Create Order
 	// Anon -> Fail
 	_, err = svc.CreateOrder(anonCtx, gb.ID, nil, "Contact", "Addr", "", "")
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not create order, got %v", err)
 	}
 
@@ -105,7 +105,7 @@ func TestGroupBuyService_AccessControl(t *testing.T) {
 	// 6. List GroupBuy Orders (Manager Only)
 	// Anon -> Fail
 	_, err = svc.ListGroupBuyOrders(anonCtx, gb.ID)
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon should not list orders, got %v", err)
 	}
 
@@ -201,7 +201,7 @@ func TestGroupBuyService_ListPermissions(t *testing.T) {
 
 	// 5. Anon ListManagerGroupBuys -> Fail
 	_, err = svc.ListManagerGroupBuys(publicCtx, 100, 0)
-	if !errors.Is(err, ErrPermissionDenied) {
+	if !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("Anon ListManagerGroupBuys should fail with PermissionDenied, got %v", err)
 	}
 }

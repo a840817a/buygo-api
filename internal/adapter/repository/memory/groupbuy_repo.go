@@ -231,8 +231,56 @@ func (r *GroupBuyRepository) UpdateOrderPaymentStatus(ctx context.Context, order
 }
 
 func (r *GroupBuyRepository) BatchUpdateOrderItemStatus(ctx context.Context, groupBuyID string, specID string, fromStatuses []int, toStatus int, limit int) (int64, []string, error) {
-	// Not implemented for memory repo in this practice scope
-	return 0, nil, nil
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var updatedCount int64
+	var updatedOrderIDs []string
+
+	// Sort orders by CreatedAt to ensure FIFO
+	var sortedOrders []*groupbuy.Order
+	for _, o := range r.orders {
+		if o.GroupBuyID == groupBuyID {
+			sortedOrders = append(sortedOrders, o)
+		}
+	}
+	sort.Slice(sortedOrders, func(i, j int) bool {
+		return sortedOrders[i].CreatedAt.Before(sortedOrders[j].CreatedAt)
+	})
+
+	for _, o := range sortedOrders {
+		if updatedCount >= int64(limit) {
+			break
+		}
+
+		updated := false
+		for _, item := range o.Items {
+			if item.SpecID == specID {
+				// Check if current status is in fromStatuses
+				match := false
+				for _, fs := range fromStatuses {
+					if int(item.Status) == fs {
+						match = true
+						break
+					}
+				}
+
+				if match {
+					item.Status = groupbuy.OrderItemStatus(toStatus)
+					updated = true
+					updatedCount++
+					if updatedCount >= int64(limit) {
+						break
+					}
+				}
+			}
+		}
+		if updated {
+			updatedOrderIDs = append(updatedOrderIDs, o.ID)
+		}
+	}
+
+	return updatedCount, updatedOrderIDs, nil
 }
 
 // Category Methods (Stub for Memory Repo)

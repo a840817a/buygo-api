@@ -60,7 +60,7 @@ func TestUpdateEvent_NonManagerDenied(t *testing.T) {
 	// Anon → denied
 	_, err = svc.UpdateEvent(anonCtx, e.ID, "Hack", "", "", "",
 		time.Now(), time.Now().Add(time.Hour), false, nil, nil, nil)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 }
 
 func TestUpdateEvent_OnlyCreatorUpdatesManagers(t *testing.T) {
@@ -127,7 +127,7 @@ func TestUpdateEventStatus_NonManagerDenied(t *testing.T) {
 
 	// Anon → denied
 	_, err = svc.UpdateEventStatus(anonCtx, e.ID, event.EventStatusActive)
-	assert.True(t, errors.Is(err, ErrPermissionDenied))
+	assert.True(t, errors.Is(err, ErrUnauthorized))
 }
 
 func TestUpdateEventStatus_SysAdminAllowed(t *testing.T) {
