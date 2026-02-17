@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -111,12 +111,12 @@ func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items 
 		return nil, err
 	}
 	if e.Status != event.EventStatusActive {
-		return nil, errors.New("event not active")
+		return nil, ErrNotActive
 	}
 
 	// Double check deadline (optional but good practice)
 	if !e.RegistrationDeadline.IsZero() && time.Now().After(e.RegistrationDeadline) {
-		return nil, errors.New("registration deadline passed")
+		return nil, ErrDeadlinePassed
 	}
 
 	// Check if already registered
@@ -127,7 +127,7 @@ func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items 
 	// If any active registration exists, error out or return it.
 	for _, er := range existingRegs {
 		if er.Status != event.RegistrationStatusCancelled {
-			return nil, errors.New("user already registered for this event")
+			return nil, ErrAlreadyRegistered
 		}
 	}
 
@@ -142,13 +142,13 @@ func (s *EventService) RegisterEvent(ctx context.Context, eventID string, items 
 			}
 		}
 		if evtItem == nil {
-			return nil, errors.New("invalid event item id")
+			return nil, ErrInvalidEventItemID
 		}
 		if regItem.Quantity <= 0 {
-			return nil, errors.New("invalid quantity")
+			return nil, ErrInvalidQuantity
 		}
 		if !evtItem.AllowMultiple && regItem.Quantity > 1 {
-			return nil, errors.New("quantity limit exceeded for item: " + evtItem.Name)
+			return nil, fmt.Errorf("%s: %w", evtItem.Name, ErrQuantityLimitExceeded)
 		}
 	}
 
@@ -208,7 +208,7 @@ func (s *EventService) UpdateRegistration(ctx context.Context, regID string, ite
 	deadlinePassed := !e.RegistrationDeadline.IsZero() && time.Now().After(e.RegistrationDeadline)
 
 	if deadlinePassed && !e.AllowException {
-		return nil, errors.New("registration modification not allowed (deadline passed)")
+		return nil, ErrModificationDenied
 	}
 
 	// If AllowException is strictly about "Allowing ANY modification", then:
@@ -226,10 +226,10 @@ func (s *EventService) UpdateRegistration(ctx context.Context, regID string, ite
 			}
 		}
 		if evtItem == nil {
-			return nil, errors.New("invalid event item id")
+			return nil, ErrInvalidEventItemID
 		}
 		if !evtItem.AllowMultiple && regItem.Quantity > 1 {
-			return nil, errors.New("quantity limit exceeded for item: " + evtItem.Name)
+			return nil, fmt.Errorf("%s: %w", evtItem.Name, ErrQuantityLimitExceeded)
 		}
 	}
 

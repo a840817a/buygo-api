@@ -82,10 +82,10 @@ const (
 )
 
 type ShippingConfig struct {
-	ID    string       `json:"id"`
-	Name  string       `json:"name"`
-	Type  ShippingType `json:"type"`
-	Price int64        `json:"price"`
+	ID    string
+	Name  string
+	Type  ShippingType
+	Price int64
 }
 
 type OrderItemStatus int

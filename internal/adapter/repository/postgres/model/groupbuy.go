@@ -21,8 +21,8 @@ type GroupBuy struct {
 	Creator        *User   `gorm:"foreignKey:CreatorID"`
 	Managers       []*User `gorm:"many2many:project_managers;"`
 
-	ShippingConfigs []*groupbuy.ShippingConfig `gorm:"serializer:json"` // Store as JSON
-	Products        []*Product                 `gorm:"foreignKey:GroupBuyID"`
+	ShippingConfigs []*ShippingConfig `gorm:"serializer:json"` // Store as JSON
+	Products        []*Product       `gorm:"foreignKey:GroupBuyID"`
 	CreatedAt       time.Time
 	Deadline        *time.Time
 }
@@ -79,6 +79,25 @@ type OrderItem struct {
 	Price       int64
 }
 
+type ShippingConfig struct {
+	ID    string               `json:"id"`
+	Name  string               `json:"name"`
+	Type  groupbuy.ShippingType `json:"type"`
+	Price int64                `json:"price"`
+}
+
+func (sc *ShippingConfig) ToDomain() *groupbuy.ShippingConfig {
+	return &groupbuy.ShippingConfig{
+		ID: sc.ID, Name: sc.Name, Type: sc.Type, Price: sc.Price,
+	}
+}
+
+func FromDomainShippingConfig(sc *groupbuy.ShippingConfig) *ShippingConfig {
+	return &ShippingConfig{
+		ID: sc.ID, Name: sc.Name, Type: sc.Type, Price: sc.Price,
+	}
+}
+
 // Mappers
 
 func (gb *GroupBuy) ToDomain() *groupbuy.GroupBuy {
@@ -110,12 +129,28 @@ func (gb *GroupBuy) ToDomain() *groupbuy.GroupBuy {
 		ManagerIDs:   managerIDs,
 		Managers:     managers,
 
-		ShippingConfigs: gb.ShippingConfigs,
+		ShippingConfigs: toDomainShippingConfigs(gb.ShippingConfigs),
 		Products:        products,
 		CreatedAt:       gb.CreatedAt,
 		Deadline:        gb.Deadline,
 		SourceCurrency:  gb.SourceCurrency,
 	}
+}
+
+func toDomainShippingConfigs(configs []*ShippingConfig) []*groupbuy.ShippingConfig {
+	var result []*groupbuy.ShippingConfig
+	for _, sc := range configs {
+		result = append(result, sc.ToDomain())
+	}
+	return result
+}
+
+func fromDomainShippingConfigs(configs []*groupbuy.ShippingConfig) []*ShippingConfig {
+	var result []*ShippingConfig
+	for _, sc := range configs {
+		result = append(result, FromDomainShippingConfig(sc))
+	}
+	return result
 }
 
 func FromDomainGroupBuy(gb *groupbuy.GroupBuy) *GroupBuy {
@@ -150,7 +185,7 @@ func FromDomainGroupBuy(gb *groupbuy.GroupBuy) *GroupBuy {
 		CreatorID:      gb.CreatorID,
 		Managers:       managers,
 
-		ShippingConfigs: gb.ShippingConfigs,
+		ShippingConfigs: fromDomainShippingConfigs(gb.ShippingConfigs),
 		Products:        products,
 		CreatedAt:       gb.CreatedAt,
 		Deadline:        gb.Deadline,

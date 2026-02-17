@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -11,10 +10,6 @@ import (
 
 	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/buygo/buygo-api/internal/domain/user"
-)
-
-var (
-	ErrPermissionDenied = errors.New("permission denied")
 )
 
 type GroupBuyService struct {
@@ -247,14 +242,14 @@ func (s *GroupBuyService) UpdateOrder(ctx context.Context, orderID string, items
 	// Validate Status - Allow edit only if not paid/locked?
 	// Or if Items are not ordered yet.
 	if order.PaymentStatus == groupbuy.PaymentStatusConfirmed {
-		return nil, errors.New("cannot update order: payment confirmed")
+		return nil, ErrPaymentConfirmed
 	}
 
 	isMgr := gb.IsManager(usrID)
 	if !isMgr {
 		for _, i := range order.Items {
 			if i.Status > groupbuy.OrderItemStatusUnordered {
-				return nil, errors.New("cannot update order: items already processed by manager")
+				return nil, ErrItemsProcessed
 			}
 		}
 	}
@@ -291,7 +286,7 @@ func (s *GroupBuyService) prepareOrderItems(ctx context.Context, groupBuyID stri
 	}
 
 	if gb.Status != groupbuy.GroupBuyStatusActive {
-		return nil, 0, errors.New("group buy is not active")
+		return nil, 0, ErrNotActive
 	}
 
 	productMap := make(map[string]*groupbuy.Product)
@@ -305,7 +300,7 @@ func (s *GroupBuyService) prepareOrderItems(ctx context.Context, groupBuyID stri
 	for _, item := range inputItems {
 		prod, ok := productMap[item.ProductID]
 		if !ok {
-			return nil, 0, fmt.Errorf("product not found: %s", item.ProductID)
+			return nil, 0, fmt.Errorf("%s: %w", item.ProductID, ErrProductNotFound)
 		}
 
 		specName := "Default"
@@ -319,7 +314,7 @@ func (s *GroupBuyService) prepareOrderItems(ctx context.Context, groupBuyID stri
 				}
 			}
 			if !foundSpec {
-				return nil, 0, fmt.Errorf("spec not found: %s", item.SpecID)
+				return nil, 0, fmt.Errorf("%s: %w", item.SpecID, ErrSpecNotFound)
 			}
 		}
 
@@ -335,7 +330,7 @@ func (s *GroupBuyService) prepareOrderItems(ctx context.Context, groupBuyID stri
 		}
 
 		if item.Quantity <= 0 {
-			return nil, 0, errors.New("invalid quantity")
+			return nil, 0, ErrInvalidQuantity
 		}
 
 		total += item.Price * int64(item.Quantity)
@@ -366,7 +361,7 @@ func (s *GroupBuyService) UpdatePaymentInfo(ctx context.Context, orderID string,
 	}
 
 	if order.PaymentStatus == groupbuy.PaymentStatusConfirmed {
-		return nil, errors.New("cannot update payment info: payment already confirmed")
+		return nil, ErrPaymentConfirmed
 	}
 
 	updated := false
@@ -443,7 +438,7 @@ func (s *GroupBuyService) CreateOrder(ctx context.Context, groupBuyID string, it
 		if !found {
 			// If not found, ignore? or error?
 			// Let's error if ID provided but not found.
-			return nil, errors.New("invalid shipping method")
+			return nil, ErrInvalidShippingMethod
 		}
 	}
 
@@ -533,14 +528,14 @@ func (s *GroupBuyService) CancelOrder(ctx context.Context, orderID string) error
 
 	// Cannot cancel if payment is already confirmed
 	if order.PaymentStatus == groupbuy.PaymentStatusConfirmed {
-		return errors.New("cannot cancel order: payment already confirmed")
+		return ErrPaymentConfirmed
 	}
 
 	// Cannot cancel if any items have been processed (ordered from supplier or beyond)
 	for _, item := range order.Items {
 		if item.Status > groupbuy.OrderItemStatusUnordered &&
 			item.Status != groupbuy.OrderItemStatusFailed {
-			return errors.New("cannot cancel order: items already being processed")
+			return ErrItemsProcessed
 		}
 	}
 
@@ -672,7 +667,7 @@ func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, groupBuyID stri
 	case groupbuy.OrderItemStatusSent:
 		fromStatuses = []int{int(groupbuy.OrderItemStatusReadyForPickup)}
 	default:
-		return 0, nil, errors.New("invalid target status for batch update")
+		return 0, nil, ErrInvalidStatus
 	}
 
 	if count <= 0 {

@@ -8,12 +8,13 @@ import (
 	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
 	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func newTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 
 	err = db.AutoMigrate(
@@ -105,4 +106,189 @@ func TestGroupBuyRepository_UpdateShippingConfigs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, final2.ShippingConfigs, 1)
 	assert.Equal(t, groupbuy.ShippingTypeMeetup, final2.ShippingConfigs[0].Type, "Type should be Meetup (3)")
+}
+
+// --- Helper ---
+
+func createTestGroupBuy(t *testing.T, db *gorm.DB, repo *GroupBuyRepository, id string, status groupbuy.GroupBuyStatus) *groupbuy.GroupBuy {
+	t.Helper()
+	creatorID := "creator-" + id
+	db.Create(&model.User{ID: creatorID, Name: "Creator " + id})
+
+	gb := &groupbuy.GroupBuy{
+		ID:          id,
+		Title:       "GroupBuy " + id,
+		Description: "Desc",
+		Status:      status,
+		CreatorID:   creatorID,
+		CreatedAt:   time.Now(),
+	}
+	require.NoError(t, repo.Create(context.Background(), gb))
+	return gb
+}
+
+// --- Create + GetByID ---
+
+func TestGroupBuyRepository_CreateAndGetByID(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+	ctx := context.Background()
+
+	db.Create(&model.User{ID: "user-1", Name: "Creator"})
+
+	gb := &groupbuy.GroupBuy{
+		ID:           "gb-1",
+		Title:        "Test GB",
+		Description:  "A test group buy",
+		Status:       groupbuy.GroupBuyStatusDraft,
+		ExchangeRate: 0.22,
+		CreatorID:    "user-1",
+		CreatedAt:    time.Now(),
+		Rounding:     &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0},
+	}
+
+	err := repo.Create(ctx, gb)
+	require.NoError(t, err)
+
+	got, err := repo.GetByID(ctx, "gb-1")
+	require.NoError(t, err)
+	assert.Equal(t, "Test GB", got.Title)
+	assert.Equal(t, "A test group buy", got.Description)
+	assert.Equal(t, groupbuy.GroupBuyStatusDraft, got.Status)
+	assert.Equal(t, 0.22, got.ExchangeRate)
+	assert.Equal(t, "user-1", got.CreatorID)
+}
+
+func TestGroupBuyRepository_GetByID_NotFound(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+
+	_, err := repo.GetByID(context.Background(), "nonexistent")
+	assert.Error(t, err)
+}
+
+// --- List Filtering ---
+
+func TestGroupBuyRepository_List_PublicOnly(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+
+	createTestGroupBuy(t, db, repo, "draft-1", groupbuy.GroupBuyStatusDraft)
+	createTestGroupBuy(t, db, repo, "active-1", groupbuy.GroupBuyStatusActive)
+	createTestGroupBuy(t, db, repo, "ended-1", groupbuy.GroupBuyStatusEnded)
+
+	// Anonymous user (no userID) should only see Active + Ended
+	list, err := repo.List(context.Background(), 10, 0, "", false, false)
+	require.NoError(t, err)
+	assert.Len(t, list, 2)
+}
+
+func TestGroupBuyRepository_List_SysAdmin(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+
+	createTestGroupBuy(t, db, repo, "draft-1", groupbuy.GroupBuyStatusDraft)
+	createTestGroupBuy(t, db, repo, "active-1", groupbuy.GroupBuyStatusActive)
+
+	// SysAdmin sees all
+	list, err := repo.List(context.Background(), 10, 0, "admin", true, false)
+	require.NoError(t, err)
+	assert.Len(t, list, 2)
+}
+
+// --- AddProduct ---
+
+func TestGroupBuyRepository_AddProduct(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+	ctx := context.Background()
+
+	gb := createTestGroupBuy(t, db, repo, "gb-1", groupbuy.GroupBuyStatusActive)
+
+	prod := &groupbuy.Product{
+		ID:            "prod-1",
+		GroupBuyID:    gb.ID,
+		Name:          "Widget",
+		PriceOriginal: 1000,
+		PriceFinal:    220,
+		ExchangeRate:  0.22,
+		Specs: []*groupbuy.ProductSpec{
+			{ID: "spec-1", ProductID: "prod-1", Name: "Red"},
+			{ID: "spec-2", ProductID: "prod-1", Name: "Blue"},
+		},
+	}
+
+	err := repo.AddProduct(ctx, prod)
+	require.NoError(t, err)
+
+	got, err := repo.GetByID(ctx, gb.ID)
+	require.NoError(t, err)
+	require.Len(t, got.Products, 1)
+	assert.Equal(t, "Widget", got.Products[0].Name)
+	assert.Len(t, got.Products[0].Specs, 2)
+}
+
+// --- Order CRUD ---
+
+func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+	ctx := context.Background()
+
+	gb := createTestGroupBuy(t, db, repo, "gb-1", groupbuy.GroupBuyStatusActive)
+
+	// Create user for order
+	db.Create(&model.User{ID: "buyer-1", Name: "Buyer"})
+
+	order := &groupbuy.Order{
+		ID:              "order-1",
+		GroupBuyID:      gb.ID,
+		UserID:          "buyer-1",
+		TotalAmount:     500,
+		PaymentStatus:   groupbuy.PaymentStatusUnset,
+		ContactInfo:     "contact@test.com",
+		ShippingAddress: "123 Main St",
+		Items: []*groupbuy.OrderItem{
+			{ID: "item-1", OrderID: "order-1", ProductID: "prod-1", SpecID: "spec-1", Quantity: 2, Price: 250},
+		},
+		CreatedAt: time.Now(),
+	}
+
+	// Create
+	err := repo.CreateOrder(ctx, order)
+	require.NoError(t, err)
+
+	// Get
+	got, err := repo.GetOrder(ctx, "order-1")
+	require.NoError(t, err)
+	assert.Equal(t, "buyer-1", got.UserID)
+	assert.Equal(t, int64(500), got.TotalAmount)
+	require.Len(t, got.Items, 1)
+	assert.Equal(t, 2, got.Items[0].Quantity)
+
+	// List by group buy
+	orders, err := repo.ListOrders(ctx, gb.ID, "")
+	require.NoError(t, err)
+	assert.Len(t, orders, 1)
+
+	// List by user
+	orders, err = repo.ListOrders(ctx, "", "buyer-1")
+	require.NoError(t, err)
+	assert.Len(t, orders, 1)
+
+	// Update payment status
+	err = repo.UpdateOrderPaymentStatus(ctx, "order-1", groupbuy.PaymentStatusConfirmed)
+	require.NoError(t, err)
+
+	got, err = repo.GetOrder(ctx, "order-1")
+	require.NoError(t, err)
+	assert.Equal(t, groupbuy.PaymentStatusConfirmed, got.PaymentStatus)
+}
+
+func TestGroupBuyRepository_GetOrder_NotFound(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+
+	_, err := repo.GetOrder(context.Background(), "nonexistent")
+	assert.Error(t, err)
 }

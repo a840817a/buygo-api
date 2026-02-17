@@ -82,7 +82,7 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *connect.Request[v1.
 func (h *EventHandler) ListEvents(ctx context.Context, req *connect.Request[v1.ListEventsRequest]) (*connect.Response[v1.ListEventsResponse], error) {
 	events, err := h.svc.ListEvents(ctx, int(req.Msg.PageSize), 0)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoEvents []*v1.Event
@@ -98,7 +98,7 @@ func (h *EventHandler) ListEvents(ctx context.Context, req *connect.Request[v1.L
 func (h *EventHandler) ListManagerEvents(ctx context.Context, req *connect.Request[v1.ListManagerEventsRequest]) (*connect.Response[v1.ListManagerEventsResponse], error) {
 	events, err := h.svc.ListManagerEvents(ctx, int(req.Msg.PageSize), 0)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoEvents []*v1.Event
@@ -114,7 +114,7 @@ func (h *EventHandler) ListManagerEvents(ctx context.Context, req *connect.Reque
 func (h *EventHandler) GetEvent(ctx context.Context, req *connect.Request[v1.GetEventRequest]) (*connect.Response[v1.GetEventResponse], error) {
 	e, err := h.svc.GetEvent(ctx, req.Msg.EventId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.GetEventResponse{

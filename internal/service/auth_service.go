@@ -103,12 +103,12 @@ func (s *AuthService) UpdateUserRole(ctx context.Context, userID string, role us
 func (s *AuthService) ListAssignableManagers(ctx context.Context, query string) ([]*user.User, error) {
 	_, role, ok := auth.FromContext(ctx)
 	if !ok {
-		return nil, errors.New("unauthorized")
+		return nil, ErrUnauthorized
 	}
 
 	// Verify Permission
 	if role != int(user.UserRoleCreator) && role != int(user.UserRoleSysAdmin) {
-		return nil, errors.New("permission denied")
+		return nil, ErrPermissionDenied
 	}
 
 	// Fetch users. Ideally Repo supports filtering by Role.

@@ -7,13 +7,13 @@ import (
 )
 
 type PriceTemplate struct {
-	ID             string          `json:"id" gorm:"primaryKey"`
-	Name           string          `json:"name"`
-	SourceCurrency string          `json:"source_currency"`
-	ExchangeRate   float64         `json:"exchange_rate"`
-	Rounding       *RoundingConfig `json:"rounding" gorm:"serializer:json"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	ID             string
+	Name           string
+	SourceCurrency string
+	ExchangeRate   float64
+	Rounding       *RoundingConfig
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 func NewPriceTemplate(name, sourceCurrency string, rate float64, rounding *RoundingConfig) *PriceTemplate {

@@ -38,7 +38,7 @@ func (h *GroupBuyHandler) CreateGroupBuy(ctx context.Context, req *connect.Reque
 func (h *GroupBuyHandler) ListGroupBuys(ctx context.Context, req *connect.Request[v1.ListGroupBuysRequest]) (*connect.Response[v1.ListGroupBuysResponse], error) {
 	gbs, err := h.svc.ListGroupBuys(ctx, int(req.Msg.PageSize), 0)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoGroupBuys []*v1.GroupBuy
@@ -54,7 +54,7 @@ func (h *GroupBuyHandler) ListGroupBuys(ctx context.Context, req *connect.Reques
 func (h *GroupBuyHandler) ListManagerGroupBuys(ctx context.Context, req *connect.Request[v1.ListManagerGroupBuysRequest]) (*connect.Response[v1.ListManagerGroupBuysResponse], error) {
 	gbs, err := h.svc.ListManagerGroupBuys(ctx, int(req.Msg.PageSize), 0)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, mapError(err)
 	}
 
 	var protoGroupBuys []*v1.GroupBuy
@@ -70,7 +70,7 @@ func (h *GroupBuyHandler) ListManagerGroupBuys(ctx context.Context, req *connect
 func (h *GroupBuyHandler) GetGroupBuy(ctx context.Context, req *connect.Request[v1.GetGroupBuyRequest]) (*connect.Response[v1.GetGroupBuyResponse], error) {
 	gb, err := h.svc.GetGroupBuy(ctx, req.Msg.GroupBuyId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, err)
+		return nil, mapError(err)
 	}
 
 	return connect.NewResponse(&v1.GetGroupBuyResponse{

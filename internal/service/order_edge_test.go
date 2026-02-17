@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/buygo/buygo-api/internal/adapter/repository/memory"
@@ -54,7 +55,7 @@ func TestUpdateOrder_PaymentConfirmedLock(t *testing.T) {
 	// User tries to update → locked
 	_, err = svc.UpdateOrder(userCtx, order.ID, items, "new note")
 	assert.Error(t, err, "Should not update order when payment confirmed")
-	assert.Contains(t, err.Error(), "payment confirmed")
+	assert.True(t, errors.Is(err, ErrPaymentConfirmed), "Expected ErrPaymentConfirmed")
 }
 
 // --- UpdateOrder: Manager vs User on Processed Items ---
