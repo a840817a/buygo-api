@@ -145,6 +145,11 @@ func (r *GroupBuyRepository) Update(ctx context.Context, gb *groupbuy.GroupBuy) 
 			}
 		}
 
+		// 3. Replace Managers
+		if err := tx.Model(&model.GroupBuy{ID: m.ID}).Association("Managers").Replace(m.Managers); err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
@@ -194,7 +199,7 @@ func (r *GroupBuyRepository) GetOrder(ctx context.Context, id string) (*groupbuy
 
 func (r *GroupBuyRepository) ListOrders(ctx context.Context, groupBuyID string, userID string) ([]*groupbuy.Order, error) {
 	var models []*model.Order
-	query := r.db.WithContext(ctx).Preload("Items")
+	query := r.db.WithContext(ctx).Preload("Items").Order("created_at DESC")
 
 	if groupBuyID != "" {
 		query = query.Where("group_buy_id = ?", groupBuyID)

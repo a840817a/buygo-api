@@ -155,20 +155,28 @@ func main() {
 		sqlDB, err := database.DB()
 		if err != nil || sqlDB.Ping() != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte(`{"status":"unhealthy"}`))
+			if _, writeErr := w.Write([]byte(`{"status":"unhealthy"}`)); writeErr != nil {
+				log.Printf("failed to write health response: %v", writeErr)
+			}
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+		if _, writeErr := w.Write([]byte(`{"status":"ok"}`)); writeErr != nil {
+			log.Printf("failed to write health response: %v", writeErr)
+		}
 	})
 
 	// 10. Server with Graceful Shutdown
 	corsOrigin := envOrDefault("CORS_ORIGIN", "http://localhost:4200")
 
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: h2c.NewHandler(newCORS(corsOrigin).Handler(mux), &http2.Server{}),
+		Addr:              ":" + port,
+		Handler:           h2c.NewHandler(newCORS(corsOrigin).Handler(mux), &http2.Server{}),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	quit := make(chan os.Signal, 1)
@@ -192,7 +200,9 @@ func main() {
 	// Cleanup
 	sqlDB, _ := database.DB()
 	if sqlDB != nil {
-		sqlDB.Close()
+		if err := sqlDB.Close(); err != nil {
+			log.Printf("failed to close database connection: %v", err)
+		}
 	}
 	log.Println("Server stopped")
 }

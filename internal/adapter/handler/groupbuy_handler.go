@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"connectrpc.com/connect"
@@ -55,9 +56,21 @@ func (h *GroupBuyHandler) CreateGroupBuy(ctx context.Context, req *connect.Reque
 }
 
 func (h *GroupBuyHandler) ListGroupBuys(ctx context.Context, req *connect.Request[v1.ListGroupBuysRequest]) (*connect.Response[v1.ListGroupBuysResponse], error) {
-	gbs, err := h.svc.ListGroupBuys(ctx, int(req.Msg.PageSize), 0)
+	limit := normalizePageSize(int(req.Msg.PageSize))
+	offset, err := decodePageToken(req.Msg.PageToken)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid page_token"))
+	}
+
+	gbs, err := h.svc.ListGroupBuys(ctx, limit+1, offset)
 	if err != nil {
 		return nil, mapError(err)
+	}
+
+	nextPageToken := ""
+	if len(gbs) > limit {
+		gbs = gbs[:limit]
+		nextPageToken = encodePageToken(offset + limit)
 	}
 
 	var protoGroupBuys []*v1.GroupBuy
@@ -66,14 +79,27 @@ func (h *GroupBuyHandler) ListGroupBuys(ctx context.Context, req *connect.Reques
 	}
 
 	return connect.NewResponse(&v1.ListGroupBuysResponse{
-		GroupBuys: protoGroupBuys,
+		GroupBuys:     protoGroupBuys,
+		NextPageToken: nextPageToken,
 	}), nil
 }
 
 func (h *GroupBuyHandler) ListManagerGroupBuys(ctx context.Context, req *connect.Request[v1.ListManagerGroupBuysRequest]) (*connect.Response[v1.ListManagerGroupBuysResponse], error) {
-	gbs, err := h.svc.ListManagerGroupBuys(ctx, int(req.Msg.PageSize), 0)
+	limit := normalizePageSize(int(req.Msg.PageSize))
+	offset, err := decodePageToken(req.Msg.PageToken)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid page_token"))
+	}
+
+	gbs, err := h.svc.ListManagerGroupBuys(ctx, limit+1, offset)
 	if err != nil {
 		return nil, mapError(err)
+	}
+
+	nextPageToken := ""
+	if len(gbs) > limit {
+		gbs = gbs[:limit]
+		nextPageToken = encodePageToken(offset + limit)
 	}
 
 	var protoGroupBuys []*v1.GroupBuy
@@ -82,7 +108,8 @@ func (h *GroupBuyHandler) ListManagerGroupBuys(ctx context.Context, req *connect
 	}
 
 	return connect.NewResponse(&v1.ListManagerGroupBuysResponse{
-		GroupBuys: protoGroupBuys,
+		GroupBuys:     protoGroupBuys,
+		NextPageToken: nextPageToken,
 	}), nil
 }
 

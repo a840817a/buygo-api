@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"connectrpc.com/connect"
 
@@ -67,12 +68,22 @@ func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.Lis
 	}
 
 	limit := int(req.Msg.PageSize)
-	offset := 0 // Parse PageToken if implemented
-	// For now simple limit/offset or just limit
+	limit = normalizePageSize(limit)
 
-	users, err := h.authService.ListUsers(ctx, limit, offset)
+	offset, err := decodePageToken(req.Msg.PageToken)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid page_token"))
+	}
+
+	users, err := h.authService.ListUsers(ctx, limit+1, offset)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	nextPageToken := ""
+	if len(users) > limit {
+		users = users[:limit]
+		nextPageToken = encodePageToken(offset + limit)
 	}
 
 	var protoUsers []*v1.User
@@ -82,8 +93,36 @@ func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.Lis
 
 	return connect.NewResponse(&v1.ListUsersResponse{
 		Users:         protoUsers,
-		NextPageToken: "", // Implement pagination token logic if needed
+		NextPageToken: nextPageToken,
 	}), nil
+}
+
+func decodePageToken(token string) (int, error) {
+	if token == "" {
+		return 0, nil
+	}
+	offset, err := strconv.Atoi(token)
+	if err != nil || offset < 0 {
+		return 0, errors.New("invalid page token")
+	}
+	return offset, nil
+}
+
+func encodePageToken(offset int) string {
+	if offset <= 0 {
+		return ""
+	}
+	return strconv.Itoa(offset)
+}
+
+func normalizePageSize(limit int) int {
+	if limit <= 0 {
+		return 20
+	}
+	if limit > 100 {
+		return 100
+	}
+	return limit
 }
 
 func (h *AuthHandler) UpdateUserRole(ctx context.Context, req *connect.Request[v1.UpdateUserRoleRequest]) (*connect.Response[v1.UpdateUserRoleResponse], error) {

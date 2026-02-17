@@ -159,18 +159,18 @@ func (r *GroupBuyRepository) CreateOrder(ctx context.Context, order *groupbuy.Or
 
 		if maxQty > 0 {
 			// Calculate sold amount
-			var sold int32 = 0
+			var sold int64 = 0
 			for _, o := range r.orders {
 				// Only count valid orders (not cancelled?)
 				// For now assume all orders in repo count towards stock
 				for _, i := range o.Items {
 					if i.ProductID == item.ProductID {
-						sold += int32(i.Quantity)
+						sold += int64(i.Quantity)
 					}
 				}
 			}
 
-			if sold+int32(item.Quantity) > maxQty {
+			if sold+int64(item.Quantity) > int64(maxQty) {
 				return errors.New("product out of stock")
 			}
 		}

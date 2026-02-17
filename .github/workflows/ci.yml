@@ -19,8 +19,24 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
+      - name: Check formatting
+        run: |
+          test -z "$(gofmt -l .)"
+
+      - name: Install security tools
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
       - name: Run tests
-        run: go test ./internal/... -race -coverprofile=coverage.out
+        run: go test ./... -race -coverprofile=coverage.out
+
+      - name: Run gosec
+        run: gosec -exclude-dir=api/v1 ./...
+
+      - name: Run govulncheck
+        run: govulncheck ./...
 
       - name: Build
         run: go build ./cmd/server

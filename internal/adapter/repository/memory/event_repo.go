@@ -141,19 +141,19 @@ func (r *EventRepository) Register(ctx context.Context, reg *event.Registration)
 		}
 
 		if maxQty > 0 {
-			var sold int32 = 0
+			var sold int64 = 0
 			for _, existReg := range r.registrations {
 				if existReg.Status == event.RegistrationStatusCancelled {
 					continue
 				}
 				for _, existItem := range existReg.SelectedItems {
 					if existItem.EventItemID == newItem.EventItemID {
-						sold += int32(existItem.Quantity)
+						sold += int64(existItem.Quantity)
 					}
 				}
 			}
 
-			if sold+int32(newItem.Quantity) > maxQty {
+			if sold+int64(newItem.Quantity) > int64(maxQty) {
 				return errors.New("registration limit exceeded")
 			}
 		}

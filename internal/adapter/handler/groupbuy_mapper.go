@@ -70,7 +70,7 @@ func toProtoGroupBuy(gb *groupbuy.GroupBuy) *v1.GroupBuy {
 		Title:          gb.Title,
 		Description:    gb.Description,
 		CoverImageUrl:  gb.CoverImage,
-		Status:         v1.GroupBuyStatus(gb.Status),
+		Status:         toProtoGroupBuyStatus(gb.Status),
 		CreatedAt:      timestamppb.New(gb.CreatedAt),
 		Deadline:       deadline,
 		ExchangeRate:   gb.ExchangeRate,
@@ -87,8 +87,8 @@ func toProtoRoundingConfig(r *groupbuy.RoundingConfig) *v1.RoundingConfig {
 		return nil
 	}
 	return &v1.RoundingConfig{
-		Method: v1.RoundingMethod(r.Method),
-		Digit:  int32(r.Digit),
+		Method: toProtoRoundingMethod(r.Method),
+		Digit:  safeIntToInt32(r.Digit),
 	}
 }
 
@@ -107,7 +107,7 @@ func toProtoShippingConfig(c *groupbuy.ShippingConfig) *v1.ShippingConfig {
 	return &v1.ShippingConfig{
 		Id:    c.ID,
 		Name:  c.Name,
-		Type:  v1.ShippingType(c.Type),
+		Type:  toProtoShippingType(c.Type),
 		Price: c.Price,
 	}
 }
@@ -122,8 +122,8 @@ func toProtoOrder(o *groupbuy.Order) *v1.Order {
 			Id:          i.ID,
 			ProductId:   i.ProductID,
 			SpecId:      i.SpecID,
-			Quantity:    int32(i.Quantity),
-			Status:      v1.OrderItemStatus(i.Status),
+			Quantity:    safeIntToInt32(i.Quantity),
+			Status:      toProtoOrderItemStatus(i.Status),
 			ProductName: i.ProductName,
 			SpecName:    i.SpecName,
 			Price:       i.Price,
@@ -149,7 +149,7 @@ func toProtoOrder(o *groupbuy.Order) *v1.Order {
 		GroupBuyId:       o.GroupBuyID,
 		UserId:           o.UserID,
 		TotalAmount:      o.TotalAmount,
-		PaymentStatus:    v1.PaymentStatus(o.PaymentStatus),
+		PaymentStatus:    toProtoGroupBuyPaymentStatus(o.PaymentStatus),
 		ContactInfo:      o.ContactInfo,
 		ShippingAddress:  o.ShippingAddress,
 		PaymentInfo:      pi,
@@ -179,8 +179,8 @@ func toProtoProduct(p *groupbuy.Product) *v1.Product {
 	var rc *v1.RoundingConfig
 	if p.Rounding != nil {
 		rc = &v1.RoundingConfig{
-			Method: v1.RoundingMethod(p.Rounding.Method),
-			Digit:  int32(p.Rounding.Digit),
+			Method: toProtoRoundingMethod(p.Rounding.Method),
+			Digit:  safeIntToInt32(p.Rounding.Digit),
 		}
 	}
 	return &v1.Product{
@@ -216,8 +216,8 @@ func toProtoPriceTemplate(pt *groupbuy.PriceTemplate) *v1.PriceTemplate {
 	var rc *v1.RoundingConfig
 	if pt.Rounding != nil {
 		rc = &v1.RoundingConfig{
-			Method: v1.RoundingMethod(pt.Rounding.Method),
-			Digit:  int32(pt.Rounding.Digit),
+			Method: toProtoRoundingMethod(pt.Rounding.Method),
+			Digit:  safeIntToInt32(pt.Rounding.Digit),
 		}
 	}
 	return &v1.PriceTemplate{

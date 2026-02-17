@@ -730,6 +730,9 @@ func (s *GroupBuyService) BatchUpdateStatus(ctx context.Context, groupBuyID stri
 	if err != nil {
 		return 0, nil, err
 	}
+	if n > (1<<31-1) || n < -(1<<31) {
+		return 0, nil, ErrInvalidQuantity
+	}
 
 	return int32(n), ids, nil
 }

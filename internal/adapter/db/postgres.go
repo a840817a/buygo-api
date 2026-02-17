@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
-	
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -13,7 +13,7 @@ type Config struct {
 	Host     string
 	Port     string
 	User     string
-	Password string
+	Password string // #nosec G117 -- DB config field name, not a hardcoded credential.
 	DBName   string
 	SSLMode  string
 }
@@ -28,7 +28,7 @@ func Connect(cfg Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	log.Println("Connected to PostgreSQL database")
 	return db, nil
 }

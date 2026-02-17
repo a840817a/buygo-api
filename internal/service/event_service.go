@@ -436,7 +436,7 @@ func (s *EventService) UpdateEventStatus(ctx context.Context, id string, status 
 // calculateTotal computes the subtotal and best applicable discount for the given items.
 func (s *EventService) calculateTotal(e *event.Event, items []*event.RegistrationItem) (int64, int64) {
 	var subtotal int64
-	var totalQty int32
+	var totalQty int64
 	distinctItems := make(map[string]bool)
 
 	// Map items for price lookup
@@ -448,13 +448,13 @@ func (s *EventService) calculateTotal(e *event.Event, items []*event.Registratio
 	for _, item := range items {
 		price := priceMap[item.EventItemID]
 		subtotal += price * int64(item.Quantity)
-		totalQty += int32(item.Quantity)
+		totalQty += int64(item.Quantity)
 		if item.Quantity > 0 {
 			distinctItems[item.EventItemID] = true
 		}
 	}
 
-	distinctCount := int32(len(distinctItems))
+	distinctCount := int64(len(distinctItems))
 
 	// Apply Best Discount Rule
 	// Criteria:
@@ -462,7 +462,7 @@ func (s *EventService) calculateTotal(e *event.Event, items []*event.Registratio
 	// 2. Distinct Count >= Rule.MinDistinctItems
 	var maxDiscount int64
 	for _, rule := range e.Discounts {
-		if totalQty >= rule.MinQuantity && distinctCount >= rule.MinDistinctItems {
+		if totalQty >= int64(rule.MinQuantity) && distinctCount >= int64(rule.MinDistinctItems) {
 			if rule.DiscountAmount > maxDiscount {
 				maxDiscount = rule.DiscountAmount
 			}

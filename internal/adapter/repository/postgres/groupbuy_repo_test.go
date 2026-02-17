@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,7 +16,8 @@ import (
 )
 
 func newTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
+	dsn := fmt.Sprintf("file:%s?mode=memory&cache=shared", strings.ReplaceAll(t.Name(), "/", "_"))
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	assert.NoError(t, err)
 
 	err = db.AutoMigrate(
@@ -113,7 +116,11 @@ func TestGroupBuyRepository_UpdateShippingConfigs(t *testing.T) {
 func createTestGroupBuy(t *testing.T, db *gorm.DB, repo *GroupBuyRepository, id string, status groupbuy.GroupBuyStatus) *groupbuy.GroupBuy {
 	t.Helper()
 	creatorID := "creator-" + id
-	db.Create(&model.User{ID: creatorID, Name: "Creator " + id})
+	require.NoError(t, db.Create(&model.User{
+		ID:    creatorID,
+		Name:  "Creator " + id,
+		Email: creatorID + "@test.local",
+	}).Error)
 
 	gb := &groupbuy.GroupBuy{
 		ID:          id,
@@ -134,7 +141,7 @@ func TestGroupBuyRepository_CreateAndGetByID(t *testing.T) {
 	repo := NewGroupBuyRepository(db)
 	ctx := context.Background()
 
-	db.Create(&model.User{ID: "user-1", Name: "Creator"})
+	require.NoError(t, db.Create(&model.User{ID: "user-1", Name: "Creator", Email: "user-1@test.local"}).Error)
 
 	gb := &groupbuy.GroupBuy{
 		ID:           "gb-1",
@@ -238,7 +245,7 @@ func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
 	gb := createTestGroupBuy(t, db, repo, "gb-1", groupbuy.GroupBuyStatusActive)
 
 	// Create user for order
-	db.Create(&model.User{ID: "buyer-1", Name: "Buyer"})
+	require.NoError(t, db.Create(&model.User{ID: "buyer-1", Name: "Buyer", Email: "buyer-1@test.local"}).Error)
 
 	order := &groupbuy.Order{
 		ID:              "order-1",
@@ -283,6 +290,45 @@ func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
 	got, err = repo.GetOrder(ctx, "order-1")
 	require.NoError(t, err)
 	assert.Equal(t, groupbuy.PaymentStatusConfirmed, got.PaymentStatus)
+}
+
+func TestGroupBuyRepository_ListOrders_SortedByCreatedAtDesc(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+	ctx := context.Background()
+
+	gb := createTestGroupBuy(t, db, repo, "gb-sort", groupbuy.GroupBuyStatusActive)
+	require.NoError(t, db.Create(&model.User{ID: "buyer-sort", Name: "Buyer", Email: "buyer-sort@test.local"}).Error)
+
+	oldOrder := &groupbuy.Order{
+		ID:              "order-old",
+		GroupBuyID:      gb.ID,
+		UserID:          "buyer-sort",
+		TotalAmount:     100,
+		PaymentStatus:   groupbuy.PaymentStatusUnset,
+		ContactInfo:     "buyer",
+		ShippingAddress: "addr",
+		CreatedAt:       time.Now().Add(-1 * time.Hour),
+	}
+	newOrder := &groupbuy.Order{
+		ID:              "order-new",
+		GroupBuyID:      gb.ID,
+		UserID:          "buyer-sort",
+		TotalAmount:     100,
+		PaymentStatus:   groupbuy.PaymentStatusUnset,
+		ContactInfo:     "buyer",
+		ShippingAddress: "addr",
+		CreatedAt:       time.Now(),
+	}
+
+	require.NoError(t, repo.CreateOrder(ctx, oldOrder))
+	require.NoError(t, repo.CreateOrder(ctx, newOrder))
+
+	orders, err := repo.ListOrders(ctx, gb.ID, "buyer-sort")
+	require.NoError(t, err)
+	require.Len(t, orders, 2)
+	assert.Equal(t, "order-new", orders[0].ID)
+	assert.Equal(t, "order-old", orders[1].ID)
 }
 
 func TestGroupBuyRepository_GetOrder_NotFound(t *testing.T) {

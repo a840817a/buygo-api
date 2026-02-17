@@ -125,6 +125,11 @@ func (r *EventRepository) Update(ctx context.Context, e *event.Event) error {
 			return err
 		}
 
+		// 4. Replace Managers
+		if err := tx.Model(&model.Event{ID: m.ID}).Association("Managers").Replace(m.Managers); err != nil {
+			return err
+		}
+
 		return nil
 	})
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"connectrpc.com/connect"
@@ -80,9 +81,21 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *connect.Request[v1.
 }
 
 func (h *EventHandler) ListEvents(ctx context.Context, req *connect.Request[v1.ListEventsRequest]) (*connect.Response[v1.ListEventsResponse], error) {
-	events, err := h.svc.ListEvents(ctx, int(req.Msg.PageSize), 0)
+	limit := normalizePageSize(int(req.Msg.PageSize))
+	offset, err := decodePageToken(req.Msg.PageToken)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid page_token"))
+	}
+
+	events, err := h.svc.ListEvents(ctx, limit+1, offset)
 	if err != nil {
 		return nil, mapError(err)
+	}
+
+	nextPageToken := ""
+	if len(events) > limit {
+		events = events[:limit]
+		nextPageToken = encodePageToken(offset + limit)
 	}
 
 	var protoEvents []*v1.Event
@@ -91,14 +104,27 @@ func (h *EventHandler) ListEvents(ctx context.Context, req *connect.Request[v1.L
 	}
 
 	return connect.NewResponse(&v1.ListEventsResponse{
-		Events: protoEvents,
+		Events:        protoEvents,
+		NextPageToken: nextPageToken,
 	}), nil
 }
 
 func (h *EventHandler) ListManagerEvents(ctx context.Context, req *connect.Request[v1.ListManagerEventsRequest]) (*connect.Response[v1.ListManagerEventsResponse], error) {
-	events, err := h.svc.ListManagerEvents(ctx, int(req.Msg.PageSize), 0)
+	limit := normalizePageSize(int(req.Msg.PageSize))
+	offset, err := decodePageToken(req.Msg.PageToken)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid page_token"))
+	}
+
+	events, err := h.svc.ListManagerEvents(ctx, limit+1, offset)
 	if err != nil {
 		return nil, mapError(err)
+	}
+
+	nextPageToken := ""
+	if len(events) > limit {
+		events = events[:limit]
+		nextPageToken = encodePageToken(offset + limit)
 	}
 
 	var protoEvents []*v1.Event
@@ -107,7 +133,8 @@ func (h *EventHandler) ListManagerEvents(ctx context.Context, req *connect.Reque
 	}
 
 	return connect.NewResponse(&v1.ListManagerEventsResponse{
-		Events: protoEvents,
+		Events:        protoEvents,
+		NextPageToken: nextPageToken,
 	}), nil
 }
 
@@ -138,7 +165,7 @@ func (h *EventHandler) RegisterEvent(ctx context.Context, req *connect.Request[v
 
 	return connect.NewResponse(&v1.RegisterEventResponse{
 		RegistrationId: reg.ID,
-		Status:         v1.RegistrationStatus(reg.Status),
+		Status:         toProtoRegistrationStatus(reg.Status),
 	}), nil
 }
 
@@ -158,7 +185,7 @@ func (h *EventHandler) UpdateRegistration(ctx context.Context, req *connect.Requ
 
 	return connect.NewResponse(&v1.UpdateRegistrationResponse{
 		RegistrationId: reg.ID,
-		Status:         v1.RegistrationStatus(reg.Status),
+		Status:         toProtoRegistrationStatus(reg.Status),
 	}), nil
 }
 
@@ -170,8 +197,8 @@ func (h *EventHandler) UpdateRegistrationStatus(ctx context.Context, req *connec
 
 	return connect.NewResponse(&v1.UpdateRegistrationStatusResponse{
 		RegistrationId: reg.ID,
-		Status:         v1.RegistrationStatus(reg.Status),
-		PaymentStatus:  v1.PaymentStatus(reg.PaymentStatus),
+		Status:         toProtoRegistrationStatus(reg.Status),
+		PaymentStatus:  toProtoEventPaymentStatus(reg.PaymentStatus),
 	}), nil
 }
 
@@ -296,7 +323,7 @@ func toProtoEvent(e *event.Event) *v1.Event {
 		Title:                e.Title,
 		Description:          e.Description,
 		CoverImageUrl:        e.CoverImage,
-		Status:               v1.EventStatus(e.Status),
+		Status:               toProtoEventStatus(e.Status),
 		StartTime:            timestamppb.New(e.StartTime),
 		EndTime:              timestamppb.New(e.EndTime),
 		RegistrationDeadline: timestamppb.New(e.RegistrationDeadline),
@@ -365,7 +392,7 @@ func toProtoRegistration(r *event.Registration) *v1.Registration {
 	for _, i := range r.SelectedItems {
 		items = append(items, &v1.RegisterItem{
 			EventItemId: i.EventItemID,
-			Quantity:    int32(i.Quantity),
+			Quantity:    safeIntToInt32(i.Quantity),
 		})
 	}
 
@@ -373,8 +400,8 @@ func toProtoRegistration(r *event.Registration) *v1.Registration {
 		Id:              r.ID,
 		EventId:         r.EventID,
 		UserId:          r.UserID,
-		Status:          v1.RegistrationStatus(r.Status),
-		PaymentStatus:   v1.PaymentStatus(r.PaymentStatus),
+		Status:          toProtoRegistrationStatus(r.Status),
+		PaymentStatus:   toProtoEventPaymentStatus(r.PaymentStatus),
 		ContactInfo:     r.ContactInfo,
 		Notes:           r.Notes,
 		TotalAmount:     r.TotalAmount,

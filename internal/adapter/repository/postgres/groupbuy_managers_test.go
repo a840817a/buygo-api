@@ -46,3 +46,37 @@ func TestGroupBuyRepository_CreateWithManagers(t *testing.T) {
 	require.Len(t, saved.Managers, 1, "Managers should have 1 element")
 	assert.Equal(t, "Manager", saved.Managers[0].Name)
 }
+
+func TestGroupBuyRepository_UpdateManagers(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewGroupBuyRepository(db)
+	ctx := context.Background()
+
+	creatorID := "user-creator"
+	managerA := "user-manager-a"
+	managerB := "user-manager-b"
+
+	require.NoError(t, db.Create(&model.User{ID: creatorID, Name: "Creator", Email: "creator@test.com"}).Error)
+	require.NoError(t, db.Create(&model.User{ID: managerA, Name: "Manager A", Email: "manager-a@test.com"}).Error)
+	require.NoError(t, db.Create(&model.User{ID: managerB, Name: "Manager B", Email: "manager-b@test.com"}).Error)
+
+	gb := &groupbuy.GroupBuy{
+		ID:         "gb-update-managers",
+		Title:      "Group Buy Update Managers",
+		Status:     groupbuy.GroupBuyStatusActive,
+		CreatorID:  creatorID,
+		CreatedAt:  time.Now(),
+		ManagerIDs: []string{managerA},
+	}
+	require.NoError(t, repo.Create(ctx, gb))
+
+	gb.ManagerIDs = []string{managerB}
+	require.NoError(t, repo.Update(ctx, gb))
+
+	saved, err := repo.GetByID(ctx, gb.ID)
+	require.NoError(t, err)
+	require.Len(t, saved.ManagerIDs, 1)
+	assert.Equal(t, managerB, saved.ManagerIDs[0])
+	require.Len(t, saved.Managers, 1)
+	assert.Equal(t, managerB, saved.Managers[0].ID)
+}
