@@ -30,7 +30,15 @@ jobs:
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - name: Run tests
-        run: go test ./... -race -coverprofile=coverage.out
+        run: |
+          pkgs=()
+          while IFS= read -r pkg; do
+            pkgs+=("$pkg")
+          done < <(go list ./... | grep -v '/api/v1' | grep -v '/api/v1/buygov1connect')
+          go test -race -coverprofile=coverage.out "${pkgs[@]}"
+
+      - name: Coverage gate
+        run: bash scripts/check-coverage.sh 50
 
       - name: Run gosec
         run: gosec -exclude-dir=api/v1 ./...

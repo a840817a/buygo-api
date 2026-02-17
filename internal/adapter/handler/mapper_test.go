@@ -246,3 +246,66 @@ func TestFromProtoProduct(t *testing.T) {
 func TestFromProtoProduct_Nil(t *testing.T) {
 	assert.Nil(t, fromProtoProduct(nil))
 }
+
+func TestFromProtoShippingConfig(t *testing.T) {
+	proto := &v1.ShippingConfig{
+		Id:    "sc-1",
+		Name:  "Store Pickup",
+		Type:  v1.ShippingType_SHIPPING_TYPE_STORE_PICKUP,
+		Price: 80,
+	}
+
+	domain := fromProtoShippingConfig(proto)
+	assert.Equal(t, "sc-1", domain.ID)
+	assert.Equal(t, "Store Pickup", domain.Name)
+	assert.Equal(t, groupbuy.ShippingTypeStorePickup, domain.Type)
+	assert.Equal(t, int64(80), domain.Price)
+}
+
+func TestFromProtoShippingConfig_Nil(t *testing.T) {
+	assert.Nil(t, fromProtoShippingConfig(nil))
+}
+
+func TestToProtoProducts_And_Category_PriceTemplate(t *testing.T) {
+	products := []*groupbuy.Product{
+		{
+			ID:            "p-1",
+			GroupBuyID:    "gb-1",
+			Name:          "P1",
+			PriceOriginal: 100,
+			ExchangeRate:  0.3,
+			PriceFinal:    30,
+			Specs:         []*groupbuy.ProductSpec{{ID: "s-1", Name: "S1"}},
+		},
+		nil,
+	}
+
+	result := toProtoProducts(products)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "p-1", result[0].Id)
+	assert.Nil(t, result[1])
+
+	cat := toProtoCategory(&groupbuy.Category{
+		ID:        "cat-1",
+		Name:      "Shoes",
+		SpecNames: []string{"size", "color"},
+	})
+	assert.Equal(t, "cat-1", cat.Id)
+	assert.Equal(t, "Shoes", cat.Name)
+	assert.Equal(t, []string{"size", "color"}, cat.SpecNames)
+	assert.Nil(t, toProtoCategory(nil))
+
+	pt := toProtoPriceTemplate(&groupbuy.PriceTemplate{
+		ID:             "tpl-1",
+		Name:           "JP Template",
+		SourceCurrency: "JPY",
+		ExchangeRate:   0.22,
+		Rounding:       &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0},
+	})
+	assert.Equal(t, "tpl-1", pt.Id)
+	assert.Equal(t, "JP Template", pt.Name)
+	assert.Equal(t, "JPY", pt.SourceCurrency)
+	assert.Equal(t, v1.RoundingMethod_ROUNDING_METHOD_FLOOR, pt.RoundingConfig.Method)
+
+	assert.Nil(t, toProtoPriceTemplate(nil))
+}
