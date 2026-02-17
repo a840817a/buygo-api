@@ -149,15 +149,7 @@ type OrderItem struct {
 
 // IsManager checks if the given user is the creator or a manager of this group buy.
 func (gb *GroupBuy) IsManager(userID string) bool {
-	if gb.CreatorID == userID {
-		return true
-	}
-	for _, m := range gb.ManagerIDs {
-		if m == userID {
-			return true
-		}
-	}
-	return false
+	return user.CheckIsManager(gb.CreatorID, gb.ManagerIDs, userID)
 }
 
 // Repository Port

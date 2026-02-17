@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"connectrpc.com/connect"
 
@@ -100,34 +99,6 @@ func (h *AuthHandler) ListUsers(ctx context.Context, req *connect.Request[v1.Lis
 	}), nil
 }
 
-func decodePageToken(token string) (int, error) {
-	if token == "" {
-		return 0, nil
-	}
-	offset, err := strconv.Atoi(token)
-	if err != nil || offset < 0 {
-		return 0, errors.New("invalid page token")
-	}
-	return offset, nil
-}
-
-func encodePageToken(offset int) string {
-	if offset <= 0 {
-		return ""
-	}
-	return strconv.Itoa(offset)
-}
-
-func normalizePageSize(limit int) int {
-	if limit <= 0 {
-		return 20
-	}
-	if limit > 100 {
-		return 100
-	}
-	return limit
-}
-
 func (h *AuthHandler) UpdateUserRole(ctx context.Context, req *connect.Request[v1.UpdateUserRoleRequest]) (*connect.Response[v1.UpdateUserRoleResponse], error) {
 	_, role, ok := auth.FromContext(ctx)
 	if !ok {
@@ -169,30 +140,4 @@ func (h *AuthHandler) ListAssignableManagers(ctx context.Context, req *connect.R
 	return connect.NewResponse(&v1.ListAssignableManagersResponse{
 		Managers: protoManagers,
 	}), nil
-}
-
-func toProtoUser(u *user.User) *v1.User {
-	if u == nil {
-		return nil
-	}
-	// Map Domain Role to Proto Role
-	var role v1.UserRole
-	switch u.Role {
-	case user.UserRoleUser:
-		role = v1.UserRole_USER_ROLE_USER
-	case user.UserRoleCreator:
-		role = v1.UserRole_USER_ROLE_CREATOR
-	case user.UserRoleSysAdmin:
-		role = v1.UserRole_USER_ROLE_SYS_ADMIN
-	default:
-		role = v1.UserRole_USER_ROLE_UNSPECIFIED
-	}
-
-	return &v1.User{
-		Id:       u.ID,
-		Name:     u.Name,
-		Email:    u.Email,
-		PhotoUrl: u.PhotoURL,
-		Role:     role,
-	}
 }

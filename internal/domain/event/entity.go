@@ -96,15 +96,7 @@ type RegistrationItem struct {
 
 // IsManager checks if the given user is the creator or a manager of this event.
 func (e *Event) IsManager(userID string) bool {
-	if e.CreatorID == userID {
-		return true
-	}
-	for _, m := range e.ManagerIDs {
-		if m == userID {
-			return true
-		}
-	}
-	return false
+	return user.CheckIsManager(e.CreatorID, e.ManagerIDs, userID)
 }
 
 type Repository interface {

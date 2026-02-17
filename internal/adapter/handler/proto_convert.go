@@ -2,10 +2,13 @@ package handler
 
 import (
 	"math"
+	"time"
 
 	v1 "github.com/hatsubosi/buygo-api/api/v1"
 	"github.com/hatsubosi/buygo-api/internal/domain/event"
 	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func safeIntToInt32(n int) int32 {
@@ -136,4 +139,103 @@ func toProtoEventPaymentStatus(status event.PaymentStatus) v1.PaymentStatus {
 	default:
 		return v1.PaymentStatus_PAYMENT_STATUS_UNSPECIFIED
 	}
+}
+
+func toProtoEventItem(i *event.EventItem) *v1.EventItem {
+	if i == nil {
+		return nil
+	}
+	var start, end *timestamppb.Timestamp
+	if i.StartTime != nil {
+		start = timestamppb.New(*i.StartTime)
+	}
+	if i.EndTime != nil {
+		end = timestamppb.New(*i.EndTime)
+	}
+
+	return &v1.EventItem{
+		Id:              i.ID,
+		Name:            i.Name,
+		Price:           i.Price,
+		MinParticipants: i.MinParticipants,
+		MaxParticipants: i.MaxParticipants,
+		StartTime:       start,
+		EndTime:         end,
+		AllowMultiple:   i.AllowMultiple,
+	}
+}
+
+func toProtoDiscounts(rules []*event.DiscountRule) []*v1.DiscountRule {
+	var res []*v1.DiscountRule
+	for _, r := range rules {
+		res = append(res, &v1.DiscountRule{
+			MinQuantity:      int32(r.MinQuantity),
+			MinDistinctItems: int32(r.MinDistinctItems),
+			DiscountAmount:   int64(r.DiscountAmount),
+		})
+	}
+	return res
+}
+
+func toProtoRegistration(r *event.Registration) *v1.Registration {
+	if r == nil {
+		return nil
+	}
+
+	// Flatten items for proto if needed or keep structure
+	// Proto expects RegisterItem which matches logic
+	var items []*v1.RegisterItem
+	for _, i := range r.SelectedItems {
+		items = append(items, &v1.RegisterItem{
+			EventItemId: i.EventItemID,
+			Quantity:    safeIntToInt32(i.Quantity),
+		})
+	}
+
+	return &v1.Registration{
+		Id:              r.ID,
+		EventId:         r.EventID,
+		UserId:          r.UserID,
+		Status:          toProtoRegistrationStatus(r.Status),
+		PaymentStatus:   toProtoEventPaymentStatus(r.PaymentStatus),
+		ContactInfo:     r.ContactInfo,
+		Notes:           r.Notes,
+		TotalAmount:     r.TotalAmount,
+		DiscountApplied: r.DiscountApplied,
+		SelectedItems:   items,
+		User:            toProtoUser(r.User),
+	}
+}
+
+func toProtoUser(u *user.User) *v1.User {
+	if u == nil {
+		return nil
+	}
+	var role v1.UserRole
+	switch u.Role {
+	case user.UserRoleUser:
+		role = v1.UserRole_USER_ROLE_USER
+	case user.UserRoleCreator:
+		role = v1.UserRole_USER_ROLE_CREATOR
+	case user.UserRoleSysAdmin:
+		role = v1.UserRole_USER_ROLE_SYS_ADMIN
+	default:
+		role = v1.UserRole_USER_ROLE_UNSPECIFIED
+	}
+
+	return &v1.User{
+		Id:       u.ID,
+		Name:     u.Name,
+		Email:    u.Email,
+		PhotoUrl: u.PhotoURL,
+		Role:     role,
+	}
+}
+
+func toTime(ts *timestamppb.Timestamp) *time.Time {
+	if ts == nil {
+		return nil
+	}
+	t := ts.AsTime()
+	return &t
 }

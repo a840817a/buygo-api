@@ -27,6 +27,10 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+func (u *User) IsAdmin() bool {
+	return u.Role == UserRoleSysAdmin
+}
+
 var (
 	ErrNotFound = errors.New("user not found")
 )
