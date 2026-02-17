@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"connectrpc.com/connect"
@@ -149,16 +150,51 @@ func main() {
 		connect.WithInterceptors(authInterceptor.NewUnaryInterceptor()))
 	mux.Handle(path, handler)
 
+	// 9. Health Check
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		sqlDB, err := database.DB()
+		if err != nil || sqlDB.Ping() != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte(`{"status":"unhealthy"}`))
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok"}`))
+	})
+
+	// 10. Server with Graceful Shutdown
 	corsOrigin := envOrDefault("CORS_ORIGIN", "http://localhost:4200")
 
-	fmt.Printf("Starting server on :%s\n", port)
-	err = http.ListenAndServe(
-		":"+port,
-		h2c.NewHandler(newCORS(corsOrigin).Handler(mux), &http2.Server{}),
-	)
-	if err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: h2c.NewHandler(newCORS(corsOrigin).Handler(mux), &http2.Server{}),
 	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-quit
+		log.Println("Shutting down server...")
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatalf("Server forced to shutdown: %v", err)
+		}
+	}()
+
+	log.Printf("Starting server on :%s\n", port)
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Failed to serve: %v", err)
+	}
+
+	// Cleanup
+	sqlDB, _ := database.DB()
+	if sqlDB != nil {
+		sqlDB.Close()
+	}
+	log.Println("Server stopped")
 }
 
 func newCORS(origin string) *cors {
