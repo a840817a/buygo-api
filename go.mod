@@ -1,4 +1,4 @@
-module github.com/buygo/buygo-api
+module github.com/hatsubosi/buygo-api
 
 go 1.25.5
 

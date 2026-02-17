@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/buygo/buygo-api/internal/adapter/repository/memory"
-	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/memory"
+	"github.com/hatsubosi/buygo-api/internal/domain/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 func TestGroupBuyService_OrderFlow(t *testing.T) {

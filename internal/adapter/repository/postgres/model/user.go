@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 type User struct {

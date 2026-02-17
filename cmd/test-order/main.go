@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	buygov1 "github.com/buygo/buygo-api/api/v1"
-	"github.com/buygo/buygo-api/api/v1/buygov1connect"
-	"github.com/buygo/buygo-api/internal/adapter/auth"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	buygov1 "github.com/hatsubosi/buygo-api/api/v1"
+	"github.com/hatsubosi/buygo-api/api/v1/buygov1connect"
+	"github.com/hatsubosi/buygo-api/internal/adapter/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 func main() {

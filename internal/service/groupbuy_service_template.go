@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 // CreatePriceTemplate: Admin Only

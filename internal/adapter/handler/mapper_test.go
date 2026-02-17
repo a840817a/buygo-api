@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/buygo/buygo-api/api/v1"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	v1 "github.com/hatsubosi/buygo-api/api/v1"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 )
 

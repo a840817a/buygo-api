@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	domainAuth "github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	domainAuth "github.com/hatsubosi/buygo-api/internal/domain/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

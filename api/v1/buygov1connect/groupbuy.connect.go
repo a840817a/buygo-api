@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1 "github.com/buygo/buygo-api/api/v1"
+	v1 "github.com/hatsubosi/buygo-api/api/v1"
 	http "net/http"
 	strings "strings"
 )

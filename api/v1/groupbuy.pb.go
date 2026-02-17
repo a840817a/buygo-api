@@ -3864,7 +3864,7 @@ const file_api_v1_groupbuy_proto_rawDesc = "" +
 	"\x12ListPriceTemplates\x12#.buygo.v1.ListPriceTemplatesRequest\x1a$.buygo.v1.ListPriceTemplatesResponse\x12Y\n" +
 	"\x10GetPriceTemplate\x12!.buygo.v1.GetPriceTemplateRequest\x1a\".buygo.v1.GetPriceTemplateResponse\x12b\n" +
 	"\x13UpdatePriceTemplate\x12$.buygo.v1.UpdatePriceTemplateRequest\x1a%.buygo.v1.UpdatePriceTemplateResponse\x12b\n" +
-	"\x13DeletePriceTemplate\x12$.buygo.v1.DeletePriceTemplateRequest\x1a%.buygo.v1.DeletePriceTemplateResponseB+Z)github.com/buygo/buygo-api/api/v1;buygov1b\x06proto3"
+	"\x13DeletePriceTemplate\x12$.buygo.v1.DeletePriceTemplateRequest\x1a%.buygo.v1.DeletePriceTemplateResponseB/Z-github.com/hatsubosi/buygo-api/api/v1;buygov1b\x06proto3"
 
 var (
 	file_api_v1_groupbuy_proto_rawDescOnce sync.Once

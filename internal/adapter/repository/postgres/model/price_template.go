@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
 )
 
 type PriceTemplate struct {

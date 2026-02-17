@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/domain/event"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
+	"github.com/hatsubosi/buygo-api/internal/domain/event"
 )
 
 type EventRepository struct {

@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
 )
 
 func (r *GroupBuyRepository) CreatePriceTemplate(ctx context.Context, pt *groupbuy.PriceTemplate) error {

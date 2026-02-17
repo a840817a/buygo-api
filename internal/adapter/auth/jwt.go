@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 type JWTGenerator struct {

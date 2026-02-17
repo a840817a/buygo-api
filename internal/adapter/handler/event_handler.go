@@ -7,10 +7,10 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	v1 "github.com/buygo/buygo-api/api/v1"
-	"github.com/buygo/buygo-api/api/v1/buygov1connect"
-	"github.com/buygo/buygo-api/internal/domain/event"
-	"github.com/buygo/buygo-api/internal/service"
+	v1 "github.com/hatsubosi/buygo-api/api/v1"
+	"github.com/hatsubosi/buygo-api/api/v1/buygov1connect"
+	"github.com/hatsubosi/buygo-api/internal/domain/event"
+	"github.com/hatsubosi/buygo-api/internal/service"
 )
 
 type EventHandler struct {

@@ -3,8 +3,8 @@ package handler
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	v1 "github.com/buygo/buygo-api/api/v1"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
+	v1 "github.com/hatsubosi/buygo-api/api/v1"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
 )
 
 func fromProtoProduct(p *v1.Product) *groupbuy.Product {

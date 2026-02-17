@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/buygo/buygo-api/internal/adapter/db"
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
+	"github.com/hatsubosi/buygo-api/internal/adapter/db"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
 )
 
 func main() {

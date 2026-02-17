@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"connectrpc.com/connect"
-	"github.com/buygo/buygo-api/internal/service"
+	"github.com/hatsubosi/buygo-api/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

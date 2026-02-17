@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package buygo.v1;
 
-option go_package = "github.com/buygo/buygo-api/api/v1;buygov1";
+option go_package = "github.com/hatsubosi/buygo-api/api/v1;buygov1";
 
 // User Roles matching Specification
 enum UserRole {

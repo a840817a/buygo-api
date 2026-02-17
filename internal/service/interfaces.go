@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/buygo/buygo-api/internal/domain/event"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/event"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 // GroupBuyServiceInterface defines the contract for group buy operations.

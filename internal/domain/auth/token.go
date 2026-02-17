@@ -1,6 +1,6 @@
 package auth
 
-import "github.com/buygo/buygo-api/internal/domain/user"
+import "github.com/hatsubosi/buygo-api/internal/domain/user"
 
 type TokenManager interface {
 	GenerateToken(user *user.User) (string, error)

@@ -2154,7 +2154,7 @@ const file_api_v1_event_proto_rawDesc = "" +
 	"\x12GetMyRegistrations\x12#.buygo.v1.GetMyRegistrationsRequest\x1a$.buygo.v1.GetMyRegistrationsResponse\x12k\n" +
 	"\x16ListEventRegistrations\x12'.buygo.v1.ListEventRegistrationsRequest\x1a(.buygo.v1.ListEventRegistrationsResponse\x12J\n" +
 	"\vUpdateEvent\x12\x1c.buygo.v1.UpdateEventRequest\x1a\x1d.buygo.v1.UpdateEventResponse\x12\\\n" +
-	"\x11UpdateEventStatus\x12\".buygo.v1.UpdateEventStatusRequest\x1a#.buygo.v1.UpdateEventStatusResponseB+Z)github.com/buygo/buygo-api/api/v1;buygov1b\x06proto3"
+	"\x11UpdateEventStatus\x12\".buygo.v1.UpdateEventStatusRequest\x1a#.buygo.v1.UpdateEventStatusResponseB/Z-github.com/hatsubosi/buygo-api/api/v1;buygov1b\x06proto3"
 
 var (
 	file_api_v1_event_proto_rawDescOnce sync.Once

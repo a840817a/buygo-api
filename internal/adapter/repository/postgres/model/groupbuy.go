@@ -3,8 +3,8 @@ package model
 import (
 	"time"
 
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 type GroupBuy struct {
@@ -22,7 +22,7 @@ type GroupBuy struct {
 	Managers       []*User `gorm:"many2many:project_managers;"`
 
 	ShippingConfigs []*ShippingConfig `gorm:"serializer:json"` // Store as JSON
-	Products        []*Product       `gorm:"foreignKey:GroupBuyID"`
+	Products        []*Product        `gorm:"foreignKey:GroupBuyID"`
 	CreatedAt       time.Time
 	Deadline        *time.Time
 }
@@ -80,10 +80,10 @@ type OrderItem struct {
 }
 
 type ShippingConfig struct {
-	ID    string               `json:"id"`
-	Name  string               `json:"name"`
+	ID    string                `json:"id"`
+	Name  string                `json:"name"`
 	Type  groupbuy.ShippingType `json:"type"`
-	Price int64                `json:"price"`
+	Price int64                 `json:"price"`
 }
 
 func (sc *ShippingConfig) ToDomain() *groupbuy.ShippingConfig {

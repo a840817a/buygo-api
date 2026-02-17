@@ -7,7 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 
-	"github.com/buygo/buygo-api/internal/domain/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/auth"
 )
 
 type AuthInterceptor struct {

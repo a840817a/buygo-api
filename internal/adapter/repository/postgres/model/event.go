@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 
-	"github.com/buygo/buygo-api/internal/domain/event"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/event"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 type Event struct {

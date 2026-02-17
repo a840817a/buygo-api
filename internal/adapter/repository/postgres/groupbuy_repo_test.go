@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"

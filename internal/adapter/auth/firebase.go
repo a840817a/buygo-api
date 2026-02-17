@@ -7,7 +7,7 @@ import (
 	firebase "firebase.google.com/go"
 	"google.golang.org/api/option"
 
-	"github.com/buygo/buygo-api/internal/domain/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/auth"
 )
 
 type FirebaseProvider struct {

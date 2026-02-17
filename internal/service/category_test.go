@@ -6,9 +6,9 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/buygo/buygo-api/internal/adapter/repository/memory"
-	"github.com/buygo/buygo-api/internal/domain/auth"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/memory"
+	"github.com/hatsubosi/buygo-api/internal/domain/auth"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
 func TestGroupBuyService_CategoryAccessControl(t *testing.T) {

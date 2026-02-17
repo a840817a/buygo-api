@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"connectrpc.com/connect"
-	"github.com/buygo/buygo-api/internal/service"
+	"github.com/hatsubosi/buygo-api/internal/service"
 )
 
 func mapError(err error) error {

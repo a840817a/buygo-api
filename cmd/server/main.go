@@ -15,14 +15,14 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/buygo/buygo-api/api/v1/buygov1connect"
-	"github.com/buygo/buygo-api/internal/adapter/auth"
-	"github.com/buygo/buygo-api/internal/adapter/db"
-	"github.com/buygo/buygo-api/internal/adapter/handler"
-	"github.com/buygo/buygo-api/internal/adapter/interceptor"
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres"
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/service"
+	"github.com/hatsubosi/buygo-api/api/v1/buygov1connect"
+	"github.com/hatsubosi/buygo-api/internal/adapter/auth"
+	"github.com/hatsubosi/buygo-api/internal/adapter/db"
+	"github.com/hatsubosi/buygo-api/internal/adapter/handler"
+	"github.com/hatsubosi/buygo-api/internal/adapter/interceptor"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
+	"github.com/hatsubosi/buygo-api/internal/service"
 )
 
 func main() {

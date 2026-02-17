@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/buygo/buygo-api/internal/adapter/repository/postgres/model"
-	"github.com/buygo/buygo-api/internal/domain/groupbuy"
 	"github.com/google/uuid"
+	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
+	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
 )
 
 type GroupBuyRepository struct {

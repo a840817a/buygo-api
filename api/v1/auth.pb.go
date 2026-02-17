@@ -659,7 +659,7 @@ const file_api_v1_auth_proto_rawDesc = "" +
 	"\tListUsers\x12\x1a.buygo.v1.ListUsersRequest\x1a\x1b.buygo.v1.ListUsersResponse\x12S\n" +
 	"\x0eUpdateUserRole\x12\x1f.buygo.v1.UpdateUserRoleRequest\x1a .buygo.v1.UpdateUserRoleResponse\x128\n" +
 	"\x05GetMe\x12\x16.buygo.v1.GetMeRequest\x1a\x17.buygo.v1.GetMeResponse\x12k\n" +
-	"\x16ListAssignableManagers\x12'.buygo.v1.ListAssignableManagersRequest\x1a(.buygo.v1.ListAssignableManagersResponseB+Z)github.com/buygo/buygo-api/api/v1;buygov1b\x06proto3"
+	"\x16ListAssignableManagers\x12'.buygo.v1.ListAssignableManagersRequest\x1a(.buygo.v1.ListAssignableManagersResponseB/Z-github.com/hatsubosi/buygo-api/api/v1;buygov1b\x06proto3"
 
 var (
 	file_api_v1_auth_proto_rawDescOnce sync.Once

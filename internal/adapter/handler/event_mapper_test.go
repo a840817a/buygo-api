@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/buygo/buygo-api/internal/domain/event"
-	"github.com/buygo/buygo-api/internal/domain/user"
+	"github.com/hatsubosi/buygo-api/internal/domain/event"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
