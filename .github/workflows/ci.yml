@@ -58,6 +58,7 @@ jobs:
         with:
           lint: true
           breaking: true
+          breaking_against: '.git#branch=main'
 
   docker:
     runs-on: ubuntu-latest
