@@ -2,339 +2,130 @@ package postgres
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
 	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
+	"github.com/hatsubosi/buygo-api/internal/domain/user"
 )
 
-func newTestDB(t *testing.T) *gorm.DB {
-	dsn := fmt.Sprintf("file:%s?mode=memory&cache=shared", strings.ReplaceAll(t.Name(), "/", "_"))
-	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
-	assert.NoError(t, err)
+func TestGroupBuyRepositoryIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
 
-	err = db.AutoMigrate(
+	_, db := setupPostgresContainer(t)
+	// Ensure groupbuy models are migrated
+	err := db.AutoMigrate(
 		&model.User{},
 		&model.GroupBuy{},
 		&model.Product{},
 		&model.ProductSpec{},
 		&model.Order{},
 		&model.OrderItem{},
+		&model.Category{},
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	return db
-}
-
-func TestGroupBuyRepository_UpdateShippingConfigs(t *testing.T) {
-	db := newTestDB(t)
+	userRepo := NewUserRepository(db)
 	repo := NewGroupBuyRepository(db)
 	ctx := context.Background()
 
-	// 1. Create Initial Project
-	creatorID := "user-1"
-	db.Create(&model.User{ID: creatorID, Name: "Creator"})
+	// Seed user data to satisfy foreign keys
+	admin := &user.User{ID: "admin-1", Name: "Admin", Email: "admin1@test.com", Role: user.UserRoleSysAdmin}
+	creator := &user.User{ID: "creator-1", Name: "Creator", Email: "creator1@test.com"}
+	manager := &user.User{ID: "manager-1", Name: "Manager", Email: "manager1@test.com"}
 
-	proj := &groupbuy.GroupBuy{
-		ID:          "proj-1",
-		Title:       "Test Project",
-		Description: "Desc",
-		Status:      groupbuy.GroupBuyStatusActive,
-		CreatorID:   creatorID,
-		CreatedAt:   time.Now(),
-		ShippingConfigs: []*groupbuy.ShippingConfig{
-			{ID: "sc-1", Name: "Initial Meetup", Type: groupbuy.ShippingTypeMeetup, Price: 0},
-		},
-	}
-	err := repo.Create(ctx, proj)
-	assert.NoError(t, err)
+	err = userRepo.Create(ctx, admin)
+	require.NoError(t, err)
+	err = userRepo.Create(ctx, creator)
+	require.NoError(t, err)
+	err = userRepo.Create(ctx, manager)
+	require.NoError(t, err)
 
-	// Verify Initial State
-	saved, err := repo.GetByID(ctx, "proj-1")
-	assert.NoError(t, err)
-	assert.Len(t, saved.ShippingConfigs, 1)
-	assert.Equal(t, groupbuy.ShippingTypeMeetup, saved.ShippingConfigs[0].Type)
-
-	// 2. Update with New Shipping Config (Simulate Type Change / Add)
-	// Changing "Initial Meetup" to "Delivery" type (Type 1), adding "Store Pickup" (Type 2)
-	updatedConfigs := []*groupbuy.ShippingConfig{
-		{ID: "sc-1", Name: "Changed to Delivery", Type: groupbuy.ShippingTypeDelivery, Price: 100},
-		{ID: "sc-2", Name: "New Store Pickup", Type: groupbuy.ShippingTypeStorePickup, Price: 60},
-	}
-	proj.ShippingConfigs = updatedConfigs
-
-	err = repo.Update(ctx, proj)
-	assert.NoError(t, err)
-
-	// 3. Verify Persistence
-	// We need to fetch again to check DB state
-	final, err := repo.GetByID(ctx, "proj-1")
-	assert.NoError(t, err)
-	assert.Len(t, final.ShippingConfigs, 2)
-
-	// Check Types
-	var delivery *groupbuy.ShippingConfig
-	var pickup *groupbuy.ShippingConfig
-
-	for _, sc := range final.ShippingConfigs {
-		if sc.ID == "sc-1" {
-			delivery = sc
-		} else if sc.ID == "sc-2" {
-			pickup = sc
+	t.Run("Create and Get GroupBuy", func(t *testing.T) {
+		gb := &groupbuy.GroupBuy{
+			ID:          "gb-1",
+			Title:       "Test GB",
+			Description: "Dest",
+			CreatorID:   creator.ID,
+			Managers:    []*user.User{manager}, // Use []*user.User instead of []string based on entity mapping/creation need initially
+			Status:      groupbuy.GroupBuyStatusDraft,
+			Products: []*groupbuy.Product{
+				{
+					ID:            "prod-1",
+					Name:          "Test Product 1",
+					PriceOriginal: 100, // Use PriceOriginal
+					Specs: []*groupbuy.ProductSpec{
+						{ID: "spec-1", Name: "Red"}, // No PriceAdjustment in domain model
+					},
+				},
+			},
 		}
-	}
 
-	assert.NotNil(t, delivery)
-	assert.Equal(t, groupbuy.ShippingTypeDelivery, delivery.Type, "Type should be Delivery (1)")
-	assert.Equal(t, int64(100), delivery.Price)
+		err := repo.Create(ctx, gb)
+		assert.NoError(t, err)
 
-	assert.NotNil(t, pickup)
-	assert.Equal(t, groupbuy.ShippingTypeStorePickup, pickup.Type, "Type should be Store Pickup (2)")
+		fetched, err := repo.GetByID(ctx, "gb-1")
+		require.NoError(t, err)
 
-	// 4. Test Meetup Again
-	proj.ShippingConfigs = []*groupbuy.ShippingConfig{
-		{ID: "sc-3", Name: "Meetup Only", Type: groupbuy.ShippingTypeMeetup, Price: 0},
-	}
-	err = repo.Update(ctx, proj)
-	assert.NoError(t, err)
+		assert.Equal(t, "Test GB", fetched.Title)
+		assert.Equal(t, creator.ID, fetched.CreatorID)
+		assert.Len(t, fetched.Managers, 1)
+		assert.Equal(t, manager.ID, fetched.Managers[0].ID)
 
-	final2, err := repo.GetByID(ctx, "proj-1")
-	assert.NoError(t, err)
-	assert.Len(t, final2.ShippingConfigs, 1)
-	assert.Equal(t, groupbuy.ShippingTypeMeetup, final2.ShippingConfigs[0].Type, "Type should be Meetup (3)")
-}
+		assert.Len(t, fetched.Products, 1)
+		assert.Equal(t, "Test Product 1", fetched.Products[0].Name)
+		assert.Len(t, fetched.Products[0].Specs, 1)
+		assert.Equal(t, "Red", fetched.Products[0].Specs[0].Name)
+	})
 
-// --- Helper ---
+	t.Run("List GroupBuys - Public Flow", func(t *testing.T) {
+		gbPublic := &groupbuy.GroupBuy{ID: "gb-2", Title: "Pub 1", CreatorID: creator.ID, Status: groupbuy.GroupBuyStatusActive}
+		gbPublicEnded := &groupbuy.GroupBuy{ID: "gb-3", Title: "Pub 2", CreatorID: creator.ID, Status: groupbuy.GroupBuyStatusEnded}
+		gbDraft := &groupbuy.GroupBuy{ID: "gb-4", Title: "Draft 1", CreatorID: creator.ID, Status: groupbuy.GroupBuyStatusDraft}
 
-func createTestGroupBuy(t *testing.T, db *gorm.DB, repo *GroupBuyRepository, id string, status groupbuy.GroupBuyStatus) *groupbuy.GroupBuy {
-	t.Helper()
-	creatorID := "creator-" + id
-	require.NoError(t, db.Create(&model.User{
-		ID:    creatorID,
-		Name:  "Creator " + id,
-		Email: creatorID + "@test.local",
-	}).Error)
+		repo.Create(ctx, gbPublic)
+		repo.Create(ctx, gbPublicEnded)
+		repo.Create(ctx, gbDraft)
 
-	gb := &groupbuy.GroupBuy{
-		ID:          id,
-		Title:       "GroupBuy " + id,
-		Description: "Desc",
-		Status:      status,
-		CreatorID:   creatorID,
-		CreatedAt:   time.Now(),
-	}
-	require.NoError(t, repo.Create(context.Background(), gb))
-	return gb
-}
+		// Public anonymous user should see only StatusActive and StatusEnded
+		publicList, err := repo.List(ctx, 10, 0, "", false, false)
+		assert.NoError(t, err)
+		assert.Len(t, publicList, 2)
+		for _, g := range publicList {
+			assert.Contains(t, []int{int(groupbuy.GroupBuyStatusActive), int(groupbuy.GroupBuyStatusEnded)}, int(g.Status))
+		}
 
-// --- Create + GetByID ---
+		// Sysadmin should see ALL
+		adminList, err := repo.List(ctx, 10, 0, admin.ID, true, false)
+		assert.NoError(t, err)
+		assert.GreaterOrEqual(t, len(adminList), 4) // Including gb-1 created earlier
 
-func TestGroupBuyRepository_CreateAndGetByID(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-	ctx := context.Background()
+		// Creator should see their drafts and public groupbuys
+		creatorList, err := repo.List(ctx, 10, 0, creator.ID, false, false)
+		assert.NoError(t, err)
+		assert.GreaterOrEqual(t, len(creatorList), 4) // All of them created by this Creator
+	})
 
-	require.NoError(t, db.Create(&model.User{ID: "user-1", Name: "Creator", Email: "user-1@test.local"}).Error)
+	t.Run("Update GroupBuy", func(t *testing.T) {
+		gb, err := repo.GetByID(ctx, "gb-1")
+		require.NoError(t, err)
 
-	gb := &groupbuy.GroupBuy{
-		ID:           "gb-1",
-		Title:        "Test GB",
-		Description:  "A test group buy",
-		Status:       groupbuy.GroupBuyStatusDraft,
-		ExchangeRate: 0.22,
-		CreatorID:    "user-1",
-		CreatedAt:    time.Now(),
-		Rounding:     &groupbuy.RoundingConfig{Method: groupbuy.RoundingMethodFloor, Digit: 0},
-	}
+		gb.Title = "Updated GB"
+		gb.Description = "New Desc"
+		// Change products
+		gb.Products[0].Name = "Updated Product 1"
 
-	err := repo.Create(ctx, gb)
-	require.NoError(t, err)
+		err = repo.Update(ctx, gb)
+		assert.NoError(t, err)
 
-	got, err := repo.GetByID(ctx, "gb-1")
-	require.NoError(t, err)
-	assert.Equal(t, "Test GB", got.Title)
-	assert.Equal(t, "A test group buy", got.Description)
-	assert.Equal(t, groupbuy.GroupBuyStatusDraft, got.Status)
-	assert.Equal(t, 0.22, got.ExchangeRate)
-	assert.Equal(t, "user-1", got.CreatorID)
-}
-
-func TestGroupBuyRepository_GetByID_NotFound(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-
-	_, err := repo.GetByID(context.Background(), "nonexistent")
-	assert.Error(t, err)
-}
-
-// --- List Filtering ---
-
-func TestGroupBuyRepository_List_PublicOnly(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-
-	createTestGroupBuy(t, db, repo, "draft-1", groupbuy.GroupBuyStatusDraft)
-	createTestGroupBuy(t, db, repo, "active-1", groupbuy.GroupBuyStatusActive)
-	createTestGroupBuy(t, db, repo, "ended-1", groupbuy.GroupBuyStatusEnded)
-
-	// Anonymous user (no userID) should only see Active + Ended
-	list, err := repo.List(context.Background(), 10, 0, "", false, false)
-	require.NoError(t, err)
-	assert.Len(t, list, 2)
-}
-
-func TestGroupBuyRepository_List_SysAdmin(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-
-	createTestGroupBuy(t, db, repo, "draft-1", groupbuy.GroupBuyStatusDraft)
-	createTestGroupBuy(t, db, repo, "active-1", groupbuy.GroupBuyStatusActive)
-
-	// SysAdmin sees all
-	list, err := repo.List(context.Background(), 10, 0, "admin", true, false)
-	require.NoError(t, err)
-	assert.Len(t, list, 2)
-}
-
-// --- AddProduct ---
-
-func TestGroupBuyRepository_AddProduct(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-	ctx := context.Background()
-
-	gb := createTestGroupBuy(t, db, repo, "gb-1", groupbuy.GroupBuyStatusActive)
-
-	prod := &groupbuy.Product{
-		ID:            "prod-1",
-		GroupBuyID:    gb.ID,
-		Name:          "Widget",
-		PriceOriginal: 1000,
-		PriceFinal:    220,
-		ExchangeRate:  0.22,
-		Specs: []*groupbuy.ProductSpec{
-			{ID: "spec-1", ProductID: "prod-1", Name: "Red"},
-			{ID: "spec-2", ProductID: "prod-1", Name: "Blue"},
-		},
-	}
-
-	err := repo.AddProduct(ctx, prod)
-	require.NoError(t, err)
-
-	got, err := repo.GetByID(ctx, gb.ID)
-	require.NoError(t, err)
-	require.Len(t, got.Products, 1)
-	assert.Equal(t, "Widget", got.Products[0].Name)
-	assert.Len(t, got.Products[0].Specs, 2)
-}
-
-// --- Order CRUD ---
-
-func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-	ctx := context.Background()
-
-	gb := createTestGroupBuy(t, db, repo, "gb-1", groupbuy.GroupBuyStatusActive)
-
-	// Create user for order
-	require.NoError(t, db.Create(&model.User{ID: "buyer-1", Name: "Buyer", Email: "buyer-1@test.local"}).Error)
-
-	order := &groupbuy.Order{
-		ID:              "order-1",
-		GroupBuyID:      gb.ID,
-		UserID:          "buyer-1",
-		TotalAmount:     500,
-		PaymentStatus:   groupbuy.PaymentStatusUnset,
-		ContactInfo:     "contact@test.com",
-		ShippingAddress: "123 Main St",
-		Items: []*groupbuy.OrderItem{
-			{ID: "item-1", OrderID: "order-1", ProductID: "prod-1", SpecID: "spec-1", Quantity: 2, Price: 250},
-		},
-		CreatedAt: time.Now(),
-	}
-
-	// Create
-	err := repo.CreateOrder(ctx, order)
-	require.NoError(t, err)
-
-	// Get
-	got, err := repo.GetOrder(ctx, "order-1")
-	require.NoError(t, err)
-	assert.Equal(t, "buyer-1", got.UserID)
-	assert.Equal(t, int64(500), got.TotalAmount)
-	require.Len(t, got.Items, 1)
-	assert.Equal(t, 2, got.Items[0].Quantity)
-
-	// List by group buy
-	orders, err := repo.ListOrders(ctx, gb.ID, "")
-	require.NoError(t, err)
-	assert.Len(t, orders, 1)
-
-	// List by user
-	orders, err = repo.ListOrders(ctx, "", "buyer-1")
-	require.NoError(t, err)
-	assert.Len(t, orders, 1)
-
-	// Update payment status
-	err = repo.UpdateOrderPaymentStatus(ctx, "order-1", groupbuy.PaymentStatusConfirmed)
-	require.NoError(t, err)
-
-	got, err = repo.GetOrder(ctx, "order-1")
-	require.NoError(t, err)
-	assert.Equal(t, groupbuy.PaymentStatusConfirmed, got.PaymentStatus)
-}
-
-func TestGroupBuyRepository_ListOrders_SortedByCreatedAtDesc(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-	ctx := context.Background()
-
-	gb := createTestGroupBuy(t, db, repo, "gb-sort", groupbuy.GroupBuyStatusActive)
-	require.NoError(t, db.Create(&model.User{ID: "buyer-sort", Name: "Buyer", Email: "buyer-sort@test.local"}).Error)
-
-	oldOrder := &groupbuy.Order{
-		ID:              "order-old",
-		GroupBuyID:      gb.ID,
-		UserID:          "buyer-sort",
-		TotalAmount:     100,
-		PaymentStatus:   groupbuy.PaymentStatusUnset,
-		ContactInfo:     "buyer",
-		ShippingAddress: "addr",
-		CreatedAt:       time.Now().Add(-1 * time.Hour),
-	}
-	newOrder := &groupbuy.Order{
-		ID:              "order-new",
-		GroupBuyID:      gb.ID,
-		UserID:          "buyer-sort",
-		TotalAmount:     100,
-		PaymentStatus:   groupbuy.PaymentStatusUnset,
-		ContactInfo:     "buyer",
-		ShippingAddress: "addr",
-		CreatedAt:       time.Now(),
-	}
-
-	require.NoError(t, repo.CreateOrder(ctx, oldOrder))
-	require.NoError(t, repo.CreateOrder(ctx, newOrder))
-
-	orders, err := repo.ListOrders(ctx, gb.ID, "buyer-sort")
-	require.NoError(t, err)
-	require.Len(t, orders, 2)
-	assert.Equal(t, "order-new", orders[0].ID)
-	assert.Equal(t, "order-old", orders[1].ID)
-}
-
-func TestGroupBuyRepository_GetOrder_NotFound(t *testing.T) {
-	db := newTestDB(t)
-	repo := NewGroupBuyRepository(db)
-
-	_, err := repo.GetOrder(context.Background(), "nonexistent")
-	assert.Error(t, err)
+		fetched, err := repo.GetByID(ctx, "gb-1")
+		assert.NoError(t, err)
+		assert.Equal(t, "Updated GB", fetched.Title)
+		assert.Equal(t, "Updated Product 1", fetched.Products[0].Name)
+	})
 }

@@ -158,8 +158,17 @@ func FromDomainGroupBuy(gb *groupbuy.GroupBuy) *GroupBuy {
 	// Note: For create/update, GORM handles association if we provide the struct with ID.
 	// We might need to fetch users first or just set IDs references if GORM supports it.
 	// Simplest for ManyToMany: Provide full User structs with just ID set is often enough for association update.
+
+	managerIDsMap := make(map[string]bool)
 	for _, id := range gb.ManagerIDs {
 		managers = append(managers, &User{ID: id})
+		managerIDsMap[id] = true
+	}
+	for _, m := range gb.Managers {
+		if m != nil && !managerIDsMap[m.ID] {
+			managers = append(managers, &User{ID: m.ID})
+			managerIDsMap[m.ID] = true
+		}
 	}
 
 	var products []*Product
