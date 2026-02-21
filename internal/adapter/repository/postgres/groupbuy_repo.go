@@ -86,14 +86,14 @@ func (r *GroupBuyRepository) List(ctx context.Context, limit, offset int, userID
 		} else {
 			// Public + My Items View
 			query = query.Where(
-				r.db.Where("status IN ?", []int{2, 3}).
+				r.db.Where("status IN ?", []int{int(groupbuy.GroupBuyStatusActive), int(groupbuy.GroupBuyStatusEnded)}).
 					Or("creator_id = ?", userID).
 					Or("id IN (?)", r.db.Table("project_managers").Select("group_buy_id").Where("user_id = ?", userID)),
 			)
 		}
 	} else {
 		// Public Only
-		query = query.Where("status IN ?", []int{2, 3})
+		query = query.Where("status IN ?", []int{int(groupbuy.GroupBuyStatusActive), int(groupbuy.GroupBuyStatusEnded)})
 	}
 
 	if err := query.Find(&models).Error; err != nil {

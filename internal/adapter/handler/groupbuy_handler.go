@@ -29,13 +29,7 @@ func (h *GroupBuyHandler) CreateGroupBuy(ctx context.Context, req *connect.Reque
 		t := req.Msg.Deadline.AsTime()
 		deadline = &t
 	}
-	var rounding *groupbuy.RoundingConfig
-	if req.Msg.RoundingConfig != nil {
-		rounding = &groupbuy.RoundingConfig{
-			Method: groupbuy.RoundingMethod(req.Msg.RoundingConfig.Method),
-			Digit:  int(req.Msg.RoundingConfig.Digit),
-		}
-	}
+	rounding := fromProtoRoundingConfig(req.Msg.RoundingConfig)
 	shippingConfigs := make([]*groupbuy.ShippingConfig, 0, len(req.Msg.ShippingConfigs))
 	for _, sc := range req.Msg.ShippingConfigs {
 		shippingConfigs = append(shippingConfigs, fromProtoShippingConfig(sc))
@@ -145,13 +139,7 @@ func (h *GroupBuyHandler) UpdateGroupBuy(ctx context.Context, req *connect.Reque
 		shippingConfigs = append(shippingConfigs, fromProtoShippingConfig(sc))
 	}
 
-	var rounding *groupbuy.RoundingConfig
-	if req.Msg.RoundingConfig != nil {
-		rounding = &groupbuy.RoundingConfig{
-			Method: groupbuy.RoundingMethod(req.Msg.RoundingConfig.Method),
-			Digit:  int(req.Msg.RoundingConfig.Digit),
-		}
-	}
+	rounding := fromProtoRoundingConfig(req.Msg.RoundingConfig)
 
 	gb, err := h.svc.UpdateGroupBuy(ctx, req.Msg.GroupBuyId, req.Msg.Title, req.Msg.Description, status, products, req.Msg.CoverImageUrl, deadline, shippingConfigs, req.Msg.ManagerIds, req.Msg.ExchangeRate, rounding, req.Msg.SourceCurrency)
 	if err != nil {
@@ -345,13 +333,7 @@ func (h *GroupBuyHandler) ListCategories(ctx context.Context, req *connect.Reque
 // PriceTemplate Handlers
 
 func (h *GroupBuyHandler) CreatePriceTemplate(ctx context.Context, req *connect.Request[v1.CreatePriceTemplateRequest]) (*connect.Response[v1.CreatePriceTemplateResponse], error) {
-	var rounding *groupbuy.RoundingConfig
-	if req.Msg.RoundingConfig != nil {
-		rounding = &groupbuy.RoundingConfig{
-			Method: groupbuy.RoundingMethod(req.Msg.RoundingConfig.Method),
-			Digit:  int(req.Msg.RoundingConfig.Digit),
-		}
-	}
+	rounding := fromProtoRoundingConfig(req.Msg.RoundingConfig)
 
 	pt, err := h.svc.CreatePriceTemplate(ctx, req.Msg.Name, req.Msg.SourceCurrency, req.Msg.ExchangeRate, rounding)
 	if err != nil {
@@ -391,13 +373,7 @@ func (h *GroupBuyHandler) GetPriceTemplate(ctx context.Context, req *connect.Req
 }
 
 func (h *GroupBuyHandler) UpdatePriceTemplate(ctx context.Context, req *connect.Request[v1.UpdatePriceTemplateRequest]) (*connect.Response[v1.UpdatePriceTemplateResponse], error) {
-	var rounding *groupbuy.RoundingConfig
-	if req.Msg.RoundingConfig != nil {
-		rounding = &groupbuy.RoundingConfig{
-			Method: groupbuy.RoundingMethod(req.Msg.RoundingConfig.Method),
-			Digit:  int(req.Msg.RoundingConfig.Digit),
-		}
-	}
+	rounding := fromProtoRoundingConfig(req.Msg.RoundingConfig)
 
 	pt, err := h.svc.UpdatePriceTemplate(ctx, req.Msg.TemplateId, req.Msg.Name, req.Msg.SourceCurrency, req.Msg.ExchangeRate, rounding)
 	if err != nil {

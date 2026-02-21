@@ -74,32 +74,7 @@ func (s *GroupBuyService) CreateGroupBuy(ctx context.Context, title, description
 	}
 
 	if len(products) > 0 {
-		for _, item := range products {
-			// Apply Defaults if Missing
-			if item.ExchangeRate == 0 {
-				item.ExchangeRate = gb.ExchangeRate
-			}
-			if item.Rounding == nil {
-				item.Rounding = gb.Rounding
-			}
-
-			if item.ID == "" {
-				item.ID = uuid.New().String()
-			}
-
-			// Always Calculate Final Price
-			item.PriceFinal = s.CalculateFinalPrice(item.PriceOriginal, item.ExchangeRate, item.Rounding)
-			item.GroupBuyID = gb.ID
-
-			// Ensure specs have IDs
-			for _, spec := range item.Specs {
-				if spec.ID == "" {
-					spec.ID = uuid.New().String()
-				}
-				spec.ProductID = item.ID
-			}
-		}
-		gb.Products = products
+		gb.Products = s.prepareProducts(gb.ID, gb.ExchangeRate, gb.Rounding, products)
 	}
 
 	if err := s.repo.Create(ctx, gb); err != nil {
@@ -210,33 +185,7 @@ func (s *GroupBuyService) UpdateGroupBuy(ctx context.Context, id string, title, 
 
 	// Update Products
 	if len(products) > 0 {
-		for _, item := range products {
-			// Apply Defaults if Missing (For both new and existing products)
-			if item.ExchangeRate == 0 && p.ExchangeRate > 0 {
-				item.ExchangeRate = p.ExchangeRate
-			}
-			if item.Rounding == nil && p.Rounding != nil {
-				// Clone? Or Shared Struct? Safe to share struct if read-only logic
-				item.Rounding = p.Rounding
-			}
-
-			if item.ID == "" {
-				item.ID = uuid.New().String()
-			}
-
-			// Always Recalculate Final Price to ensure consistency/updates
-			item.PriceFinal = s.CalculateFinalPrice(item.PriceOriginal, item.ExchangeRate, item.Rounding)
-			item.GroupBuyID = p.ID
-
-			// Ensure specs have IDs
-			for _, spec := range item.Specs {
-				if spec.ID == "" {
-					spec.ID = uuid.New().String()
-					spec.ProductID = item.ID
-				}
-			}
-		}
-		p.Products = products
+		p.Products = s.prepareProducts(p.ID, p.ExchangeRate, p.Rounding, products)
 	} else {
 		if products != nil {
 			p.Products = products
@@ -794,4 +743,30 @@ func (s *GroupBuyService) CalculateFinalPrice(original int64, rate float64, roun
 
 	val = val * pow
 	return int64(val)
+}
+
+// prepareProducts ensures all products have IDs, correct exchange rates,
+// rounding configs, calculated final prices, and spec IDs.
+func (s *GroupBuyService) prepareProducts(gbID string, exchangeRate float64, rounding *groupbuy.RoundingConfig, products []*groupbuy.Product) []*groupbuy.Product {
+	for _, item := range products {
+		if item.ExchangeRate == 0 {
+			item.ExchangeRate = exchangeRate
+		}
+		if item.Rounding == nil {
+			item.Rounding = rounding
+		}
+		if item.ID == "" {
+			item.ID = uuid.New().String()
+		}
+		item.PriceFinal = s.CalculateFinalPrice(item.PriceOriginal, item.ExchangeRate, item.Rounding)
+		item.GroupBuyID = gbID
+
+		for _, spec := range item.Specs {
+			if spec.ID == "" {
+				spec.ID = uuid.New().String()
+			}
+			spec.ProductID = item.ID
+		}
+	}
+	return products
 }

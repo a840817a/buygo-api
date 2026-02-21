@@ -228,3 +228,13 @@ func toProtoPriceTemplate(pt *groupbuy.PriceTemplate) *v1.PriceTemplate {
 		RoundingConfig: rc,
 	}
 }
+
+func fromProtoRoundingConfig(rc *v1.RoundingConfig) *groupbuy.RoundingConfig {
+	if rc == nil {
+		return nil
+	}
+	return &groupbuy.RoundingConfig{
+		Method: groupbuy.RoundingMethod(rc.Method),
+		Digit:  int(rc.Digit),
+	}
+}
