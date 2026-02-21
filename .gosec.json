@@ -1,0 +1,7 @@
+{
+    "global": {
+        "exclude": [
+            "*.pb.go"
+        ]
+    }
+}
