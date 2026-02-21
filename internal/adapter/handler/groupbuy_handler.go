@@ -13,10 +13,10 @@ import (
 )
 
 type GroupBuyHandler struct {
-	svc *service.GroupBuyService
+	svc service.GroupBuyServiceInterface
 }
 
-func NewGroupBuyHandler(svc *service.GroupBuyService) *GroupBuyHandler {
+func NewGroupBuyHandler(svc service.GroupBuyServiceInterface) *GroupBuyHandler {
 	return &GroupBuyHandler{svc: svc}
 }
 

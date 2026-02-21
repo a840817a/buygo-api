@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
 	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
+	"github.com/hatsubosi/buygo-api/internal/service"
 )
 
 type GroupBuyRepository struct {
@@ -53,7 +54,7 @@ func (r *GroupBuyRepository) GetByID(ctx context.Context, id string) (*groupbuy.
 		Preload("Products.Specs").
 		First(&m, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("group buy not found")
+			return nil, service.ErrNotFound
 		}
 		return nil, err
 	}
@@ -190,7 +191,7 @@ func (r *GroupBuyRepository) GetOrder(ctx context.Context, id string) (*groupbuy
 	var m model.Order
 	if err := r.db.WithContext(ctx).Preload("Items").First(&m, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("order not found")
+			return nil, service.ErrNotFound
 		}
 		return nil, err
 	}

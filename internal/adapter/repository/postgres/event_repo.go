@@ -8,6 +8,7 @@ import (
 
 	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
 	"github.com/hatsubosi/buygo-api/internal/domain/event"
+	"github.com/hatsubosi/buygo-api/internal/service"
 )
 
 type EventRepository struct {
@@ -48,7 +49,7 @@ func (r *EventRepository) GetByID(ctx context.Context, id string) (*event.Event,
 		Preload("Discounts").
 		First(&m, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("event not found")
+			return nil, service.ErrNotFound
 		}
 		return nil, err
 	}
@@ -144,7 +145,7 @@ func (r *EventRepository) GetRegistration(ctx context.Context, id string) (*even
 	var m model.Registration
 	if err := r.db.WithContext(ctx).Preload("SelectedItems").Preload("User").First(&m, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("registration not found")
+			return nil, service.ErrNotFound
 		}
 		return nil, err
 	}

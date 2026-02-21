@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
@@ -26,7 +28,10 @@ import (
 )
 
 func main() {
-	// 0. Load .env
+	// 0. Setup structured logging
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
+	// 1. Load .env
 	_ = godotenv.Load()
 
 	port := envOrDefault("PORT", "8080")
@@ -37,13 +42,14 @@ func main() {
 
 	if appEnv == "production" {
 		if dbPassword == "" {
-			log.Fatal("DB_PASSWORD is required in production")
+			slog.Error("DB_PASSWORD is required in production")
+			os.Exit(1)
 		}
 		if len(jwtSecret) < 32 {
-			log.Fatal("JWT_SECRET must be at least 32 characters in production")
+			slog.Error("JWT_SECRET must be at least 32 characters in production")
+			os.Exit(1)
 		}
 	} else {
-		// Development defaults for convenience if not set
 		if dbPassword == "" {
 			dbPassword = "password"
 		}
@@ -64,11 +70,12 @@ func main() {
 
 	database, err := db.Connect(dbConfig)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		slog.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 	}
 
 	// 2. Migration
-	log.Println("Running AutoMigrate...")
+	slog.Info("Running AutoMigrate...")
 	if err := database.AutoMigrate(
 		&model.User{},
 		&model.GroupBuy{},
@@ -84,7 +91,8 @@ func main() {
 		&model.DiscountRule{},
 		&model.PriceTemplate{},
 	); err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		slog.Error("Failed to migrate database", "error", err)
+		os.Exit(1)
 	}
 
 	// 3. Infrastructure (Auth)
@@ -93,25 +101,25 @@ func main() {
 
 	if appEnv == "production" {
 		if firebaseCreds == "" {
-			log.Fatal("FIREBASE_CREDENTIALS_JSON is required in production")
+			slog.Error("FIREBASE_CREDENTIALS_JSON is required in production")
+			os.Exit(1)
 		}
-		// Init real firebase
 		tp, err := auth.NewFirebaseProvider(context.Background(), []byte(firebaseCreds))
 		if err != nil {
-			log.Fatalf("Failed to init firebase: %v", err)
+			slog.Error("Failed to init firebase", "error", err)
+			os.Exit(1)
 		}
 		tokenProvider = tp
 	} else {
-		// Development
 		if firebaseCreds != "" {
 			tp, err := auth.NewFirebaseProvider(context.Background(), []byte(firebaseCreds))
 			if err != nil {
-				log.Fatalf("Failed to init firebase: %v", err)
+				slog.Error("Failed to init firebase", "error", err)
+				os.Exit(1)
 			}
 			tokenProvider = tp
 		} else {
-			// Mock mode
-			log.Println("WARNING: Using Firebase Mock Mode")
+			slog.Warn("Using Firebase Mock Mode — do NOT use in production")
 			tokenProvider = &auth.FirebaseProvider{MockMode: true}
 		}
 	}
@@ -169,10 +177,16 @@ func main() {
 
 	// 10. Server with Graceful Shutdown
 	corsOrigin := envOrDefault("CORS_ORIGIN", "http://localhost:4200")
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{corsOrigin},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Connect-Protocol-Version"},
+		AllowCredentials: true,
+	})
 
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           h2c.NewHandler(newCORS(corsOrigin).Handler(mux), &http2.Server{}),
+		Handler:           h2c.NewHandler(corsHandler.Handler(mux), &http2.Server{}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
@@ -184,49 +198,28 @@ func main() {
 
 	go func() {
 		<-quit
-		log.Println("Shutting down server...")
+		slog.Info("Shutting down server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {
-			log.Fatalf("Server forced to shutdown: %v", err)
+			slog.Error("Server forced to shutdown", "error", err)
+			os.Exit(1)
 		}
 	}()
 
-	log.Printf("Starting server on :%s\n", port)
+	slog.Info("Server starting", "port", port)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("Failed to serve: %v", err)
+		slog.Error("Failed to serve", "error", err)
+		os.Exit(1)
 	}
 
-	// Cleanup
 	sqlDB, _ := database.DB()
 	if sqlDB != nil {
 		if err := sqlDB.Close(); err != nil {
-			log.Printf("failed to close database connection: %v", err)
+			slog.Error("failed to close database connection", "error", err)
 		}
 	}
-	log.Println("Server stopped")
-}
-
-func newCORS(origin string) *cors {
-	return &cors{origin: origin}
-}
-
-type cors struct {
-	origin string
-}
-
-func (c *cors) Handler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", c.origin)
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Connect-Protocol-Version")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		h.ServeHTTP(w, r)
-	})
+	slog.Info("Server stopped")
 }
 
 func envOrDefault(key, fallback string) string {
