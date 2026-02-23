@@ -26,6 +26,15 @@ func NewEventHandler(svc service.EventServiceInterface) *EventHandler {
 var _ buygov1connect.EventServiceHandler = (*EventHandler)(nil)
 
 func (h *EventHandler) CreateEvent(ctx context.Context, req *connect.Request[v1.CreateEventRequest]) (*connect.Response[v1.CreateEventResponse], error) {
+	if err := validateRequired(req.Msg.Title, "title"); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Title, "title", 200); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Description, "description", 5000); err != nil {
+		return nil, err
+	}
 	start := req.Msg.StartTime.AsTime()
 	end := req.Msg.EndTime.AsTime()
 

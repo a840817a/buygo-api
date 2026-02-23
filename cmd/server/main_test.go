@@ -35,6 +35,8 @@ func TestCORSHandler_OptionsAndPassThrough(t *testing.T) {
 	handler := c.Handler(next)
 
 	optionsReq := httptest.NewRequest(http.MethodOptions, "/health", nil)
+	optionsReq.Header.Set("Origin", "https://example.com")
+	optionsReq.Header.Set("Access-Control-Request-Method", "POST")
 	optionsRec := httptest.NewRecorder()
 	handler.ServeHTTP(optionsRec, optionsReq)
 
@@ -45,7 +47,9 @@ func TestCORSHandler_OptionsAndPassThrough(t *testing.T) {
 		t.Fatalf("allow origin = %q, want %q", got, "https://example.com")
 	}
 
+	// Cross-origin GET should receive CORS response headers
 	getReq := httptest.NewRequest(http.MethodGet, "/health", nil)
+	getReq.Header.Set("Origin", "https://example.com")
 	getRec := httptest.NewRecorder()
 	handler.ServeHTTP(getRec, getReq)
 

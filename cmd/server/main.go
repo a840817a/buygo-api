@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
@@ -118,9 +117,12 @@ func main() {
 				os.Exit(1)
 			}
 			tokenProvider = tp
-		} else {
+		} else if os.Getenv("ENABLE_MOCK_AUTH") == "true" {
 			slog.Warn("Using Firebase Mock Mode — do NOT use in production")
 			tokenProvider = &auth.FirebaseProvider{MockMode: true}
+		} else {
+			slog.Error("Set FIREBASE_CREDENTIALS_JSON or ENABLE_MOCK_AUTH=true")
+			os.Exit(1)
 		}
 	}
 	tokenManager := auth.NewJWTGenerator(jwtSecret, "buygo", 24*time.Hour)
@@ -177,16 +179,12 @@ func main() {
 
 	// 10. Server with Graceful Shutdown
 	corsOrigin := envOrDefault("CORS_ORIGIN", "http://localhost:4200")
-	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{corsOrigin},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
-		AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Connect-Protocol-Version"},
-		AllowCredentials: true,
-	})
+	corsHandler := newCORS(corsOrigin)
 
+	rl := newRateLimiterFromEnv()
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           h2c.NewHandler(corsHandler.Handler(mux), &http2.Server{}),
+		Handler:           h2c.NewHandler(rl(securityHeaders(corsHandler.Handler(mux))), &http2.Server{}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,

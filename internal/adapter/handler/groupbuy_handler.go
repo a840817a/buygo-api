@@ -24,6 +24,15 @@ func NewGroupBuyHandler(svc service.GroupBuyServiceInterface) *GroupBuyHandler {
 var _ buygov1connect.GroupBuyServiceHandler = (*GroupBuyHandler)(nil)
 
 func (h *GroupBuyHandler) CreateGroupBuy(ctx context.Context, req *connect.Request[v1.CreateGroupBuyRequest]) (*connect.Response[v1.CreateGroupBuyResponse], error) {
+	if err := validateRequired(req.Msg.Title, "title"); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Title, "title", 200); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Description, "description", 5000); err != nil {
+		return nil, err
+	}
 	var deadline *time.Time
 	if req.Msg.Deadline != nil {
 		t := req.Msg.Deadline.AsTime()
@@ -120,6 +129,15 @@ func (h *GroupBuyHandler) GetGroupBuy(ctx context.Context, req *connect.Request[
 }
 
 func (h *GroupBuyHandler) UpdateGroupBuy(ctx context.Context, req *connect.Request[v1.UpdateGroupBuyRequest]) (*connect.Response[v1.UpdateGroupBuyResponse], error) {
+	if err := validateRequired(req.Msg.GroupBuyId, "group_buy_id"); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Title, "title", 200); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Description, "description", 5000); err != nil {
+		return nil, err
+	}
 	// Use make to ensure non-nil slices, allowing empty lists to clear data
 	status := groupbuy.GroupBuyStatus(req.Msg.Status)
 
@@ -163,6 +181,17 @@ func (h *GroupBuyHandler) AddProduct(ctx context.Context, req *connect.Request[v
 }
 
 func (h *GroupBuyHandler) CreateOrder(ctx context.Context, req *connect.Request[v1.CreateOrderRequest]) (*connect.Response[v1.CreateOrderResponse], error) {
+	if err := validateRequired(req.Msg.GroupBuyId, "group_buy_id"); err != nil {
+		return nil, err
+	}
+	if len(req.Msg.Items) == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("at least one item is required"))
+	}
+	for _, item := range req.Msg.Items {
+		if item.Quantity <= 0 {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("item quantity must be greater than zero"))
+		}
+	}
 	// Map Request Items to Domain Items
 	var items []*groupbuy.OrderItem
 	for _, i := range req.Msg.Items {
@@ -304,6 +333,12 @@ func (h *GroupBuyHandler) CancelOrder(ctx context.Context, req *connect.Request[
 }
 
 func (h *GroupBuyHandler) CreateCategory(ctx context.Context, req *connect.Request[v1.CreateCategoryRequest]) (*connect.Response[v1.CreateCategoryResponse], error) {
+	if err := validateRequired(req.Msg.Name, "name"); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Name, "name", 100); err != nil {
+		return nil, err
+	}
 	c, err := h.svc.CreateCategory(ctx, req.Msg.Name, req.Msg.SpecNames)
 	if err != nil {
 		return nil, mapError(err)
@@ -333,6 +368,15 @@ func (h *GroupBuyHandler) ListCategories(ctx context.Context, req *connect.Reque
 // PriceTemplate Handlers
 
 func (h *GroupBuyHandler) CreatePriceTemplate(ctx context.Context, req *connect.Request[v1.CreatePriceTemplateRequest]) (*connect.Response[v1.CreatePriceTemplateResponse], error) {
+	if err := validateRequired(req.Msg.Name, "name"); err != nil {
+		return nil, err
+	}
+	if err := validateMaxLength(req.Msg.Name, "name", 100); err != nil {
+		return nil, err
+	}
+	if err := validatePositiveFloat64(req.Msg.ExchangeRate, "exchange_rate"); err != nil {
+		return nil, err
+	}
 	rounding := fromProtoRoundingConfig(req.Msg.RoundingConfig)
 
 	pt, err := h.svc.CreatePriceTemplate(ctx, req.Msg.Name, req.Msg.SourceCurrency, req.Msg.ExchangeRate, rounding)
