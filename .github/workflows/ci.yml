@@ -38,7 +38,7 @@ jobs:
           go test -race -coverprofile=coverage.out "${pkgs[@]}"
 
       - name: Coverage gate
-        run: bash scripts/check-coverage.sh 50
+        run: bash scripts/check-coverage.sh 70
 
       - name: Run gosec
         run: gosec -exclude-dir=api -exclude-dir=proto -conf .gosec.json ./...
