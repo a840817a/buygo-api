@@ -1,0 +1,5 @@
+version: v1
+plugins:
+  - plugin: doc
+    out: docs
+    opt: markdown,api.md

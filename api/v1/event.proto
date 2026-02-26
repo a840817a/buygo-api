@@ -6,11 +6,9 @@ option go_package = "github.com/hatsubosi/buygo-api/api/v1;buygov1";
 
 import "google/protobuf/timestamp.proto";
 import "api/v1/auth.proto";
-import "api/v1/groupbuy.proto"; // For PaymentStatus/PaymentMethods if reused, or redefine
+import "api/v1/groupbuy.proto";
 
-// Using project enums for consistency if possible, but distinct types might be better decoupled.
-// For now, redefining specific Event statuses.
-
+// EventStatus represents the lifecycle of an event.
 enum EventStatus {
   EVENT_STATUS_UNSPECIFIED = 0;
   EVENT_STATUS_DRAFT = 1;
@@ -19,6 +17,7 @@ enum EventStatus {
   EVENT_STATUS_ARCHIVED = 4;
 }
 
+// RegistrationStatus tracks a user's registration state for an event.
 enum RegistrationStatus {
   REGISTRATION_STATUS_UNSPECIFIED = 0;
   REGISTRATION_STATUS_PENDING = 1;
@@ -26,25 +25,57 @@ enum RegistrationStatus {
   REGISTRATION_STATUS_CANCELLED = 3;
 }
 
+// EventService manages events, event items, and user registrations.
 service EventService {
+  // CreateEvent creates a new event with items and discount rules.
+  // Access: Creator / Admin
   rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+
+  // ListEvents returns a paginated list of events.
+  // Access: Public
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+
+  // ListManagerEvents returns events managed by the current user.
+  // Access: Manager
   rpc ListManagerEvents(ListManagerEventsRequest) returns (ListManagerEventsResponse);
+
+  // GetEvent returns a single event with its items and discount rules.
+  // Access: Public
   rpc GetEvent(GetEventRequest) returns (GetEventResponse);
-  
-  // Registration
+
+  // RegisterEvent registers the current user for an event.
+  // Access: Authenticated
   rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse);
+
+  // UpdateRegistration modifies a user's registration items.
+  // Access: Registrant
   rpc UpdateRegistration(UpdateRegistrationRequest) returns (UpdateRegistrationResponse);
+
+  // UpdateRegistrationStatus approves or rejects a registration.
+  // Access: Manager
   rpc UpdateRegistrationStatus(UpdateRegistrationStatusRequest) returns (UpdateRegistrationStatusResponse);
+
+  // CancelRegistration cancels a user's registration.
+  // Access: Registrant
   rpc CancelRegistration(CancelRegistrationRequest) returns (CancelRegistrationResponse);
+
+  // GetMyRegistrations returns all registrations for the current user.
+  // Access: Authenticated
   rpc GetMyRegistrations(GetMyRegistrationsRequest) returns (GetMyRegistrationsResponse);
+
+  // ListEventRegistrations returns all registrations for an event.
+  // Access: Manager
   rpc ListEventRegistrations(ListEventRegistrationsRequest) returns (ListEventRegistrationsResponse);
-  
-  // Management
+
+  // UpdateEvent updates event details, items, and managers.
+  // Access: Creator / Manager
   rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+
+  // UpdateEventStatus changes the event status (e.g. Draft → Active → Ended).
+  // Access: Creator / Manager
   rpc UpdateEventStatus(UpdateEventStatusRequest) returns (UpdateEventStatusResponse);
 }
-// ...
+
 message UpdateRegistrationRequest {
   string registration_id = 1;
   repeated RegisterItem items = 2;
@@ -59,6 +90,7 @@ message UpdateRegistrationResponse {
 
 message UpdateRegistrationStatusRequest {
   string registration_id = 1;
+  // Must be CONFIRMED or CANCELLED.
   RegistrationStatus status = 2;
   PaymentStatus payment_status = 3;
 }
@@ -68,46 +100,58 @@ message UpdateRegistrationStatusResponse {
   RegistrationStatus status = 2;
   PaymentStatus payment_status = 3;
 }
-// ...
 
+// Event represents a scheduled event with registration and pricing.
 message Event {
   string id = 1;
   string title = 2;
   string description = 3;
   string cover_image_url = 4;
   EventStatus status = 5;
-  
+
   google.protobuf.Timestamp start_time = 6;
   google.protobuf.Timestamp end_time = 7;
+  // No new registrations accepted after this time.
   google.protobuf.Timestamp registration_deadline = 8;
-  
+
   string location = 9;
-  
+
   User creator = 10;
   repeated User managers = 11;
-  
+
+  // Accepted payment methods (e.g. "bank transfer", "LINE Pay").
   repeated string payment_methods = 12;
   repeated EventItem items = 13;
+  // Whether registrants can modify their registration after submission.
   bool allow_modification = 14;
   repeated DiscountRule discounts = 15;
 }
 
+// EventItem represents a selectable item within an event (e.g. a session, a ticket type).
 message EventItem {
   string id = 1;
   string name = 2;
+  // Price per unit in the smallest currency unit.
   int64 price = 3;
+  // Minimum participants required for this item to proceed.
   int32 min_participants = 4;
+  // Maximum participants allowed (0 = unlimited).
   int32 max_participants = 5;
+  // Item availability time window.
   google.protobuf.Timestamp start_time = 6;
   google.protobuf.Timestamp end_time = 7;
+  // Whether a user can select multiple quantities of this item.
   bool allow_multiple = 8;
 }
 
+// DiscountRule defines a quantity-based discount applied to registrations.
 message DiscountRule {
-  int32 min_quantity = 1; // Minimum items (sum of all items in registration)
-  int64 discount_amount = 2; // Fixed amount off (e.g. 100 TWD)
+  // Minimum total items (sum across all selected items) to trigger the discount.
+  int32 min_quantity = 1;
+  // Fixed discount amount off the total (e.g. 100 = 100 TWD off).
+  int64 discount_amount = 2;
+  // Minimum number of distinct items required.
   int32 min_distinct_items = 3;
-  // Could add percentage later
 }
 
 message GetEventRequest {
@@ -146,7 +190,8 @@ message UpdateEventRequest {
   string location = 6;
   string cover_image_url = 7;
   bool allow_modification = 8;
-  repeated EventItem items = 9; // Full replace strategy for items
+  // Full replacement list of event items.
+  repeated EventItem items = 9;
   repeated string manager_ids = 10;
   repeated DiscountRule discounts = 11;
 }
@@ -165,8 +210,8 @@ message UpdateEventStatusResponse {
 }
 
 message ListEventsRequest {
-    int32 page_size = 1;
-    string page_token = 2;
+  int32 page_size = 1;
+  string page_token = 2;
 }
 
 message ListEventsResponse {
@@ -175,8 +220,8 @@ message ListEventsResponse {
 }
 
 message ListManagerEventsRequest {
-    int32 page_size = 1;
-    string page_token = 2;
+  int32 page_size = 1;
+  string page_token = 2;
 }
 
 message ListManagerEventsResponse {
@@ -187,13 +232,16 @@ message ListManagerEventsResponse {
 message RegisterEventRequest {
   string event_id = 1;
   repeated RegisterItem items = 2;
-  string contact_info = 3; // JSON or Struct
+  // Contact information (e.g. phone, LINE ID).
+  string contact_info = 3;
   string notes = 4;
 }
 
+// RegisterItem specifies an event item and quantity to register for.
 message RegisterItem {
-    string event_item_id = 1;
-    int32 quantity = 2; // Usually 1 for events, but maybe guest tickets
+  string event_item_id = 1;
+  // Number of units (usually 1, but can be more for guest tickets).
+  int32 quantity = 2;
 }
 
 message RegisterEventResponse {
@@ -210,32 +258,35 @@ message CancelRegistrationResponse {
   RegistrationStatus status = 2;
 }
 
+// Registration represents a user's registration for an event.
 message Registration {
-    string id = 1;
-    string event_id = 2;
-    string user_id = 3;
-    RegistrationStatus status = 4;
-    PaymentStatus payment_status = 5;
-    string contact_info = 6;
-    string notes = 7;
+  string id = 1;
+  string event_id = 2;
+  string user_id = 3;
+  RegistrationStatus status = 4;
+  PaymentStatus payment_status = 5;
+  string contact_info = 6;
+  string notes = 7;
   repeated RegisterItem selected_items = 8;
   User user = 9;
-  
-  // Snapshots at time of order
+
+  // Snapshot fields — captured at registration time.
+  // Total amount before discount.
   int64 total_amount = 10;
+  // Discount amount applied based on DiscountRules.
   int64 discount_applied = 11;
 }
 
 message GetMyRegistrationsRequest {}
 
 message GetMyRegistrationsResponse {
-    repeated Registration registrations = 1;
+  repeated Registration registrations = 1;
 }
 
 message ListEventRegistrationsRequest {
-    string event_id = 1;
+  string event_id = 1;
 }
 
 message ListEventRegistrationsResponse {
-    repeated Registration registrations = 1;
+  repeated Registration registrations = 1;
 }

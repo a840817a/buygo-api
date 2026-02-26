@@ -9,6 +9,7 @@ import "api/v1/auth.proto";
 
 // --- Enums ---
 
+// GroupBuyStatus represents the lifecycle of a group buy project.
 enum GroupBuyStatus {
   GROUP_BUY_STATUS_UNSPECIFIED = 0;
   GROUP_BUY_STATUS_DRAFT = 1;
@@ -17,25 +18,40 @@ enum GroupBuyStatus {
   GROUP_BUY_STATUS_ARCHIVED = 4;
 }
 
+// OrderItemStatus tracks the fulfillment progress of an order item.
+// Progression: Unordered → Ordered → Arrived Overseas → Arrived Domestic → Ready for Pickup → Sent.
 enum OrderItemStatus {
   ITEM_STATUS_UNSPECIFIED = 0;
-  ITEM_STATUS_UNORDERED = 1; // User placed, not yet bought from supplier
-  ITEM_STATUS_ORDERED = 2;   // Manager ordered from supplier
+  // User placed the item, not yet ordered from supplier.
+  ITEM_STATUS_UNORDERED = 1;
+  // Manager ordered from supplier.
+  ITEM_STATUS_ORDERED = 2;
+  // Item arrived at overseas warehouse.
   ITEM_STATUS_ARRIVED_OVERSEAS = 3;
+  // Item arrived at domestic warehouse.
   ITEM_STATUS_ARRIVED_DOMESTIC = 4;
+  // Item is ready for user pickup.
   ITEM_STATUS_READY_FOR_PICKUP = 5;
-  ITEM_STATUS_SENT = 6;      // Shipped to user / Picked up
-  ITEM_STATUS_FAILED = 7;    // Out of stock etc.
+  // Item shipped to user or picked up.
+  ITEM_STATUS_SENT = 6;
+  // Item failed (out of stock, etc.).
+  ITEM_STATUS_FAILED = 7;
 }
 
+// PaymentStatus tracks the payment verification state of an order.
 enum PaymentStatus {
   PAYMENT_STATUS_UNSPECIFIED = 0;
+  // No payment info submitted yet.
   PAYMENT_STATUS_UNSET = 1;
-  PAYMENT_STATUS_SUBMITTED = 2; // User uploaded proof
-  PAYMENT_STATUS_CONFIRMED = 3; // Manager confirmed
+  // User uploaded payment proof.
+  PAYMENT_STATUS_SUBMITTED = 2;
+  // Manager confirmed the payment.
+  PAYMENT_STATUS_CONFIRMED = 3;
+  // Manager rejected the payment.
   PAYMENT_STATUS_REJECTED = 4;
 }
 
+// RoundingMethod defines how currency conversion results are rounded.
 enum RoundingMethod {
   ROUNDING_METHOD_UNSPECIFIED = 0;
   ROUNDING_METHOD_FLOOR = 1;
@@ -45,49 +61,101 @@ enum RoundingMethod {
 
 // --- Service ---
 
+// GroupBuyService manages group buying projects, products, orders, and pricing.
 service GroupBuyService {
-  // GroupBuy Management (Creator/Admin)
+  // CreateGroupBuy creates a new group buy project.
+  // Access: Creator / Admin
   rpc CreateGroupBuy(CreateGroupBuyRequest) returns (CreateGroupBuyResponse);
+
+  // ListGroupBuys returns a paginated list of active group buys.
+  // Access: Public
   rpc ListGroupBuys(ListGroupBuysRequest) returns (ListGroupBuysResponse);
+
+  // ListManagerGroupBuys returns group buys managed by the current user.
+  // Access: Manager
   rpc ListManagerGroupBuys(ListManagerGroupBuysRequest) returns (ListManagerGroupBuysResponse);
+
+  // GetGroupBuy returns a group buy with its products.
+  // Access: Public
   rpc GetGroupBuy(GetGroupBuyRequest) returns (GetGroupBuyResponse);
+
+  // UpdateGroupBuy updates group buy details, status, products, and managers.
+  // Access: Creator / Manager
   rpc UpdateGroupBuy(UpdateGroupBuyRequest) returns (UpdateGroupBuyResponse);
-  
-  // Product Management (Creator/Admin)
+
+  // AddProduct adds a product with specs to a group buy.
+  // Access: Creator / Manager
   rpc AddProduct(AddProductRequest) returns (AddProductResponse);
-  
-  // Category (Template) Methods
+
+  // CreateCategory creates a product category template.
+  // Access: Creator
   rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+
+  // ListCategories returns all product categories.
+  // Access: Public
   rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
-  
-  // Order Management (User)
+
+  // CreateOrder places a new order in a group buy.
+  // Access: Authenticated
   rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+  // CancelOrder cancels an order (only if all items are still unordered).
+  // Access: Order Owner
   rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+
+  // GetMyGroupBuyOrder returns the current user's order for a specific group buy.
+  // Access: Authenticated
   rpc GetMyGroupBuyOrder(GetMyGroupBuyOrderRequest) returns (GetMyGroupBuyOrderResponse);
+
+  // UpdateOrder modifies order items (only if all items are still unordered).
+  // Access: Order Owner
   rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+
+  // UpdatePaymentInfo submits or updates payment proof for an order.
+  // Access: Order Owner
   rpc UpdatePaymentInfo(UpdatePaymentInfoRequest) returns (UpdatePaymentInfoResponse);
+
+  // GetMyOrders returns all orders placed by the current user.
+  // Access: Authenticated
   rpc GetMyOrders(GetMyOrdersRequest) returns (GetMyOrdersResponse);
 
-  // Order Management (Manager)
-  // Batch update status of items (FIFO)
+  // BatchUpdateStatus performs FIFO batch status progression on order items.
+  // Processes oldest items first, updating up to `count` items matching the spec.
+  // Access: Manager
   rpc BatchUpdateStatus(BatchUpdateStatusRequest) returns (BatchUpdateStatusResponse);
-  // Confirm user payment
-  // Confirm user payment
+
+  // ConfirmPayment approves or rejects a user's payment.
+  // Access: Manager
   rpc ConfirmPayment(ConfirmPaymentRequest) returns (ConfirmPaymentResponse);
 
-  // Manager: List Orders for a GroupBuy
+  // ListGroupBuyOrders returns all orders for a group buy.
+  // Access: Manager
   rpc ListGroupBuyOrders(ListGroupBuyOrdersRequest) returns (ListGroupBuyOrdersResponse);
 
-  // Price Templates (Admin Only)
+  // CreatePriceTemplate creates a reusable pricing template.
+  // Access: Admin
   rpc CreatePriceTemplate(CreatePriceTemplateRequest) returns (CreatePriceTemplateResponse);
+
+  // ListPriceTemplates returns all pricing templates.
+  // Access: Admin
   rpc ListPriceTemplates(ListPriceTemplatesRequest) returns (ListPriceTemplatesResponse);
+
+  // GetPriceTemplate returns a single pricing template.
+  // Access: Admin
   rpc GetPriceTemplate(GetPriceTemplateRequest) returns (GetPriceTemplateResponse);
+
+  // UpdatePriceTemplate updates a pricing template.
+  // Access: Admin
   rpc UpdatePriceTemplate(UpdatePriceTemplateRequest) returns (UpdatePriceTemplateResponse);
+
+  // DeletePriceTemplate deletes a pricing template.
+  // Access: Admin
   rpc DeletePriceTemplate(DeletePriceTemplateRequest) returns (DeletePriceTemplateResponse);
 }
 
 // --- Messages ---
 
+// ShippingType defines available shipping/pickup methods.
 enum ShippingType {
   SHIPPING_TYPE_UNSPECIFIED = 0;
   SHIPPING_TYPE_DELIVERY = 1;
@@ -95,13 +163,16 @@ enum ShippingType {
   SHIPPING_TYPE_MEETUP = 3;
 }
 
+// ShippingConfig defines a shipping option with its pricing.
 message ShippingConfig {
   string id = 1;
   string name = 2;
   ShippingType type = 3;
+  // Shipping fee in the smallest currency unit (e.g. cents).
   int64 price = 4;
 }
 
+// GroupBuy represents a group buying project.
 message GroupBuy {
   string id = 1;
   string title = 2;
@@ -109,11 +180,14 @@ message GroupBuy {
   string cover_image_url = 4;
   GroupBuyStatus status = 5;
 
+  // Exchange rate from source currency to target currency.
   double exchange_rate = 13;
   RoundingConfig rounding_config = 14;
-  string source_currency = 15; // New field
+  // Source currency code (e.g. "JPY", "USD").
+  string source_currency = 15;
 
   google.protobuf.Timestamp created_at = 6;
+  // Order deadline — no new orders accepted after this time.
   google.protobuf.Timestamp deadline = 7;
 
   User creator = 8;
@@ -121,9 +195,10 @@ message GroupBuy {
 
   reserved 10; // payment_methods
 
-  repeated ShippingConfig shipping_configs = 12; // New structured config
+  repeated ShippingConfig shipping_configs = 12;
 }
 
+// Product represents a purchasable item within a group buy.
 message Product {
   string id = 1;
   string group_buy_id = 2;
@@ -131,20 +206,27 @@ message Product {
   string description = 4;
   string image_url = 5;
 
+  // Original price in source currency (smallest unit).
   int64 price_original = 6;
   double exchange_rate = 7;
   RoundingConfig rounding_config = 8;
-  int64 price_final = 9; // Calculated
+  // Final price after currency conversion and rounding (calculated server-side).
+  int64 price_final = 9;
 
-  int32 max_quantity = 10; // Total available
+  // Total available quantity (0 = unlimited).
+  int32 max_quantity = 10;
+  // Product variants/options.
   repeated ProductSpec specs = 11;
 }
 
+// RoundingConfig specifies how to round currency conversion results.
 message RoundingConfig {
   RoundingMethod method = 1;
-  int32 digit = 2; // 0=ones, 1=tens
+  // Rounding digit: 0 = ones place, 1 = tens place, 2 = hundreds place.
+  int32 digit = 2;
 }
 
+// PriceTemplate is a reusable pricing configuration for group buys.
 message PriceTemplate {
   string id = 1;
   string name = 2;
@@ -153,6 +235,7 @@ message PriceTemplate {
   RoundingConfig rounding_config = 5;
 }
 
+// ProductSpec represents a variant/option of a product (e.g. size, color).
 message ProductSpec {
   string id = 1;
   string name = 2;
@@ -197,16 +280,18 @@ message GetGroupBuyResponse {
   repeated Product products = 2;
 }
 
+// Order represents a user's order within a group buy.
 message Order {
   string id = 1;
   string group_buy_id = 2;
   string user_id = 3;
+  // Total amount in target currency (smallest unit).
   int64 total_amount = 4;
 
   PaymentStatus payment_status = 5;
   PaymentInfo payment_info = 6;
 
-  // Sensitive Info (Manager/Owner Only)
+  // Sensitive fields — only visible to order owner and managers.
   string contact_info = 7;
   string shipping_address = 8;
   string note = 12;
@@ -217,30 +302,35 @@ message Order {
   int64 shipping_fee = 11;
 }
 
+// OrderItem represents a single line item in an order.
 message OrderItem {
   string id = 1;
   string product_id = 2;
   string spec_id = 3;
   int32 quantity = 4;
   OrderItemStatus status = 5;
-  
-  // Snapshot fields for display
+
+  // Snapshot fields — captured at order time for display consistency.
   string product_name = 6;
   string spec_name = 7;
+  // Unit price at the time of order.
   int64 price = 8;
 }
 
+// PaymentInfo contains the payment proof submitted by the user.
 message PaymentInfo {
-    string method = 1;
-    string account_last5 = 2;
-    google.protobuf.Timestamp paid_at = 3;
-    int64 amount = 4;
+  // Payment method description (e.g. "bank transfer", "LINE Pay").
+  string method = 1;
+  // Last 5 digits of the payment account for verification.
+  string account_last5 = 2;
+  google.protobuf.Timestamp paid_at = 3;
+  // Payment amount in target currency (smallest unit).
+  int64 amount = 4;
 }
 
 message CreateOrderRequest {
   string group_buy_id = 1;
   repeated CreateOrderItem items = 2;
-  // User can set payment/shipping later or now
   string contact_info = 3;
   string shipping_address = 4;
   string shipping_method_id = 5;
@@ -257,7 +347,7 @@ message UpdateGroupBuyRequest {
   google.protobuf.Timestamp deadline = 7;
   double exchange_rate = 12;
   RoundingConfig rounding_config = 13;
-  string source_currency = 14; // New field
+  string source_currency = 14;
   reserved 8; // payment_methods
 
   repeated ShippingConfig shipping_configs = 10;
@@ -274,7 +364,7 @@ message AddProductRequest {
   int64 price_original = 3;
   double exchange_rate = 4;
   RoundingConfig rounding_config = 5;
-  // Specs strings
+  // Spec name strings to create as ProductSpec entries.
   repeated string specs = 6;
 }
 
@@ -282,10 +372,11 @@ message AddProductResponse {
   Product product = 1;
 }
 
-// Category Messages
+// Category is a product category template with predefined spec names.
 message Category {
   string id = 1;
   string name = 2;
+  // Predefined spec names for products in this category.
   repeated string spec_names = 3;
 }
 
@@ -322,11 +413,12 @@ message ListManagerGroupBuysResponse {
   string next_page_token = 2;
 }
 
+// CreateOrderItem specifies an item to include when creating or updating an order.
 message CreateOrderItem {
-    string product_id = 1;
-    string spec_id = 2;
-    int32 quantity = 3;
-    OrderItemStatus status = 4;
+  string product_id = 1;
+  string spec_id = 2;
+  int32 quantity = 3;
+  OrderItemStatus status = 4;
 }
 
 message CreateOrderResponse {
@@ -339,42 +431,41 @@ message CancelOrderRequest {
 
 message CancelOrderResponse {
   string order_id = 1;
-  OrderItemStatus status = 2; // e.g. ITEM_STATUS_FAILED (Cancelled)
+  OrderItemStatus status = 2;
 }
 
-// User: Edit existing order items (only if UNORDERED)
 message GetMyGroupBuyOrderRequest {
   string group_buy_id = 1;
 }
 
 message GetMyGroupBuyOrderResponse {
-  Order order = 1; // Nullable if none
+  // The user's order for this group buy, or null if none exists.
+  Order order = 1;
 }
 
 message UpdateOrderRequest {
-    string order_id = 1;
-    repeated CreateOrderItem items = 2; // Replacement list
-    string note = 3;
+  string order_id = 1;
+  // Full replacement list of order items.
+  repeated CreateOrderItem items = 2;
+  string note = 3;
 }
 
 message UpdateOrderResponse {
-    Order order = 1;
+  Order order = 1;
 }
 
-// User: Update payment info
 message UpdatePaymentInfoRequest {
-    string order_id = 1;
-    string method = 2;
-    string account_last5 = 3;
-    // User might update shipping/contact here too?
-    string contact_info = 4;
-    string shipping_address = 5;
-    google.protobuf.Timestamp paid_at = 6;
-    int64 amount = 7;
+  string order_id = 1;
+  string method = 2;
+  string account_last5 = 3;
+  string contact_info = 4;
+  string shipping_address = 5;
+  google.protobuf.Timestamp paid_at = 6;
+  int64 amount = 7;
 }
 
 message UpdatePaymentInfoResponse {
-    Order order = 1;
+  Order order = 1;
 }
 
 message GetMyOrdersRequest {}
@@ -383,29 +474,39 @@ message GetMyOrdersResponse {
   repeated Order orders = 1;
 }
 
+// BatchUpdateStatusRequest triggers FIFO batch status progression.
+// The system finds the oldest `count` items matching `spec_id` with status < `target_status`,
+// and advances them to `target_status`.
 message BatchUpdateStatusRequest {
   string group_buy_id = 1;
+  // Filter by product spec.
   string spec_id = 2;
+  // Target status to advance items to.
   OrderItemStatus target_status = 3;
-  int32 count = 4; // Number of items to progress (FIFO)
+  // Number of items to process (oldest first).
+  int32 count = 4;
 }
 
 message BatchUpdateStatusResponse {
+  // Actual number of items updated.
   int32 updated_count = 1;
-  repeated string updated_order_ids = 2; // For UI feedback
+  // Order IDs affected, for UI feedback.
+  repeated string updated_order_ids = 2;
 }
 
 message ConfirmPaymentRequest {
-    string order_id = 1;
-    PaymentStatus status = 2; // CONFIRMED or REJECTED
+  string order_id = 1;
+  // Must be CONFIRMED or REJECTED.
+  PaymentStatus status = 2;
 }
 
 message ConfirmPaymentResponse {
-    string order_id = 1;
-    PaymentStatus status = 2;
+  string order_id = 1;
+  PaymentStatus status = 2;
 }
 
-// Price Template Requests
+// --- Price Template ---
+
 message CreatePriceTemplateRequest {
   string name = 1;
   string source_currency = 2;

@@ -4,31 +4,41 @@ package buygo.v1;
 
 option go_package = "github.com/hatsubosi/buygo-api/api/v1;buygov1";
 
-// User Roles matching Specification
+// User roles for role-based access control.
 enum UserRole {
   USER_ROLE_UNSPECIFIED = 0;
+  // Regular user — can browse, place orders, and register for events.
   USER_ROLE_USER = 1;
+  // Creator — can create and manage group buys and events.
   USER_ROLE_CREATOR = 2;
+  // System administrator — full platform access including user management.
   USER_ROLE_SYS_ADMIN = 3;
 }
 
+// AuthService handles user authentication and user management.
 service AuthService {
-  // Login with 3rd Party Token (Firebase)
+  // Login exchanges a Firebase ID token for a backend JWT.
+  // Access: Public
   rpc Login(LoginRequest) returns (LoginResponse);
-  
-  // Admin only: List users for management
+
+  // ListUsers returns a paginated list of all users.
+  // Access: Admin only
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
-  
-  // Admin only: Update user role
+
+  // UpdateUserRole changes a user's role.
+  // Access: Admin only
   rpc UpdateUserRole(UpdateUserRoleRequest) returns (UpdateUserRoleResponse);
-  
-  // Get current user profile (Self)
+
+  // GetMe returns the currently authenticated user's profile.
+  // Access: Authenticated
   rpc GetMe(GetMeRequest) returns (GetMeResponse);
-  
-  // List Users eligible to be Managers (Creator or SysAdmin)
+
+  // ListAssignableManagers returns users eligible to be assigned as managers (Creator or SysAdmin).
+  // Access: Creator
   rpc ListAssignableManagers(ListAssignableManagersRequest) returns (ListAssignableManagersResponse);
 }
 
+// User represents a platform user account.
 message User {
   string id = 1;
   string name = 2;
@@ -38,11 +48,13 @@ message User {
 }
 
 message LoginRequest {
-  string id_token = 1; // Firebase ID Token
+  // Firebase ID token obtained from client-side authentication.
+  string id_token = 1;
 }
 
 message LoginResponse {
-  string access_token = 1; // Backend JWT
+  // Backend JWT for subsequent API calls.
+  string access_token = 1;
   User user = 2;
 }
 
@@ -72,7 +84,8 @@ message GetMeResponse {
 }
 
 message ListAssignableManagersRequest {
-  string query = 1; // Optional: Search by name or email
+  // Optional search filter by name or email.
+  string query = 1;
 }
 
 message ListAssignableManagersResponse {

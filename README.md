@@ -103,9 +103,20 @@ This starts:
 - `buygo-api` — API server on port 8080
 - `buygo-web` — Frontend on port 4200
 
-## API Overview
+## API Documentation
 
-The API is defined in Protocol Buffers (`api/v1/*.proto`). Three main services:
+The API is defined in Protocol Buffers (`api/v1/*.proto`). Full generated documentation is available at [`docs/api.md`](docs/api.md).
+
+To regenerate after modifying `.proto` files:
+
+```bash
+go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
+buf generate --template buf.gen.doc.yaml
+```
+
+### Overview
+
+Three main services:
 
 ### AuthService (`auth.proto`)
 
