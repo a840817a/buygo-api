@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/hatsubosi/buygo-api/internal/adapter/repository/memory"
@@ -18,6 +19,18 @@ func (p *MockAuthProvider) VerifyToken(ctx context.Context, token string) (*auth
 			UID:      "test-uid",
 			Email:    "test@example.com",
 			Name:     "Test User",
+			PhotoURL: "http://example.com/photo.jpg",
+		}, nil
+	}
+	if strings.HasPrefix(token, "mock-token-") {
+		uid := strings.TrimPrefix(token, "mock-token-")
+		if uid == "" {
+			uid = "test-uid"
+		}
+		return &auth.TokenInfo{
+			UID:      uid,
+			Email:    uid + "@example.com",
+			Name:     "User " + uid,
 			PhotoURL: "http://example.com/photo.jpg",
 		}, nil
 	}
@@ -85,6 +98,27 @@ func TestLoginOrRegister_InvalidToken(t *testing.T) {
 	_, _, err := svc.LoginOrRegister(context.Background(), "invalid-token")
 	if err == nil {
 		t.Error("expected error for invalid token, got nil")
+	}
+}
+
+func TestLoginOrRegister_MockAppleToken(t *testing.T) {
+	repo := memory.NewUserRepository()
+	provider := &MockAuthProvider{}
+	tokenGen := &MockTokenGen{}
+	svc := NewAuthService(repo, provider, tokenGen)
+
+	token, u, err := svc.LoginOrRegister(context.Background(), "mock-token-apple-user-1")
+	if err != nil {
+		t.Fatalf("expected no error for mock apple token, got %v", err)
+	}
+	if token != "mock-jwt-token" {
+		t.Errorf("expected token mock-jwt-token, got %s", token)
+	}
+	if u.ID != "apple-user-1" {
+		t.Errorf("expected user id apple-user-1, got %s", u.ID)
+	}
+	if u.Email != "apple-user-1@example.com" {
+		t.Errorf("expected apple email mapping, got %s", u.Email)
 	}
 }
 
