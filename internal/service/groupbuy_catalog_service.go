@@ -104,9 +104,9 @@ func (s *GroupBuyService) CreateCategory(ctx context.Context, name string, specN
 	return c, nil
 }
 
-// ListCategories returns all product categories (authenticated users).
+// ListCategories returns all product categories (creator or sys admin).
 func (s *GroupBuyService) ListCategories(ctx context.Context) ([]*groupbuy.Category, error) {
-	_, _, err := checkLogin(ctx)
+	_, _, err := requireRole(ctx, user.UserRoleCreator)
 	if err != nil {
 		return nil, err
 	}

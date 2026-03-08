@@ -34,7 +34,7 @@ service AuthService {
   rpc GetMe(GetMeRequest) returns (GetMeResponse);
 
   // ListAssignableManagers returns users eligible to be assigned as managers (Creator or SysAdmin).
-  // Access: Creator
+  // Access: Creator / Admin
   rpc ListAssignableManagers(ListAssignableManagersRequest) returns (ListAssignableManagersResponse);
 }
 

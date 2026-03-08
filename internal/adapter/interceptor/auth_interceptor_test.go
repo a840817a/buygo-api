@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"connectrpc.com/connect"
+	"github.com/hatsubosi/buygo-api/api/v1/buygov1connect"
 	"github.com/hatsubosi/buygo-api/internal/domain/auth"
 	"github.com/hatsubosi/buygo-api/internal/domain/user"
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ func doRequest(t *testing.T, serverURL, procedure, token string) *http.Response 
 
 func TestAuthInterceptor_PublicEndpoint_NoToken(t *testing.T) {
 	tm := &mockTokenManager{err: errors.New("no token")}
-	procedure := "/buygo.v1.BuygoService/ListGroupBuys"
+	procedure := buygov1connect.GroupBuyServiceListGroupBuysProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -96,7 +97,7 @@ func TestAuthInterceptor_PublicEndpoint_WithValidToken(t *testing.T) {
 	tm := &mockTokenManager{
 		claims: &auth.Claims{UserID: "user-1", Role: user.UserRoleUser},
 	}
-	procedure := "/buygo.v1.BuygoService/GetGroupBuy"
+	procedure := buygov1connect.GroupBuyServiceGetGroupBuyProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -116,7 +117,7 @@ func TestAuthInterceptor_PublicEndpoint_WithValidToken(t *testing.T) {
 
 func TestAuthInterceptor_PublicEndpoint_InvalidToken(t *testing.T) {
 	tm := &mockTokenManager{err: errors.New("invalid")}
-	procedure := "/buygo.v1.BuygoService/ListEvents"
+	procedure := buygov1connect.EventServiceListEventsProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -134,7 +135,7 @@ func TestAuthInterceptor_PublicEndpoint_InvalidToken(t *testing.T) {
 
 func TestAuthInterceptor_PrivateEndpoint_NoToken(t *testing.T) {
 	tm := &mockTokenManager{}
-	procedure := "/buygo.v1.BuygoService/CreateGroupBuy"
+	procedure := buygov1connect.GroupBuyServiceCreateGroupBuyProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -152,7 +153,7 @@ func TestAuthInterceptor_PrivateEndpoint_ValidToken(t *testing.T) {
 	tm := &mockTokenManager{
 		claims: &auth.Claims{UserID: "creator-1", Role: user.UserRoleCreator},
 	}
-	procedure := "/buygo.v1.BuygoService/CreateGroupBuy"
+	procedure := buygov1connect.GroupBuyServiceCreateGroupBuyProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -172,7 +173,7 @@ func TestAuthInterceptor_PrivateEndpoint_ValidToken(t *testing.T) {
 
 func TestAuthInterceptor_PrivateEndpoint_InvalidToken(t *testing.T) {
 	tm := &mockTokenManager{err: errors.New("expired")}
-	procedure := "/buygo.v1.BuygoService/UpdateOrder"
+	procedure := buygov1connect.GroupBuyServiceUpdateOrderProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -187,7 +188,7 @@ func TestAuthInterceptor_PrivateEndpoint_InvalidToken(t *testing.T) {
 
 func TestAuthInterceptor_LoginEndpoint_NoToken(t *testing.T) {
 	tm := &mockTokenManager{}
-	procedure := "/buygo.v1.AuthService/Login"
+	procedure := buygov1connect.AuthServiceLoginProcedure
 	ctxChan := make(chan context.Context, 1)
 	server := createTestServer(tm, procedure, ctxChan)
 	defer server.Close()
@@ -198,4 +199,57 @@ func TestAuthInterceptor_LoginEndpoint_NoToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Len(t, ctxChan, 1, "Handler should be called for Login")
+}
+
+func TestAuthInterceptor_SysAdminEndpoint_NonAdminDenied(t *testing.T) {
+	tm := &mockTokenManager{
+		claims: &auth.Claims{UserID: "user-1", Role: user.UserRoleCreator},
+	}
+	procedure := buygov1connect.AuthServiceListUsersProcedure
+	ctxChan := make(chan context.Context, 1)
+	server := createTestServer(tm, procedure, ctxChan)
+	defer server.Close()
+
+	resp := doRequest(t, server.URL, procedure, "valid-token")
+	defer resp.Body.Close()
+	io.ReadAll(resp.Body)
+
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+	assert.Empty(t, ctxChan, "Handler should not be called")
+}
+
+func TestAuthInterceptor_SysAdminEndpoint_AdminAllowed(t *testing.T) {
+	tm := &mockTokenManager{
+		claims: &auth.Claims{UserID: "admin-1", Role: user.UserRoleSysAdmin},
+	}
+	procedure := buygov1connect.AuthServiceListUsersProcedure
+	ctxChan := make(chan context.Context, 1)
+	server := createTestServer(tm, procedure, ctxChan)
+	defer server.Close()
+
+	resp := doRequest(t, server.URL, procedure, "valid-token")
+	defer resp.Body.Close()
+	io.ReadAll(resp.Body)
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	ctx := <-ctxChan
+	userID, role, ok := auth.FromContext(ctx)
+	assert.True(t, ok)
+	assert.Equal(t, "admin-1", userID)
+	assert.Equal(t, int(user.UserRoleSysAdmin), role)
+}
+
+func TestAuthInterceptor_ProcedureSubstringMatchDoesNotBypassAuth(t *testing.T) {
+	tm := &mockTokenManager{}
+	procedure := buygov1connect.GroupBuyServiceGetGroupBuyProcedure + "Extra"
+	ctxChan := make(chan context.Context, 1)
+	server := createTestServer(tm, procedure, ctxChan)
+	defer server.Close()
+
+	resp := doRequest(t, server.URL, procedure, "")
+	defer resp.Body.Close()
+	io.ReadAll(resp.Body)
+
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	assert.Empty(t, ctxChan, "Handler should not be called")
 }

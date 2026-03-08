@@ -21,17 +21,17 @@ func (s *GroupBuyService) CreatePriceTemplate(ctx context.Context, name, sourceC
 	return pt, nil
 }
 
-// ListPriceTemplates: Authenticated (Managers need to see them to select)
+// ListPriceTemplates: Creator or SysAdmin.
 func (s *GroupBuyService) ListPriceTemplates(ctx context.Context) ([]*groupbuy.PriceTemplate, error) {
-	if _, _, err := checkLogin(ctx); err != nil {
+	if _, _, err := requireRole(ctx, user.UserRoleCreator); err != nil {
 		return nil, err
 	}
 	return s.repo.ListPriceTemplates(ctx)
 }
 
-// GetPriceTemplate: Authenticated
+// GetPriceTemplate: Creator or SysAdmin.
 func (s *GroupBuyService) GetPriceTemplate(ctx context.Context, id string) (*groupbuy.PriceTemplate, error) {
-	if _, _, err := checkLogin(ctx); err != nil {
+	if _, _, err := requireRole(ctx, user.UserRoleCreator); err != nil {
 		return nil, err
 	}
 	return s.repo.GetPriceTemplate(ctx, id)

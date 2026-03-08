@@ -18,6 +18,7 @@ func TestGroupBuyService_PriceTemplate_AccessControl(t *testing.T) {
 
 	adminCtx := auth.NewContext(context.Background(), "admin", int(user.UserRoleSysAdmin))
 	creatorCtx := auth.NewContext(context.Background(), "creator", int(user.UserRoleCreator))
+	userCtx := auth.NewContext(context.Background(), "user", int(user.UserRoleUser))
 	anonCtx := context.Background()
 
 	// Create: Admin Only
@@ -33,14 +34,32 @@ func TestGroupBuyService_PriceTemplate_AccessControl(t *testing.T) {
 		assert.NotEmpty(t, pt.ID)
 	})
 
-	// List: Authenticated
+	// List/Get: Creator + SysAdmin
 	t.Run("List Access", func(t *testing.T) {
 		_, err := svc.ListPriceTemplates(anonCtx)
 		assert.ErrorIs(t, err, ErrUnauthorized)
 
+		_, err = svc.ListPriceTemplates(userCtx)
+		assert.ErrorIs(t, err, ErrPermissionDenied)
+
 		list, err := svc.ListPriceTemplates(creatorCtx)
 		require.NoError(t, err)
 		assert.Len(t, list, 1) // One created via admin above
+	})
+
+	t.Run("Get Access", func(t *testing.T) {
+		pt, err := svc.CreatePriceTemplate(adminCtx, "ReadMe", "JPY", 0.2, nil)
+		require.NoError(t, err)
+
+		_, err = svc.GetPriceTemplate(anonCtx, pt.ID)
+		assert.ErrorIs(t, err, ErrUnauthorized)
+
+		_, err = svc.GetPriceTemplate(userCtx, pt.ID)
+		assert.ErrorIs(t, err, ErrPermissionDenied)
+
+		got, err := svc.GetPriceTemplate(creatorCtx, pt.ID)
+		require.NoError(t, err)
+		assert.Equal(t, pt.ID, got.ID)
 	})
 
 	// Update: Admin Only

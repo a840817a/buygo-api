@@ -88,11 +88,11 @@ service GroupBuyService {
   rpc AddProduct(AddProductRequest) returns (AddProductResponse);
 
   // CreateCategory creates a product category template.
-  // Access: Creator
+  // Access: Admin
   rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
 
   // ListCategories returns all product categories.
-  // Access: Public
+  // Access: Creator / Admin
   rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
 
   // CreateOrder places a new order in a group buy.
@@ -137,11 +137,11 @@ service GroupBuyService {
   rpc CreatePriceTemplate(CreatePriceTemplateRequest) returns (CreatePriceTemplateResponse);
 
   // ListPriceTemplates returns all pricing templates.
-  // Access: Admin
+  // Access: Creator / Admin
   rpc ListPriceTemplates(ListPriceTemplatesRequest) returns (ListPriceTemplatesResponse);
 
   // GetPriceTemplate returns a single pricing template.
-  // Access: Admin
+  // Access: Creator / Admin
   rpc GetPriceTemplate(GetPriceTemplateRequest) returns (GetPriceTemplateResponse);
 
   // UpdatePriceTemplate updates a pricing template.

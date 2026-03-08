@@ -46,23 +46,38 @@ func TestGroupBuyService_CategoryAccessControl(t *testing.T) {
 		t.Errorf("SysAdmin should create category, got %v", err)
 	}
 
-	// 2. List Categories (Public Access)
+	// 2. List Categories (Creator/Admin)
 	// Create another for sorting test
 	_, err = svc.CreateCategory(adminCtx, "AliceCat", []string{"Size"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Anon -> Fail (Service requires Auth)
+	// Anon -> Fail
 	_, err = svc.ListCategories(anonCtx)
 	if !errors.Is(err, ErrUnauthorized) {
-		t.Errorf("Anon should not list categories (requires auth), got %v", err)
+		t.Errorf("Anon should not list categories, got %v", err)
 	}
 
-	// User -> Success
-	cats, err := svc.ListCategories(userCtx)
+	// User -> Fail
+	_, err = svc.ListCategories(userCtx)
+	if !errors.Is(err, ErrPermissionDenied) {
+		t.Errorf("User should not list categories, got %v", err)
+	}
+
+	// Creator -> Success
+	cats, err := svc.ListCategories(creatorCtx)
 	if err != nil {
-		t.Errorf("User should list categories, got %v", err)
+		t.Errorf("Creator should list categories, got %v", err)
+	}
+	if len(cats) != 2 {
+		t.Errorf("Expected 2 categories, got %d", len(cats))
+	}
+
+	// Admin -> Success
+	cats, err = svc.ListCategories(adminCtx)
+	if err != nil {
+		t.Errorf("Admin should list categories, got %v", err)
 	}
 	if len(cats) != 2 {
 		t.Errorf("Expected 2 categories, got %d", len(cats))

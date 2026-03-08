@@ -126,7 +126,7 @@ Three main services:
 | `GetMe` | Get current user profile | Authenticated |
 | `ListUsers` | List all users | Admin |
 | `UpdateUserRole` | Change user role | Admin |
-| `ListAssignableManagers` | List manager candidates | Creator |
+| `ListAssignableManagers` | List manager candidates | Creator / Admin |
 
 ### GroupBuyService (`groupbuy.proto`)
 
@@ -145,8 +145,10 @@ Three main services:
 | `ListGroupBuyOrders` | View all orders for a group buy | Manager |
 | `ConfirmPayment` | Approve/reject payment | Manager |
 | `BatchUpdateStatus` | FIFO batch status progression | Manager |
-| `CreateCategory` / `ListCategories` | Product categories | Creator / Public |
-| `CreatePriceTemplate` / CRUD | Pricing templates | Admin |
+| `CreateCategory` | Create category templates | Admin |
+| `ListCategories` | List category templates | Creator / Admin |
+| `CreatePriceTemplate` / `UpdatePriceTemplate` / `DeletePriceTemplate` | Manage pricing templates | Admin |
+| `ListPriceTemplates` / `GetPriceTemplate` | Read pricing templates | Creator / Admin |
 
 ### EventService (`event.proto`)
 
