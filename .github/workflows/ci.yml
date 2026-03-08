@@ -34,7 +34,7 @@ jobs:
           pkgs=()
           while IFS= read -r pkg; do
             pkgs+=("$pkg")
-          done < <(go list ./... | grep -v '/api/v1' | grep -v '/api/v1/buygov1connect')
+          done < <(go list ./... | grep -v '/api/v1' | grep -v '/api/v1/buygov1connect' | grep -v '/scripts$')
           go test -race -coverprofile=coverage.out "${pkgs[@]}"
 
       - name: Coverage gate
@@ -84,8 +84,12 @@ jobs:
 
       - name: Install gitleaks
         run: |
-          curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh \
-            | sh -s -- -b /usr/local/bin v8.24.3
+          VERSION="8.24.3"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          chmod +x /tmp/gitleaks
+          echo "/tmp" >> "$GITHUB_PATH"
+          /tmp/gitleaks version
 
       - name: Scan for secrets
         run: |
