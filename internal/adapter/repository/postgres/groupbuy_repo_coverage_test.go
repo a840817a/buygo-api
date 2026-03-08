@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hatsubosi/buygo-api/internal/adapter/repository/postgres/model"
 	"github.com/hatsubosi/buygo-api/internal/domain/groupbuy"
@@ -148,6 +149,98 @@ func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
 	afterPay, err := repo.GetOrder(ctx, "order-1")
 	require.NoError(t, err)
 	assert.Equal(t, groupbuy.PaymentStatusConfirmed, afterPay.PaymentStatus)
+}
+
+func TestGroupBuyRepository_BatchUpdateOrderItemStatus_FIFOAndSplit(t *testing.T) {
+	db := newGroupBuyTestDB(t)
+	repo := NewGroupBuyRepository(db)
+	ctx := context.Background()
+
+	seedUser(t, db, "u1", "User 1", "u1@test.com")
+	seedGroupBuy(t, repo, ctx, "gb1", "u1")
+
+	older := time.Now().Add(-2 * time.Hour)
+	newer := time.Now().Add(-1 * time.Hour)
+
+	// Older order: qty=2
+	order1 := &groupbuy.Order{
+		ID:         "fifo-order-1",
+		GroupBuyID: "gb1",
+		UserID:     "u1",
+		CreatedAt:  older,
+		Items: []*groupbuy.OrderItem{
+			{
+				ID:          "fifo-item-1",
+				OrderID:     "fifo-order-1",
+				ProductID:   "gb1-prod",
+				SpecID:      "gb1-spec",
+				Quantity:    2,
+				Status:      groupbuy.OrderItemStatusUnordered,
+				ProductName: "Product in gb1",
+				SpecName:    "Default",
+				Price:       100,
+			},
+		},
+	}
+	require.NoError(t, repo.CreateOrder(ctx, order1))
+
+	// Newer order: qty=3
+	order2 := &groupbuy.Order{
+		ID:         "fifo-order-2",
+		GroupBuyID: "gb1",
+		UserID:     "u1",
+		CreatedAt:  newer,
+		Items: []*groupbuy.OrderItem{
+			{
+				ID:          "fifo-item-2",
+				OrderID:     "fifo-order-2",
+				ProductID:   "gb1-prod",
+				SpecID:      "gb1-spec",
+				Quantity:    3,
+				Status:      groupbuy.OrderItemStatusUnordered,
+				ProductName: "Product in gb1",
+				SpecName:    "Default",
+				Price:       100,
+			},
+		},
+	}
+	require.NoError(t, repo.CreateOrder(ctx, order2))
+
+	// Move 4 units from Unordered -> Ordered.
+	moved, orderIDs, err := repo.BatchUpdateOrderItemStatus(
+		ctx,
+		"gb1",
+		"gb1-spec",
+		[]int{int(groupbuy.OrderItemStatusUnordered)},
+		int(groupbuy.OrderItemStatusOrdered),
+		4,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, int64(4), moved)
+	assert.ElementsMatch(t, []string{"fifo-order-1", "fifo-order-2"}, orderIDs)
+
+	got1, err := repo.GetOrder(ctx, "fifo-order-1")
+	require.NoError(t, err)
+	require.Len(t, got1.Items, 1)
+	assert.Equal(t, groupbuy.OrderItemStatusOrdered, got1.Items[0].Status)
+	assert.Equal(t, 2, got1.Items[0].Quantity)
+
+	got2, err := repo.GetOrder(ctx, "fifo-order-2")
+	require.NoError(t, err)
+	require.Len(t, got2.Items, 2)
+
+	var unorderedQty, orderedQty int
+	for _, it := range got2.Items {
+		switch it.Status {
+		case groupbuy.OrderItemStatusUnordered:
+			unorderedQty += it.Quantity
+		case groupbuy.OrderItemStatusOrdered:
+			orderedQty += it.Quantity
+		}
+	}
+	// Split result: newer order keeps 1 unordered, and 2 moved to ordered.
+	assert.Equal(t, 1, unorderedQty)
+	assert.Equal(t, 2, orderedQty)
 }
 
 // ---------------------------------------------------------------------------

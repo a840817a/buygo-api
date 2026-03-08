@@ -106,14 +106,58 @@ func TestGroupBuyService_OrderFlow(t *testing.T) {
 	}
 
 	// Test: Update Payment Info
-	_, err = svc.UpdatePaymentInfo(userCtx, order.ID, "Bank Transfer", "12345", "", "", nil, 0)
+	updatedPaymentOrder, err := svc.UpdatePaymentInfo(
+		userCtx,
+		order.ID,
+		"Bank Transfer",
+		"12345",
+		"new-contact",
+		"new-address",
+		nil,
+		0,
+	)
 	if err != nil {
 		t.Fatalf("Failed to update payment info: %v", err)
 	}
 
-	// Fetch again to verify
-	// (Actually UpdatePaymentInfo returns order, but let's fetch to be sure of persistence)
-	// Service doesn't expose GetOrder for User easily (Create/Update return it).
-	// But ListProjectOrders (Manager) can find it.
-	// Or just trust the return value for this unit test.
+	// Verify returned fields and auto-submitted payment status
+	if updatedPaymentOrder.PaymentInfo == nil {
+		t.Fatalf("Expected payment info to be set")
+	}
+	if updatedPaymentOrder.PaymentInfo.Method != "Bank Transfer" {
+		t.Errorf("Expected payment method 'Bank Transfer', got '%s'", updatedPaymentOrder.PaymentInfo.Method)
+	}
+	if updatedPaymentOrder.PaymentInfo.AccountLast5 != "12345" {
+		t.Errorf("Expected account last5 '12345', got '%s'", updatedPaymentOrder.PaymentInfo.AccountLast5)
+	}
+	if updatedPaymentOrder.PaymentStatus != groupbuy.PaymentStatusSubmitted {
+		t.Errorf("Expected PaymentStatusSubmitted, got %v", updatedPaymentOrder.PaymentStatus)
+	}
+	if updatedPaymentOrder.ContactInfo != "new-contact" {
+		t.Errorf("Expected ContactInfo 'new-contact', got '%s'", updatedPaymentOrder.ContactInfo)
+	}
+	if updatedPaymentOrder.ShippingAddress != "new-address" {
+		t.Errorf("Expected ShippingAddress 'new-address', got '%s'", updatedPaymentOrder.ShippingAddress)
+	}
+
+	// Verify persistence by fetching from repository directly
+	savedOrder, err := repo.GetOrder(context.Background(), order.ID)
+	if err != nil {
+		t.Fatalf("Failed to fetch saved order: %v", err)
+	}
+	if savedOrder.PaymentInfo == nil {
+		t.Fatalf("Expected saved payment info to be set")
+	}
+	if savedOrder.PaymentInfo.Method != "Bank Transfer" {
+		t.Errorf("Expected saved method 'Bank Transfer', got '%s'", savedOrder.PaymentInfo.Method)
+	}
+	if savedOrder.PaymentInfo.AccountLast5 != "12345" {
+		t.Errorf("Expected saved account last5 '12345', got '%s'", savedOrder.PaymentInfo.AccountLast5)
+	}
+	if savedOrder.PaymentStatus != groupbuy.PaymentStatusSubmitted {
+		t.Errorf("Expected saved PaymentStatusSubmitted, got %v", savedOrder.PaymentStatus)
+	}
+	if savedOrder.ContactInfo != "new-contact" || savedOrder.ShippingAddress != "new-address" {
+		t.Errorf("Expected saved contact/shipping to persist, got contact='%s', shipping='%s'", savedOrder.ContactInfo, savedOrder.ShippingAddress)
+	}
 }
