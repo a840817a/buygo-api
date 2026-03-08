@@ -150,12 +150,12 @@ func TestOrderModel_Conversion(t *testing.T) {
 	now := time.Now()
 	paidAt := now.Add(-1 * time.Hour)
 	order := &groupbuy.Order{
-		ID:            "o1",
-		GroupBuyID:    "gb1",
-		UserID:        "u1",
-		TotalAmount:   5000,
-		PaymentStatus: groupbuy.PaymentStatusConfirmed,
-		ContactInfo:   "John",
+		ID:              "o1",
+		GroupBuyID:      "gb1",
+		UserID:          "u1",
+		TotalAmount:     5000,
+		PaymentStatus:   groupbuy.PaymentStatusConfirmed,
+		ContactInfo:     "John",
 		ShippingAddress: "123 Main St",
 		PaymentInfo: &groupbuy.PaymentInfo{
 			Method:       "transfer",
@@ -197,9 +197,9 @@ func TestOrderModel_Conversion(t *testing.T) {
 
 func TestOrderModel_NilPaymentInfo(t *testing.T) {
 	order := &groupbuy.Order{
-		ID:        "o2",
+		ID:         "o2",
 		GroupBuyID: "gb1",
-		UserID:    "u1",
+		UserID:     "u1",
 	}
 	m := FromDomainOrder(order)
 	assert.Empty(t, m.PaymentMethod)
@@ -310,14 +310,14 @@ func TestEventItemModel_Conversion(t *testing.T) {
 
 func TestRegistrationModel_Conversion(t *testing.T) {
 	reg := &event.Registration{
-		ID:            "r1",
-		EventID:       "e1",
-		UserID:        "u1",
-		Status:        event.RegistrationStatusConfirmed,
-		PaymentStatus: event.PaymentStatusPaid,
-		ContactInfo:   "John Doe",
-		Notes:         "Vegetarian",
-		TotalAmount:   1000,
+		ID:              "r1",
+		EventID:         "e1",
+		UserID:          "u1",
+		Status:          event.RegistrationStatusConfirmed,
+		PaymentStatus:   event.PaymentStatusPaid,
+		ContactInfo:     "John Doe",
+		Notes:           "Vegetarian",
+		TotalAmount:     1000,
 		DiscountApplied: 100,
 		SelectedItems: []*event.RegistrationItem{
 			{EventItemID: "ei1", Quantity: 2},

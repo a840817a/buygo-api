@@ -76,10 +76,10 @@ func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
 
 	// --- CreateOrder ---
 	order := &groupbuy.Order{
-		ID:         "order-1",
-		GroupBuyID: "gb1",
-		UserID:     "u1",
-		TotalAmount: 200,
+		ID:            "order-1",
+		GroupBuyID:    "gb1",
+		UserID:        "u1",
+		TotalAmount:   200,
 		PaymentStatus: groupbuy.PaymentStatusUnset,
 		Items: []*groupbuy.OrderItem{
 			{ID: "oi-1", OrderID: "order-1", ProductID: "gb1-prod", SpecID: "gb1-spec", Quantity: 2, Status: groupbuy.OrderItemStatusUnordered, ProductName: "Product in gb1", SpecName: "Default", Price: 100},
@@ -106,10 +106,10 @@ func TestGroupBuyRepository_OrderCRUD(t *testing.T) {
 
 	// --- Create a second order for user u2 ---
 	order2 := &groupbuy.Order{
-		ID:         "order-2",
-		GroupBuyID: "gb1",
-		UserID:     "u2",
-		TotalAmount: 100,
+		ID:            "order-2",
+		GroupBuyID:    "gb1",
+		UserID:        "u2",
+		TotalAmount:   100,
 		PaymentStatus: groupbuy.PaymentStatusUnset,
 		Items: []*groupbuy.OrderItem{
 			{ID: "oi-2", OrderID: "order-2", ProductID: "gb1-prod", SpecID: "gb1-spec", Quantity: 1, Status: groupbuy.OrderItemStatusUnordered, ProductName: "Product in gb1", SpecName: "Default", Price: 100},

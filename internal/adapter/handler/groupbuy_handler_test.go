@@ -663,7 +663,7 @@ func TestGroupBuyHandler_CreateOrder_Validation(t *testing.T) {
 	// Zero quantity
 	_, err = h.CreateOrder(ctx, connect.NewRequest(&v1.CreateOrderRequest{
 		GroupBuyId: "gb1",
-		Items:     []*v1.CreateOrderItem{{ProductId: "p1", Quantity: 0}},
+		Items:      []*v1.CreateOrderItem{{ProductId: "p1", Quantity: 0}},
 	}))
 	if err == nil {
 		t.Fatal("expected error for zero quantity")
