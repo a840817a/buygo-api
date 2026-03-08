@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -25,14 +26,22 @@ func main() {
 	root, err := projectRoot()
 	must(err)
 	protoDir := filepath.Join(root, "api", "v1")
+	protoFS := os.DirFS(protoDir)
 
-	files, err := filepath.Glob(filepath.Join(protoDir, "*.proto"))
+	dirEntries, err := os.ReadDir(protoDir)
 	must(err)
+	files := make([]string, 0, len(dirEntries))
+	for _, de := range dirEntries {
+		if de.IsDir() || !strings.HasSuffix(de.Name(), ".proto") {
+			continue
+		}
+		files = append(files, de.Name())
+	}
 	sort.Strings(files)
 
 	entries := make([]policyEntry, 0, 32)
 	for _, file := range files {
-		b, readErr := os.ReadFile(file)
+		b, readErr := fs.ReadFile(protoFS, file)
 		must(readErr)
 
 		currentService := ""
@@ -73,7 +82,7 @@ func main() {
 	out.WriteString("}\n")
 
 	target := filepath.Join(root, "internal", "adapter", "interceptor", "auth_policy_generated.go")
-	must(os.WriteFile(target, out.Bytes(), 0o644))
+	must(os.WriteFile(target, out.Bytes(), 0o600))
 }
 
 func projectRoot() (string, error) {
